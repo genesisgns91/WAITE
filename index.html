@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0d1117">
+    <title>Astro Tarot — Diário & Leitura Iniciática</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Astro Tarot">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyADZphyLztYYeMV130uyq_3CYthr6QzBo0",
+            authDomain: "coringa-c0bce.firebaseapp.com",
+            projectId: "coringa-c0bce",
+            storageBucket: "coringa-c0bce.firebasestorage.app",
+            messagingSenderId: "346363639454",
+            appId: "1:346363639454:web:38b288fe0d7abf66daad8f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Disponibiliza db e funções no escopo global para uso direto nos scripts
+        window.db = db;
+        window.fbCollection = collection;
+        window.fbAddDoc = addDoc;
+        window.fbGetDocs = getDocs;
+        window.fbDeleteDoc = deleteDoc;
+        window.fbDoc = doc;
+        window.fbQuery = query;
+        window.fbOrderBy = orderBy;
+    </script>
+
+    <style>
+        :root {
+            --bg-principal: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --texto: #c9d1d9;
+            --destaque: #a371f7;
+            --ouro: #e3b341;
+            --fogo: #f85149;
+            --terra: #7ee787;
+            --ar: #79c0ff;
+            --agua: #d2a8ff;
+            --ia-color: #a371f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            background-color: var(--bg-principal);
+            color: var(--texto);
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1400px;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            color: var(--ouro);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 0.82rem;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        .app-nav {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            text-decoration: none;
+            color: #8b949e;
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            border-color: var(--destaque);
+            color: #fff;
+        }
+
+        .nav-tab.active {
+            background: var(--destaque);
+            color: #0d1117;
+            border-color: var(--destaque);
+        }
+
+        .app-layout {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .section-form-title {
+            font-size: 0.85rem;
+            color: var(--ouro);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.78rem;
+            color: #8b949e;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--destaque);
+        }
+
+        .qty-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-qty {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            color: var(--texto);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-qty.active {
+            background: var(--destaque);
+            color: #0d1117;
+            border-color: var(--destaque);
+        }
+
+        .cards-selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .card-slot {
+            background: var(--bg-principal);
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .card-slot:hover {
+            border-color: var(--destaque);
+        }
+
+        .card-slot-header {
+            font-size: 0.78rem;
+            color: var(--ouro);
+            font-weight: 700;
+            width: 100%;
+        }
+
+        .card-preview-img {
+            width: 120px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .btn-primary {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 100%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2ea043;
+        }
+
+        /* Mesa Virtual de Cartas Exibidas */
+        .spread-display {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .spread-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .spread-card-item {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            width: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .spread-card-item img {
+            width: 130px;
+            height: 215px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--ouro);
+        }
+
+        .spread-position-title {
+            font-size: 0.75rem;
+            color: var(--destaque);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .spread-card-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Seção da IA */
+        .ia-section {
+            background: var(--bg-card);
+            border: 1px solid var(--ia-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ia-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .ia-header h3 {
+            color: var(--ia-color);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ia-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-ia-action {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            color: #c9d1d9;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-ia-action:hover {
+            border-color: var(--ia-color);
+            color: #fff;
+        }
+
+        .voice-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-principal);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .voice-controls select {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            max-width: 220px;
+        }
+
+        .ia-output {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 160px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            color: #e6edf3;
+        }
+
+        /* Chat / Perguntas de Aprofundamento */
+        .chat-section {
+            border-top: 1px dashed var(--border);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .chat-msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        .chat-msg.user {
+            background: rgba(88, 166, 255, 0.15);
+            border: 1px solid var(--ar);
+            align-self: flex-end;
+            color: #fff;
+        }
+
+        .chat-msg.assistant {
+            background: rgba(163, 113, 247, 0.15);
+            border: 1px solid var(--ia-color);
+            align-self: flex-start;
+            color: #e6edf3;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Histórico Firebase */
+        .history-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+
+        .history-card {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .history-card:hover {
+            border-color: var(--ouro);
+        }
+
+        .history-card-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #8b949e;
+        }
+
+        .history-card-quest {
+            font-weight: 600;
+            color: var(--ouro);
+            font-size: 0.88rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-del-hist {
+            background: #da3633;
+            color: #fff;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ASTRO TAROT — DIÁRIO & SÍNTESE INICIÁTICA</h1>
+        <p>Registro Físico, Hermetismo, Cabala, Psicologia Analítica (Jung) & Firebase Cloud</p>
+        
+        <nav class="app-nav">
+            <a href="index.html" class="nav-tab">Mapa Natal</a>
+            <a href="revolucao_solar.html" class="nav-tab">Revolução Solar</a>
+            <a href="transitos_diarios.html" class="nav-tab">Trânsitos Diários</a>
+            <a href="tarot.html" class="nav-tab active">Astro Tarot</a>
+        </nav>
+    </header>
+
+    <div class="app-layout">
+        
+        <form class="controls" onsubmit="event.preventDefault(); processarLeituraIniciatica();">
+            <div class="section-form-title">
+                <span>1. Questão Principal & Tiragem Físico-Virtual</span>
+            </div>
+
+            <div class="input-group">
+                <label for="questaoInput">Qual é a Questão / Pergunta Principal?</label>
+                <textarea id="questaoInput" placeholder="Ex: Qual é a dinâmica espiritual e o obstáculo arquetípico no meu atual ciclo profissional?" required></textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Quantidade de Cartas Tiradas na Mesa:</label>
+                <div class="qty-selector">
+                    <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1 Carta</button>
+                    <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3 Cartas</button>
+                    <button type="button" class="btn-qty active" onclick="definirQtdCartas(5)">5 Cartas</button>
+                    <button type="button" class="btn-qty" onclick="definirQtdCartas(7)">7 Cartas</button>
+                </div>
+            </div>
+
+            <div class="section-form-title" style="margin-top: 10px;">
+                <span>2. Atribuição de Posições e Escolha das Cartas</span>
+            </div>
+
+            <div id="slotsContainer" class="cards-selection-grid">
+                </div>
+
+            <button type="submit" class="btn-primary">✨ SINTETIZAR E REGISTRAR LEITURA INICIÁTICA</button>
+        </form>
+
+        <div class="spread-display" id="spreadDisplay" style="display: none;">
+            <div class="section-form-title">
+                <span>Mesa Virtual da Tiragem</span>
+            </div>
+            <div id="spreadGrid" class="spread-grid"></div>
+        </div>
+
+        <div class="ia-section">
+            <div class="ia-header">
+                <h3>✨ Interpretação Iniciática & Alquímica</h3>
+                <div class="ia-actions">
+                    <button class="btn-ia-action" onclick="gerarOuRegerarIA()">🤖 Nova Interpretação</button>
+                    <button class="btn-ia-action" onclick="exportarTXT()">📄 Exportar TXT</button>
+                    <button class="btn-ia-action" onclick="exportarPDF()">📑 Exportar PDF</button>
+                </div>
+            </div>
+
+            <div class="voice-controls">
+                <label for="voiceSelect">📢 Voz:</label>
+                <select id="voiceSelect"></select>
+                <button class="btn-ia-action" onclick="falarTextoIA()">▶ Ouvir</button>
+                <button class="btn-ia-action" onclick="pausarVozIA()">⏸ Pausar</button>
+                <button class="btn-ia-action" onclick="pararVozIA()">⏹ Parar</button>
+            </div>
+
+            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico e clique no botão acima para sintetizar a leitura sob a ótica do Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.</div>
+
+            <div class="chat-section">
+                <div class="section-form-title" style="font-size: 0.8rem; color: var(--ar);">
+                    <span>💬 Diálogo de Aprofundamento com a IA</span>
+                </div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Faça uma pergunta sobre os símbolos ou aspectos desta leitura..." onkeypress="if(event.key==='Enter') enviarPerguntaChat();">
+                    <button type="button" class="btn-ia-action" style="background: var(--destaque); color:#0d1117; font-weight:bold;" onclick="enviarPerguntaChat()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="section-form-title">
+                <span>📜 Histórico de Leituras Registradas (Firebase Cloud)</span>
+                <button type="button" class="btn-ia-action" onclick="carregarHistoricoFirebase()">🔄 Atualizar</button>
+            </div>
+            <div id="historyGrid" class="history-grid">
+                <div style="font-size:0.8rem; color:#8b949e;">Carregando histórico do banco de dados...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==================== LISTA DAS 78 CARTAS (PASTA cards) ====================
+        const TODAS_AS_CARTAS = [
+            { id: "00_Fool", nome: "0 - O Louco (The Fool)", arquivo: "cards/00_Fool.jpg" },
+            { id: "01_Magician", nome: "I - O Mago (The Magician)", arquivo: "cards/01_Magician.jpg" },
+            { id: "02_High_Priestess", nome: "II - A Sacerdotisa (The High Priestess)", arquivo: "cards/02_High_Priestess.jpg" },
+            { id: "03_Empress", nome: "III - A Imperatriz (The Empress)", arquivo: "cards/03_Empress.jpg" },
+            { id: "04_Emperor", nome: "IV - O Imperador (The Emperor)", arquivo: "cards/04_Emperor.jpg" },
+            { id: "05_Hierophant", nome: "V - O Hierofante (The Hierophant)", arquivo: "cards/05_Hierophant.jpg" },
+            { id: "06_Lovers", nome: "VI - Os Enamorados (The Lovers)", arquivo: "cards/06_Lovers.jpg" },
+            { id: "07_Chariot", nome: "VII - O Carro (The Chariot)", arquivo: "cards/07_Chariot.jpg" },
+            { id: "08_Strength", nome: "VIII - A Força (Strength)", arquivo: "cards/08_Strength.jpg" },
+            { id: "09_Hermit", nome: "IX - O Eremita (The Hermit)", arquivo: "cards/09_Hermit.jpg" },
+            { id: "10_Wheel_of_Fortune", nome: "X - Roda da Fortuna (Wheel of Fortune)", arquivo: "cards/10_Wheel_of_Fortune.jpg" },
+            { id: "11_Justice", nome: "XI - A Justiça (Justice)", arquivo: "cards/11_Justice.jpg" },
+            { id: "12_Hanged_Man", nome: "XII - O Pendurado (The Hanged Man)", arquivo: "cards/12_Hanged_Man.jpg" },
+            { id: "13_Death", nome: "XIII - A Morte (Death)", arquivo: "cards/13_Death.jpg" },
+            { id: "14_Temperance", nome: "XIV - A Temperança (Temperance)", arquivo: "cards/14_Temperance.jpg" },
+            { id: "15_Devil", nome: "XV - O Diabo (The Devil)", arquivo: "cards/15_Devil.jpg" },
+            { id: "16_Tower", nome: "XVI - A Torre (The Tower)", arquivo: "cards/16_Tower.jpg" },
+            { id: "17_Star", nome: "XVII - A Estrela (The Star)", arquivo: "cards/17_Star.jpg" },
+            { id: "18_Moon", nome: "XVIII - A Lua (The Moon)", arquivo: "cards/18_Moon.jpg" },
+            { id: "19_Sun", nome: "XIX - O Sol (The Sun)", arquivo: "cards/19_Sun.jpg" },
+            { id: "20_Judgement", nome: "XX - O Julgamento (Judgement)", arquivo: "cards/20_Judgement.jpg" },
+            { id: "21_World", nome: "XXI - O Mundo (The World)", arquivo: "cards/21_World.jpg" },
+
+            // Taças / Cups
+            { id: "Cups01", nome: "Ás de Taças", arquivo: "cards/Cups01.jpg" },
+            { id: "Cups02", nome: "2 de Taças", arquivo: "cards/Cups02.jpg" },
+            { id: "Cups03", nome: "3 de Taças", arquivo: "cards/Cups03.jpg" },
+            { id: "Cups04", nome: "4 de Taças", arquivo: "cards/Cups04.jpg" },
+            { id: "Cups05", nome: "5 de Taças", arquivo: "cards/Cups05.jpg" },
+            { id: "Cups06", nome: "6 de Taças", arquivo: "cards/Cups06.jpg" },
+            { id: "Cups07", nome: "7 de Taças", arquivo: "cards/Cups07.jpg" },
+            { id: "Cups08", nome: "8 de Taças", arquivo: "cards/Cups08.jpg" },
+            { id: "Cups09", nome: "9 de Taças", arquivo: "cards/Cups09.jpg" },
+            { id: "Cups10", nome: "10 de Taças", arquivo: "cards/Cups10.jpg" },
+            { id: "Cups11", nome: "Príncipe/Valete de Taças", arquivo: "cards/Cups11.jpg" },
+            { id: "Cups12", nome: "Cavaleiro de Taças", arquivo: "cards/Cups12.jpg" },
+            { id: "Cups13", nome: "Rainha de Taças", arquivo: "cards/Cups13.jpg" },
+            { id: "Cups14", nome: "Rei de Taças", arquivo: "cards/Cups14.jpg" },
+
+            // Ouros / Pents
+            { id: "Pents01", nome: "Ás de Ouros", arquivo: "cards/Pents01.jpg" },
+            { id: "Pents02", nome: "2 de Ouros", arquivo: "cards/Pents02.jpg" },
+            { id: "Pents03", nome: "3 de Ouros", arquivo: "cards/Pents03.jpg" },
+            { id: "Pents04", nome: "4 de Ouros", arquivo: "cards/Pents04.jpg" },
+            { id: "Pents05", nome: "5 de Ouros", arquivo: "cards/Pents05.jpg" },
+            { id: "Pents06", nome: "6 de Ouros", arquivo: "cards/Pents06.jpg" },
+            { id: "Pents07", nome: "7 de Ouros", arquivo: "cards/Pents07.jpg" },
+            { id: "Pents08", nome: "8 de Ouros", arquivo: "cards/Pents08.jpg" },
+            { id: "Pents09", nome: "9 de Ouros", arquivo: "cards/Pents09.jpg" },
+            { id: "Pents10", nome: "10 de Ouros", arquivo: "cards/Pents10.jpg" },
+            { id: "Pents11", nome: "Príncipe/Valete de Ouros", arquivo: "cards/Pents11.jpg" },
+            { id: "Pents12", nome: "Cavaleiro de Ouros", arquivo: "cards/Pents12.jpg" },
+            { id: "Pents13", nome: "Rainha de Ouros", arquivo: "cards/Pents13.jpg" },
+            { id: "Pents14", nome: "Rei de Ouros", arquivo: "cards/Pents14.jpg" },
+
+            // Espadas / Swords
+            { id: "Swords01", nome: "Ás de Espadas", arquivo: "cards/Swords01.jpg" },
+            { id: "Swords02", nome: "2 de Espadas", arquivo: "cards/Swords02.jpg" },
+            { id: "Swords03", nome: "3 de Espadas", arquivo: "cards/Swords03.jpg" },
+            { id: "Swords04", nome: "4 de Espadas", arquivo: "cards/Swords04.jpg" },
+            { id: "Swords05", nome: "5 de Espadas", arquivo: "cards/Swords05.jpg" },
+            { id: "Swords06", nome: "6 de Espadas", arquivo: "cards/Swords06.jpg" },
+            { id: "Swords07", nome: "7 de Espadas", arquivo: "cards/Swords07.jpg" },
+            { id: "Swords08", nome: "8 de Espadas", arquivo: "cards/Swords08.jpg" },
+            { id: "Swords09", nome: "9 de Espadas", arquivo: "cards/Swords09.jpg" },
+            { id: "Swords10", nome: "10 de Espadas", arquivo: "cards/Swords10.jpg" },
+            { id: "Swords11", nome: "Príncipe/Valete de Espadas", arquivo: "cards/Swords11.jpg" },
+            { id: "Swords12", nome: "Cavaleiro de Espadas", arquivo: "cards/Swords12.jpg" },
+            { id: "Swords13", nome: "Rainha de Espadas", arquivo: "cards/Swords13.jpg" },
+            { id: "Swords14", nome: "Rei de Espadas", arquivo: "cards/Swords14.jpg" },
+
+            // Paus / Wands
+            { id: "Wands01", nome: "Ás de Paus", arquivo: "cards/Wands01.jpg" },
+            { id: "Wands02", nome: "2 de Paus", arquivo: "cards/Wands02.jpg" },
+            { id: "Wands03", nome: "3 de Paus", arquivo: "cards/Wands03.jpg" },
+            { id: "Wands04", nome: "4 de Paus", arquivo: "cards/Wands04.jpg" },
+            { id: "Wands05", nome: "5 de Paus", arquivo: "cards/Wands05.jpg" },
+            { id: "Wands06", nome: "6 de Paus", arquivo: "cards/Wands06.jpg" },
+            { id: "Wands07", nome: "7 de Paus", arquivo: "cards/Wands07.jpg" },
+            { id: "Wands08", nome: "8 de Paus", arquivo: "cards/Wands08.jpg" },
+            { id: "Wands09", nome: "9 de Paus", arquivo: "cards/Wands09.jpg" },
+            { id: "Wands10", nome: "10 de Paus", arquivo: "cards/Wands10.jpg" },
+            { id: "Wands11", nome: "Príncipe/Valete de Paus", arquivo: "cards/Wands11.jpg" },
+            { id: "Wands12", nome: "Cavaleiro de Paus", arquivo: "cards/Wands12.jpg" },
+            { id: "Wands13", nome: "Rainha de Paus", arquivo: "cards/Wands13.jpg" },
+            { id: "Wands14", nome: "Rei de Paus", arquivo: "cards/Wands14.jpg" }
+        ];
+
+        // ==================== PROXIES WORKERS COM FALLBACK AUTOMÁTICO ====================
+        const PROXIES_WORKERS = [
+            "https://shiny-sky-21dd.genesisgns.workers.dev",
+            "https://astro-gns-proxy.genesisgns.workers.dev",
+            "https://astro2.genesisgns.workers.dev"
+        ];
+
+        // Rótulos padrão para quando a quantidade é selecionada
+        const ROTULOS_PADRAO = {
+            1: ["1. Síntese Geral / Resposta Central"],
+            3: ["1. Passado / Causa", "2. Presente / Desafio", "3. Futuro / Tendência"],
+            5: ["1. O Momento Atual", "2. O Desafio / Obstáculo", "3. Influências Inconscientes", "4. Recurso / Conselho", "5. Desfecho / Alquimia"],
+            7: ["1. Estado Mental/Espiritual", "2. Influência Externa", "3. Desafio Central", "4. Causa Raiz", "5. Potencial Oculto", "6. Conselho da Razão", "7. Síntese Final"]
+        };
+
+        let qtdCartasSelecionada = 5;
+        let leituraAtual = null;
+        let historicoChat = [];
+        let vozesDisponiveis = [];
+
+        function definirQtdCartas(qtd) {
+            qtdCartasSelecionada = qtd;
+            document.querySelectorAll('.btn-qty').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderizarSlots();
+        }
+
+        function renderizarSlots() {
+            const container = document.getElementById('slotsContainer');
+            container.innerHTML = '';
+            const rotulos = ROTULOS_PADRAO[qtdCartasSelecionada] || [];
+
+            for (let i = 0; i < qtdCartasSelecionada; i++) {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'card-slot';
+
+                const rotuloPadrao = rotulos[i] || `Carta ${i + 1}`;
+
+                slotDiv.innerHTML = `
+                    <div class="card-slot-header">POSIÇÃO ${i + 1}</div>
+                    <input type="text" id="rotulo_${i}" value="${rotuloPadrao}" placeholder="Significado desta posição">
+                    <img id="preview_${i}" src="${TODAS_AS_CARTAS[0].arquivo}" class="card-preview-img" alt="Preview">
+                    <select id="select_card_${i}" onchange="atualizarPreviewCard(${i})">
+                        ${TODAS_AS_CARTAS.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
+                    </select>
+                `;
+                container.appendChild(slotDiv);
+            }
+        }
+
+        function atualizarPreviewCard(idx) {
+            const cardId = document.getElementById(`select_card_${idx}`).value;
+            const carta = TODAS_AS_CARTAS.find(c => c.id === cardId);
+            if (carta) {
+                document.getElementById(`preview_${idx}`).src = carta.arquivo;
+            }
+        }
+
+        function renderizarMesaVirtual(cartasTiradas) {
+            const display = document.getElementById('spreadDisplay');
+            const grid = document.getElementById('spreadGrid');
+            grid.innerHTML = '';
+            display.style.display = 'flex';
+
+            cartasTiradas.forEach(item => {
+                grid.innerHTML += `
+                    <div class="spread-card-item">
+                        <div class="spread-position-title">${item.posicao}</div>
+                        <img src="${item.arquivo}" alt="${item.nomeCarta}">
+                        <div class="spread-card-name">${item.nomeCarta}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // ==================== CHAMADA COM FALLBACK ENTRE OS 3 PROXIES ====================
+        async function fazerRequisicaoIAComFallback(payloadPrompt) {
+            let ultimoErro = null;
+
+            for (let i = 0; i < PROXIES_WORKERS.length; i++) {
+                const proxyUrl = PROXIES_WORKERS[i];
+                try {
+                    console.log(`Tentando requisição no Proxy ${i + 1}: ${proxyUrl}`);
+                    const response = await fetch(proxyUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payloadPrompt)
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.resultado || data.resposta || data.content || JSON.stringify(data);
+                    } else {
+                        console.warn(`Proxy ${i + 1} respondeu com erro status ${response.status}. Migrando para o próximo...`);
+                    }
+                } catch (err) {
+                    console.warn(`Erro de conexão com Proxy ${i + 1}: ${err.message}. Migrando para o próximo...`);
+                    ultimoErro = err;
+                }
+            }
+
+            throw new Error(`Todos os 3 proxies de IA atingiram o limite ou falharam. Último erro: ${ultimoErro ? ultimoErro.message : 'Sem resposta'}`);
+        }
+
+        // ==================== PROMPT SISTEMA DE ALTA PRECISÃO OCULTISTA/JUNGUIANA ====================
+        function construirSystemPrompt() {
+            return `Você é um Guardião do Ocultismo Sério, Mestre em Tarô Hermético e Analista Junguiano de Alta Rigorozidade.
+Sua análise DEVE obrigatoriamente seguir a ótica:
+1. Hermetismo, Gnosticismo e Tradição da Hermetic Order of the Golden Dawn.
+2. Árvore da Vida / Cabala: Sempre que citar termos cabalísticos (como Kether, Chokmah, Binah, Tiphereth, Yesod, Geburah, Chesed, Hod, Netzach, Malkuth ou os Caminhos), VOCÊ DEVE EXPLICAR O QUE O TERMO SIGNIFICA E O QUE ELE ESTÁ REPRESENTANDO na dinâmica espiritual da questão.
+3. Psicologia Analítica de Carl G. Jung: Arquétipos, Inconsciente Pessoal e Coletivo, Sombra, Anima/Animus, Persona, Processo de Individuação e Sincronicidade.
+4. Foco constante no desenvolvimento pessoal, alquimia interior, espiritualidade e elevação da consciência.
+
+Seja profundo, solene, claro, revelador e estruturado.`;
+        }
+
+        async function processarLeituraIniciatica() {
+            const questao = document.getElementById('questaoInput').value;
+            if (!questao) return alert("Por favor, digite a Questão Principal.");
+
+            const cartasTiradas = [];
+            for (let i = 0; i < qtdCartasSelecionada; i++) {
+                const rotulo = document.getElementById(`rotulo_${i}`).value || `Posição ${i + 1}`;
+                const cardId = document.getElementById(`select_card_${i}`).value;
+                const cartaObj = TODAS_AS_CARTAS.find(c => c.id === cardId);
+                cartasTiradas.push({
+                    posicao: rotulo,
+                    cardId: cardId,
+                    nomeCarta: cartaObj ? cartaObj.nome : cardId,
+                    arquivo: cartaObj ? cartaObj.arquivo : ''
+                });
+            }
+
+            renderizarMesaVirtual(cartasTiradas);
+
+            const out = document.getElementById('iaOutput');
+            out.innerText = "Consultando a Tradição Hermética e sintetizando os Arcanos... Aguarde...";
+            document.getElementById('chatMessages').innerHTML = '';
+            historicoChat = [];
+
+            const promptUsuario = `
+QUESTÃO PRINCIPAL DO CONSULENTE: "${questao}"
+
+MESA DE CARTAS TIRADAS:
+${cartasTiradas.map((c, idx) => `- Posição ${idx + 1} (${c.posicao}): Carta "${c.nomeCarta}"`).join('\n')}
+
+INSTRUÇÃO DA LEITURA:
+Faça a síntese completa desta tiragem. Analise a relação entre cada carta e sua respectiva posição.
+Conecte as cartas com o Hermetismo, a Cabala (explicando cada Sephira ou Caminho citado), a Filosofia da Golden Dawn e os Arquétipos de Carl Jung (Individuação, Sombra, Self, etc.). Finalize com um Conselho Alquímico de Ação Prática e Elevação Espiritual.`;
+
+            const payload = {
+                system: construirSystemPrompt(),
+                messages: [{ role: 'user', content: promptUsuario }]
+            };
+
+            try {
+                const respostaTexto = await fazerRequisicaoIAComFallback(payload);
+                out.innerText = respostaTexto;
+
+                leituraAtual = {
+                    data: new Date().toISOString(),
+                    questao: questao,
+                    cartas: cartasTiradas,
+                    interpretação: respostaTexto
+                };
+
+                salvarLeituraFirebase(leituraAtual);
+            } catch (err) {
+                out.innerText = `Erro durante a síntese iniciática: ${err.message}`;
+            }
+        }
+
+        async function gerarOuRegerarIA() {
+            if (!leituraAtual) return alert("Faça primeiro uma síntese para gerar a interpretação.");
+            processarLeituraIniciatica();
+        }
+
+        // ==================== CHAT DE APROFUNDAMENTO ====================
+        async function enviarPerguntaChat() {
+            const input = document.getElementById('chatInput');
+            const pergunta = input.value.trim();
+            if (!pergunta) return;
+
+            if (!leituraAtual) return alert("Realize a leitura inicial antes de fazer perguntas de aprofundamento.");
+
+            const chatMessages = document.getElementById('chatMessages');
+            
+            // Adiciona mensagem do usuário
+            chatMessages.innerHTML += `<div class="chat-msg user"><b>Você:</b> ${pergunta}</div>`;
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            historicoChat.push({ role: 'user', content: pergunta });
+
+            const msgLoading = document.createElement('div');
+            msgLoading.className = 'chat-msg assistant';
+            msgLoading.innerText = 'Consultando os mistérios...';
+            chatMessages.appendChild(msgLoading);
+
+            const contextPrompt = `
+CONTEXTO DA LEITURA ATUAL:
+Questão: "${leituraAtual.questao}"
+Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta}`).join(', ')}
+Interpretação Anterior: "${leituraAtual.interpretação}"
+
+NOVA PERGUNTA DE APROFUNDAMENTO DO CONSULENTE: "${pergunta}"
+Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Hermetismo e Psicologia Junguiana.`;
+
+            const payload = {
+                system: construirSystemPrompt(),
+                messages: [{ role: 'user', content: contextPrompt }]
+            };
+
+            try {
+                const respostaAprofundada = await fazerRequisicaoIAComFallback(payload);
+                msgLoading.innerHTML = `<b>IA Iniciática:</b> ${respostaAprofundada}`;
+                historicoChat.push({ role: 'assistant', content: respostaAprofundada });
+            } catch (err) {
+                msgLoading.innerText = `Erro ao responder: ${err.message}`;
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ==================== FIREBASE FIRESTORE INTEGRATION ====================
+        async function salvarLeituraFirebase(dados) {
+            try {
+                if (!window.db) return;
+                const colRef = window.fbCollection(window.db, "leituras_tarot");
+                await window.fbAddDoc(colRef, {
+                    ...dados,
+                    timestamp: new Date()
+                });
+                console.log("Leitura salva com sucesso no Firestore!");
+                carregarHistoricoFirebase();
+            } catch (e) {
+                console.error("Erro ao salvar no Firebase: ", e);
+            }
+        }
+
+        async function carregarHistoricoFirebase() {
+            const container = document.getElementById('historyGrid');
+            if (!window.db) {
+                container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Firebase carregando ou não inicializado.</div>';
+                return;
+            }
+
+            try {
+                const colRef = window.fbCollection(window.db, "leituras_tarot");
+                const q = window.fbQuery(colRef, window.fbOrderBy("timestamp", "desc"));
+                const querySnapshot = await window.fbGetDocs(q);
+
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura registrada no Firebase.</div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const docId = docSnap.id;
+                    const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
+
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'history-card';
+                    cardEl.innerHTML = `
+                        <div class="history-card-header">
+                            <span>📅 ${dateStr}</span>
+                            <span>${data.cartas ? data.cartas.length : 0} cartas</span>
+                        </div>
+                        <div class="history-card-quest">${data.questao || 'Sem Pergunta'}</div>
+                        <button type="button" class="btn-del-hist" onclick="excluirLeituraFirebase('${docId}', event)">✕ Excluir</button>
+                    `;
+
+                    cardEl.onclick = (e) => {
+                        if (e.target.tagName !== 'BUTTON') {
+                            carregarLeituraDoHistorico(data);
+                        }
+                    };
+
+                    container.appendChild(cardEl);
+                });
+            } catch (err) {
+                container.innerHTML = `<div style="font-size:0.8rem; color:#f85149;">Erro ao carregar histórico: ${err.message}</div>`;
+            }
+        }
+
+        async function excluirLeituraFirebase(docId, event) {
+            event.stopPropagation();
+            if (!confirm("Deseja realmente excluir esta leitura do banco de dados?")) return;
+
+            try {
+                const docRef = window.fbDoc(window.db, "leituras_tarot", docId);
+                await window.fbDeleteDoc(docRef);
+                carregarHistoricoFirebase();
+            } catch (err) {
+                alert("Erro ao excluir documento: " + err.message);
+            }
+        }
+
+        function carregarLeituraDoHistorico(data) {
+            document.getElementById('questaoInput').value = data.questao || '';
+            leituraAtual = data;
+            if (data.cartas) {
+                renderizarMesaVirtual(data.cartas);
+            }
+            document.getElementById('iaOutput').innerText = data.interpretação || 'Sem interpretação gravada.';
+            window.scrollTo({ top: document.getElementById('spreadDisplay').offsetTop - 20, behavior: 'smooth' });
+        }
+
+        // ==================== EXPORTAÇÕES (TXT / PDF) ====================
+        function exportarTXT() {
+            if (!leituraAtual) return alert("Nenhuma leitura ativa para exportar.");
+            const texto = document.getElementById('iaOutput').innerText;
+            const conteudo = `ASTRO TAROT — REGISTRO DE LEITURA INICIÁTICA\nData: ${new Date().toLocaleString('pt-BR')}\nQuestão: ${leituraAtual.questao}\n\nCARTAS TIRADAS:\n${leituraAtual.cartas.map(c => `- ${c.posicao}: ${c.nomeCarta}`).join('\n')}\n\n=========================================\n${texto}`;
+
+            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Tarot_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+        }
+
+        function exportarPDF() {
+            if (!leituraAtual) return alert("Nenhuma leitura ativa para exportar.");
+            const texto = document.getElementById('iaOutput').innerText;
+            const win = window.open('', '', 'width=800,height=600');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Astro Tarot - Leitura Iniciática</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; }
+                        h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; }
+                        .meta { font-size: 10pt; color: #555; margin-bottom: 20px; }
+                        .content { font-size: 11pt; white-space: pre-wrap; }
+                    </style>
+                </head>
+                <body>
+                    <h1>ASTRO TAROT — SÍNTESE E REGISTRO INICIÁTICO</h1>
+                    <div class="meta">
+                        <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}<br>
+                        <strong>Questão Principal:</strong> ${leituraAtual.questao}<br>
+                        <strong>Cartas:</strong> ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta}`).join(' | ')}
+                    </div>
+                    <div class="content">${texto}</div>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            win.print();
+        }
+
+        // ==================== VOZ (SPEECH SYNTHESIS NATIVA) ====================
+        function carregarVozes() {
+            if (!('speechSynthesis' in window)) return;
+            vozesDisponiveis = speechSynthesis.getVoices().filter(v => v.lang.includes('pt') || v.lang.includes('es') || v.lang.includes('en'));
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+            vozesDisponiveis.forEach((v, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${v.name} (${v.lang})`;
+                if (v.lang.includes('pt')) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function falarTextoIA() {
+            if (!('speechSynthesis' in window)) return alert('Navegador não suporta leitura de voz.');
+            speechSynthesis.cancel();
+            const texto = document.getElementById('iaOutput').innerText;
+            if (!texto) return;
+
+            const utt = new SpeechSynthesisUtterance(texto);
+            const idx = document.getElementById('voiceSelect').value;
+            if (vozesDisponiveis[idx]) utt.voice = vozesDisponiveis[idx];
+            utt.rate = 1.0;
+            speechSynthesis.speak(utt);
+        }
+
+        function pausarVozIA() {
+            if ('speechSynthesis' in window) speechSynthesis.pause();
+        }
+
+        function pararVozIA() {
+            if ('speechSynthesis' in window) speechSynthesis.cancel();
+        }
+
+        // Inicialização
+        window.onload = () => {
+            renderizarSlots();
+
+            setTimeout(() => {
+                carregarHistoricoFirebase();
+            }, 1000);
+
+            if ('speechSynthesis' in window) {
+                carregarVozes();
+                speechSynthesis.onvoiceschanged = carregarVozes;
+            }
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').then((registro) => {
+                    registro.update();
+                }).catch(err => console.warn('Falha ao registrar Service Worker:', err));
+            }
+        };
+    </script>
+</body>
+</html>
