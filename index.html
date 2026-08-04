@@ -333,6 +333,25 @@
             background-color: #2ea043;
         }
 
+        .btn-save-reading {
+            background-color: var(--ouro);
+            color: #0d1117;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save-reading:hover {
+            background-color: #f3c14b;
+        }
+
         /* Mesa Virtual de Cartas */
         .spread-display {
             background: var(--bg-card);
@@ -464,7 +483,7 @@
         .voice-controls select {
             padding: 4px 8px;
             font-size: 0.8rem;
-            max-width: 220px;
+            max-width: 250px;
         }
 
         .ia-output {
@@ -475,7 +494,7 @@
             min-height: 160px;
             max-height: 600px;
             overflow-y: auto;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             line-height: 1.7;
             white-space: pre-wrap;
             color: #e6edf3;
@@ -494,16 +513,19 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 350px;
+            max-height: 400px;
             overflow-y: auto;
         }
 
         .chat-msg {
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-radius: 8px;
-            font-size: 0.88rem;
-            line-height: 1.5;
+            font-size: 0.9rem;
+            line-height: 1.6;
             max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .chat-msg.user {
@@ -518,6 +540,12 @@
             border: 1px solid var(--ia-color);
             align-self: flex-start;
             color: #e6edf3;
+        }
+
+        .chat-msg-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 4px;
         }
 
         .chat-input-area {
@@ -617,8 +645,7 @@
             <div class="input-group">
                 <label>Quantidade de Cartas Tiradas na Mesa (1 a 12):</label>
                 <div class="qty-controls">
-                    <select id="selectQtdCartas" onchange="definirQtdCartas(parseInt(this.value))">
-                        </select>
+                    <select id="selectQtdCartas" onchange="definirQtdCartas(parseInt(this.value))"></select>
                     <div class="qty-selector">
                         <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1</button>
                         <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3</button>
@@ -634,10 +661,9 @@
                 <span>2. Definição e Busca das Cartas Físicas</span>
             </div>
 
-            <div id="slotsContainer" class="cards-selection-grid">
-                </div>
+            <div id="slotsContainer" class="cards-selection-grid"></div>
 
-            <button type="submit" class="btn-primary">✨ SINTETIZAR E REGISTRAR LEITURA INICIÁTICA</button>
+            <button type="submit" class="btn-primary">✨ SINTETIZAR LEITURA INICIÁTICA</button>
         </form>
 
         <div class="spread-display" id="spreadDisplay" style="display: none;">
@@ -658,14 +684,18 @@
             </div>
 
             <div class="voice-controls">
-                <label for="voiceSelect">📢 Voz:</label>
+                <label for="voiceSelect">📢 Voz Padrão:</label>
                 <select id="voiceSelect"></select>
-                <button class="btn-ia-action" onclick="falarTextoIA()">▶ Ouvir</button>
+                <button class="btn-ia-action" onclick="falarTextoIA(document.getElementById('iaOutput').innerText)">▶ Ouvir Interpretação</button>
                 <button class="btn-ia-action" onclick="pausarVozIA()">⏸ Pausar</button>
                 <button class="btn-ia-action" onclick="pararVozIA()">⏹ Parar</button>
             </div>
 
-            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico (marcando se vieram invertidas) e clique no botão acima para sintetizar a leitura sob a ótica do Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.</div>
+            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico e clique no botão acima para sintetizar a leitura.</div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                <button type="button" class="btn-save-reading" onclick="salvarLeituraAtualManual()">💾 Guardar esta Leitura no Histórico</button>
+            </div>
 
             <div class="chat-section">
                 <div class="section-form-title" style="font-size: 0.8rem; color: var(--ar);">
@@ -681,7 +711,7 @@
 
         <div class="history-section">
             <div class="section-form-title">
-                <span>📜 Histórico de Leituras Registradas (Firebase Cloud)</span>
+                <span>📜 Histórico de Leituras Salvas (Firebase Cloud)</span>
                 <button type="button" class="btn-ia-action" onclick="carregarHistoricoFirebase()">🔄 Atualizar</button>
             </div>
             <div id="historyGrid" class="history-grid">
@@ -789,7 +819,6 @@
             "https://astro2.genesisgns.workers.dev"
         ];
 
-        // Rótulos Padrão de Posições
         const ROTULOS_PADRAO = {
             1: ["1. Síntese Geral / Resposta Central"],
             2: ["1. Tese / Situação", "2. Antítese / Desafio"],
@@ -799,13 +828,13 @@
             6: ["1. Passado", "2. Presente", "3. Futuro", "4. O que ajuda", "5. O que obstaculiza", "6. Síntese Final"],
             7: ["1. Estado Espiritual", "2. Influência Externa", "3. Desafio Central", "4. Causa Raiz", "5. Potencial Oculto", "6. Conselho da Razão", "7. Síntese Alquímica"],
             10: [
-                "1. Situação Atual (Significador)", "2. O Obstáculo (Cruzamento)", "3. Inconsciente / Fundação", "4. Passado Recente", 
-                "5. Coroa / Melhores Anseios", "6. Futuro Próximo", "7. Atitude Pessoal", "8. Ambiente / Outros", "9. Desejos e Temores", "10. Resultado Final"
+                "1. Situação Atual", "2. O Obstáculo", "3. Inconsciente", "4. Passado Recente", 
+                "5. Anseios Superiores", "6. Futuro Próximo", "7. Atitude Pessoal", "8. Ambiente Externo", "9. Desejos e Temores", "10. Resultado Final"
             ],
             12: [
-                "1. Casa I - O Eu / Início", "2. Casa II - Recursos e Valores", "3. Casa III - Mente e Comunicação", "4. Casa IV - Lar e Origens",
-                "5. Casa V - Criatividade e Expressão", "6. Casa VI - Trabalho e Saúde", "7. Casa VII - Parcerias e Relacionamentos", "8. Casa VIII - Transmutação e Sombra",
-                "9. Casa IX - Filosofia e Expansão", "10. Casa X - Propósito e Carreira", "11. Casa XI - Coletivo e Projetos", "12. Casa XII - Inconsciente e Síntese"
+                "1. Casa I - O Eu", "2. Casa II - Recursos", "3. Casa III - Mente", "4. Casa IV - Lar",
+                "5. Casa V - Expressão", "6. Casa VI - Trabalho", "7. Casa VII - Parcerias", "8. Casa VIII - Transmutação",
+                "9. Casa IX - Filosofia", "10. Casa X - Propósito", "11. Casa XI - Coletivo", "12. Casa XII - Inconsciente"
             ]
         };
 
@@ -918,11 +947,9 @@
             });
         }
 
-        // ==================== REQUISIÇÃO COMPATÍVEL COM TODOS OS WORKERS ====================
         async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
             let ultimoErro = null;
 
-            // Payload universal aceito pelos Workers proxy
             const payload = {
                 system: systemPrompt,
                 prompt: userPrompt,
@@ -938,7 +965,6 @@
             for (let i = 0; i < PROXIES_WORKERS.length; i++) {
                 const proxyUrl = PROXIES_WORKERS[i];
                 try {
-                    console.log(`Conectando ao Proxy ${i + 1}: ${proxyUrl}`);
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -947,38 +973,43 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        // Trata todas as estruturas possíveis de retorno
-                        if (typeof data === 'string') return data;
-                        if (data.resultado) return data.resultado;
-                        if (data.resposta) return data.resposta;
-                        if (data.content) return data.content;
-                        if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                            return data.candidates[0].content.parts[0].text;
+                        let textoRes = "";
+                        if (typeof data === 'string') textoRes = data;
+                        else if (data.resultado) textoRes = data.resultado;
+                        else if (data.resposta) textoRes = data.resposta;
+                        else if (data.content) textoRes = data.content;
+                        else if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                            textoRes = data.candidates[0].content.parts[0].text;
+                        } else if (data.choices && data.choices[0]?.message?.content) {
+                            textoRes = data.choices[0].message.content;
+                        } else {
+                            textoRes = JSON.stringify(data);
                         }
-                        if (data.choices && data.choices[0]?.message?.content) {
-                            return data.choices[0].message.content;
-                        }
-                        return JSON.stringify(data);
-                    } else {
-                        console.warn(`Proxy ${i + 1} retornou status HTTP ${response.status}`);
+
+                        // Limpeza rigorosa de Markdown para garantir áudio limpo
+                        return textoRes.replace(/[#*`_~>-]/g, '').trim();
                     }
                 } catch (err) {
-                    console.warn(`Falha na chamada ao Proxy ${i + 1}: ${err.message}`);
                     ultimoErro = err;
                 }
             }
 
-            throw new Error(`Serviço temporariamente indisponível nos proxies de IA. (${ultimoErro ? ultimoErro.message : 'Sem resposta'})`);
+            throw new Error(`Serviço indisponível no momento. (${ultimoErro ? ultimoErro.message : 'Sem resposta'})`);
         }
 
         function construirSystemPrompt() {
-            return `Você é um Guardião do Ocultismo Sério, Mestre em Tarô Hermético e Analista Junguiano de Alta Rigorozidade.
-Sua análise DEVE obrigatoriamente seguir a ótica:
-1. Hermetismo, Gnosticismo e Tradição da Hermetic Order of the Golden Dawn.
-2. Árvore da Vida / Cabala: Sempre que citar termos cabalísticos (como Kether, Chokmah, Binah, Tiphereth, Yesod, Geburah, Chesed, Hod, Netzach, Malkuth ou os Caminhos), VOCÊ DEVE EXPLICAR O QUE O TERMO SIGNIFICA E O QUE ELE ESTÁ REPRESENTANDO na dinâmica espiritual e psíquica da questão.
-3. Psicologia Analítica de Carl G. Jung: Arquétipos, Inconsciente Pessoal e Coletivo, Sombra, Anima/Animus, Persona, Processo de Individuação e Sincronicidade.
-4. ATENÇÃO ÀS CARTAS INVERTIDAS: Quando uma carta for indicada como "INVERTIDA", analise seu aspecto de sombra, energia bloqueada, introversão da força do arcano ou desafio de integração.
-5. Manter foco absoluto na elevação espiritual, alquimia interior e desenvolvimento pessoal.`;
+            return `Você é um Ocultista e Analista Junguiano.
+REGRA CRÍTICA DE FORMATO:
+Você DEVE escrever sua resposta estritamente em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES.
+NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO.
+O texto será convertido diretamente em áudio (Text-to-Speech) e qualquer caractere como asterisco ou cardinal atrapalha a leitura vocal.
+
+CONTEÚDO DA RESPOSTA:
+1. Hermetismo e Golden Dawn.
+2. Cabala e Árvore da Vida: Ao citar qualquer termo cabalístico, explique em linguagem fluida o que ele representa psiquicamente.
+3. Psicologia Junguiana: Arquétipos, Inconsciente e Individuação.
+4. Cartas Invertidas: Se houver indicação de carta invertida, explique a energia bloqueada ou a sombra do arcano.
+5. Conclua com um conselho prático integrador.`;
         }
 
         async function processarLeituraIniciatica() {
@@ -1005,19 +1036,17 @@ Sua análise DEVE obrigatoriamente seguir a ótica:
             renderizarMesaVirtual(cartasTiradas);
 
             const out = document.getElementById('iaOutput');
-            out.innerText = "Sintetizando os arcanos sob a Tradição Hermética e Psicologia Analítica... Aguarde...";
+            out.innerText = "Sintetizando a leitura em texto dissertativo para áudio... Aguarde...";
             document.getElementById('chatMessages').innerHTML = '';
             historicoChat = [];
 
             const userPrompt = `
-QUESTÃO PRINCIPAL DO CONSULENTE: "${questao}"
+QUESTÃO: "${questao}"
 
-MESA DE CARTAS TIRADAS:
-${cartasTiradas.map((c, idx) => `- Posição ${idx + 1} (${c.posicao}): Carta "${c.nomeCarta}" ${c.invertida ? '[CARTA INVERTIDA / INVERTED]' : '[CARTA NORMAL / UPRIGHT]'}`).join('\n')}
+CARTAS TIRADAS:
+${cartasTiradas.map((c, idx) => `Posição ${idx + 1} (${c.posicao}): ${c.nomeCarta} ${c.invertida ? 'INVERTIDA' : 'NORMAL'}`).join('\n')}
 
-INSTRUÇÃO DA LEITURA:
-Faça a síntese completa desta tiragem. Analise a relação entre cada carta e sua posição.
-Conecte com a Hermética, Golden Dawn, Cabala (explicando o significado exato de cada Sephira/Caminho citado) e Arquétipos Junguianos. Para as cartas que saíram INVERTIDAS, detalhe a interpretação da sombra ou do bloqueio do arcano. Finalize com um Conselho Alquímico Prático.`;
+Lembre-se: Responda em texto dissertativo corrido sem usar nenhum asterisco, cardinal ou formatação especial.`;
 
             try {
                 const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
@@ -1029,8 +1058,6 @@ Conecte com a Hermética, Golden Dawn, Cabala (explicando o significado exato de
                     cartas: cartasTiradas,
                     interpretação: respostaTexto
                 };
-
-                salvarLeituraFirebase(leituraAtual);
             } catch (err) {
                 out.innerText = `Erro na síntese da IA: ${err.message}`;
             }
@@ -1042,6 +1069,7 @@ Conecte com a Hermética, Golden Dawn, Cabala (explicando o significado exato de
         }
 
         // ==================== CHAT DE APROFUNDAMENTO ====================
+        let chatCounter = 0;
         async function enviarPerguntaChat() {
             const input = document.getElementById('chatInput');
             const pergunta = input.value.trim();
@@ -1054,41 +1082,60 @@ Conecte com a Hermética, Golden Dawn, Cabala (explicando o significado exato de
             input.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
+            chatCounter++;
+            const msgId = `chat_ans_${chatCounter}`;
+
             const msgLoading = document.createElement('div');
             msgLoading.className = 'chat-msg assistant';
-            msgLoading.innerText = 'Consultando a Tradição...';
+            msgLoading.id = msgId;
+            msgLoading.innerText = 'Processando resposta...';
             chatMessages.appendChild(msgLoading);
 
             const userPrompt = `
-CONTEXTO DA LEITURA DE TARÔ:
+CONTEXTO DA LEITURA:
 Questão: "${leituraAtual.questao}"
 Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(', ')}
-Interpretação Base: "${leituraAtual.interpretação}"
 
-PERGUNTA DE APROFUNDAMENTO DO CONSULENTE: "${pergunta}"
-Responda mantendo rigor no Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.`;
+PERGUNTA DO CONSULENTE: "${pergunta}"
+
+Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum tipo de caractere especial de formatação como asteriscos ou cardinais.`;
 
             try {
                 const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
-                msgLoading.innerHTML = `<b>IA Iniciática:</b> ${respostaAprofundada}`;
+                
+                const el = document.getElementById(msgId);
+                el.innerHTML = `
+                    <div><b>IA Iniciática:</b> ${respostaAprofundada}</div>
+                    <div class="chat-msg-controls">
+                        <button class="btn-ia-action" onclick="falarTextoIA('${respostaAprofundada.replace(/'/g, "\\'")}')">▶ Ouvir Resposta</button>
+                    </div>
+                `;
             } catch (err) {
-                msgLoading.innerText = `Erro ao responder: ${err.message}`;
+                document.getElementById(msgId).innerText = `Erro ao responder: ${err.message}`;
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // ==================== FIREBASE FIRESTORE ====================
+        // ==================== SALVAR MANUAL E FIREBASE ====================
+        async function salvarLeituraAtualManual() {
+            if (!leituraAtual) {
+                return alert("Não há nenhuma leitura gerada para guardar.");
+            }
+            await salvarLeituraFirebase(leituraAtual);
+        }
+
         async function salvarLeituraFirebase(dados) {
             try {
-                if (!window.db) return;
+                if (!window.db) return alert("Banco de dados indisponível.");
                 const colRef = window.fbCollection(window.db, "leituras_tarot");
                 await window.fbAddDoc(colRef, {
                     ...dados,
                     timestamp: new Date()
                 });
+                alert("✨ Leitura salva com sucesso no Histórico!");
                 carregarHistoricoFirebase();
             } catch (e) {
-                console.error("Erro ao salvar no Firebase: ", e);
+                alert("Erro ao salvar no Firebase: " + e.message);
             }
         }
 
@@ -1105,7 +1152,7 @@ Responda mantendo rigor no Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana
                 const querySnapshot = await window.fbGetDocs(q);
 
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura registrada.</div>';
+                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura salva encontrada.</div>';
                     return;
                 }
 
@@ -1141,7 +1188,7 @@ Responda mantendo rigor no Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana
 
         async function excluirLeituraFirebase(docId, event) {
             event.stopPropagation();
-            if (!confirm("Deseja realmente excluir esta leitura do banco de dados?")) return;
+            if (!confirm("Deseja realmente excluir esta leitura do histórico?")) return;
 
             try {
                 const docRef = window.fbDoc(window.db, "leituras_tarot", docId);
@@ -1205,28 +1252,43 @@ Responda mantendo rigor no Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana
             win.print();
         }
 
-        // ==================== VOZ (SPEECH SYNTHESIS) ====================
+        // ==================== VOZ FIXADA: GOOGLE PORTUGUÊS DO BRASIL ====================
         function carregarVozes() {
             if (!('speechSynthesis' in window)) return;
-            vozesDisponiveis = speechSynthesis.getVoices().filter(v => v.lang.includes('pt') || v.lang.includes('es') || v.lang.includes('en'));
+            vozesDisponiveis = speechSynthesis.getVoices();
             const select = document.getElementById('voiceSelect');
             select.innerHTML = '';
+
+            let idxGooglePT = -1;
+
             vozesDisponiveis.forEach((v, i) => {
                 const opt = document.createElement('option');
                 opt.value = i;
                 opt.textContent = `${v.name} (${v.lang})`;
-                if (v.lang.includes('pt')) opt.selected = true;
+
+                // Localiza exatamente a voz Google Português do Brasil como na imagem
+                if (v.name.includes('Google') && (v.lang.includes('pt-BR') || v.lang.includes('pt_BR'))) {
+                    idxGooglePT = i;
+                } else if (idxGooglePT === -1 && v.lang.includes('pt')) {
+                    idxGooglePT = i;
+                }
+
                 select.appendChild(opt);
             });
+
+            if (idxGooglePT !== -1) {
+                select.value = idxGooglePT;
+            }
         }
 
-        function falarTextoIA() {
+        function falarTextoIA(texto) {
             if (!('speechSynthesis' in window)) return alert('Navegador não suporta síntese de voz.');
             speechSynthesis.cancel();
-            const texto = document.getElementById('iaOutput').innerText;
-            if (!texto) return;
+            
+            const textoLimpo = (texto || document.getElementById('iaOutput').innerText).replace(/[#*`_~>-]/g, '').trim();
+            if (!textoLimpo) return;
 
-            const utt = new SpeechSynthesisUtterance(texto);
+            const utt = new SpeechSynthesisUtterance(textoLimpo);
             const idx = document.getElementById('voiceSelect').value;
             if (vozesDisponiveis[idx]) utt.voice = vozesDisponiveis[idx];
             utt.rate = 1.0;
