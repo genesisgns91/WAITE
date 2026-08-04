@@ -7,10 +7,10 @@
     <title>Astro Tarot — Diário & Leitura Iniciática</title>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon-192.png" type="image/png">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='%23a371f7'><path d='M256 32c-20 0-36 16-36 36 0 8 3 15 8 21-28 12-52 32-70 56-14-10-33-12-49-4-22 11-35 33-35 57 0 12 4 23 11 32-18 20-29 46-29 74 0 60 48 108 108 108h184c60 0 108-48 108-108 0-28-11-54-29-74 7-9 11-20 11-32 0-24-13-46-35-57-16-8-35-6-49 4-18-24-42-44-70-56 5-6 8-13 8-21 0-20-16-36-36-36zm-80 170c14 0 25 11 25 25s-11 25-25 25-25-11-25-25 11-25 25-25zm160 0c14 0 25 11 25 25s-11 25-25 25-25-11-25-25 11-25 25-25zm-120 75c25 20 55 20 80 0 4-3 10-2 13 2s2 10-2 13c-32 26-74 26-106 0-4-3-5-9-2-13 3-4 10-5 13-2z'/></svg>">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Astro Tarot">
 
@@ -684,7 +684,7 @@
             </div>
 
             <div class="voice-controls">
-                <label for="voiceSelect">📢 Voz Padrão:</label>
+                <label for="voiceSelect">📢 Voz PT-BR / Bilíngue:</label>
                 <select id="voiceSelect"></select>
                 <button class="btn-ia-action" onclick="falarTextoIA(document.getElementById('iaOutput').innerText)">▶ Ouvir Interpretação</button>
                 <button class="btn-ia-action" onclick="pausarVozIA()">⏸ Pausar</button>
@@ -812,7 +812,7 @@
             { id: "Wands14", nome: "Rei de Paus (King)", busca: "rei de paus king wands Wands14", arquivo: "cards/Wands14.jpg" }
         ];
 
-        // ==================== PROXIES WORKERS DE IA ====================
+        // WORKERS DE IA CONECTADOS
         const PROXIES_WORKERS = [
             "https://shiny-sky-21dd.genesisgns.workers.dev",
             "https://astro-gns-proxy.genesisgns.workers.dev",
@@ -841,7 +841,7 @@
         let qtdCartasSelecionada = 5;
         let leituraAtual = null;
         let historicoChat = [];
-        let vozesDisponiveis = [];
+        let vozesFiltradas = [];
 
         function popularDatalist() {
             const dl = document.getElementById('listaCartasTarot');
@@ -986,7 +986,7 @@
                             textoRes = JSON.stringify(data);
                         }
 
-                        // Limpeza rigorosa de Markdown para garantir áudio limpo
+                        // Remove toda a formatação markdown para não prejudicar o leitor de voz
                         return textoRes.replace(/[#*`_~>-]/g, '').trim();
                     }
                 } catch (err) {
@@ -1002,7 +1002,7 @@
 REGRA CRÍTICA DE FORMATO:
 Você DEVE escrever sua resposta estritamente em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES.
 NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO.
-O texto será convertido diretamente em áudio (Text-to-Speech) e qualquer caractere como asterisco ou cardinal atrapalha a leitura vocal.
+O texto será lido por um sintetizador de voz (TTS) e qualquer caractere de formatação atrapalha a leitura.
 
 CONTEÚDO DA RESPOSTA:
 1. Hermetismo e Golden Dawn.
@@ -1096,7 +1096,7 @@ CONTEXTO DA LEITURA:
 Questão: "${leituraAtual.questao}"
 Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(', ')}
 
-PERGUNTA DO CONSULENTE: "${pergunta}"
+PERGUNTA ADICIONAL DO CONSULENTE: "${pergunta}"
 
 Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum tipo de caractere especial de formatação como asteriscos ou cardinais.`;
 
@@ -1107,9 +1107,15 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
                 el.innerHTML = `
                     <div><b>IA Iniciática:</b> ${respostaAprofundada}</div>
                     <div class="chat-msg-controls">
-                        <button class="btn-ia-action" onclick="falarTextoIA('${respostaAprofundada.replace(/'/g, "\\'")}')">▶ Ouvir Resposta</button>
+                        <button class="btn-ia-action" id="btn_speak_${msgId}">▶ Ouvir Resposta</button>
                     </div>
                 `;
+
+                // Garante que a leitura do áudio funcione sem erros de sintaxe ou de aspas
+                document.getElementById(`btn_speak_${msgId}`).onclick = () => {
+                    falarTextoIA(`Pergunta: ${pergunta}. Resposta: ${respostaAprofundada}`);
+                };
+
             } catch (err) {
                 document.getElementById(msgId).innerText = `Erro ao responder: ${err.message}`;
             }
@@ -1135,7 +1141,7 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
                 alert("✨ Leitura salva com sucesso no Histórico!");
                 carregarHistoricoFirebase();
             } catch (e) {
-                alert("Erro ao salvar no Firebase: " + e.message);
+                alert("Erro ao salvar no Firebase: " + e.message + "\n\n(Lembre-se de definir as Regras do Firestore para públicas: allow read, write: if true;)");
             }
         }
 
@@ -1252,33 +1258,41 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
             win.print();
         }
 
-        // ==================== VOZ FIXADA: GOOGLE PORTUGUÊS DO BRASIL ====================
+        // ==================== FILTRO E SELEÇÃO DE VOZES (EXCLUSIVO PT-BR / BILÍNGUE) ====================
         function carregarVozes() {
             if (!('speechSynthesis' in window)) return;
-            vozesDisponiveis = speechSynthesis.getVoices();
+            const todasVozes = speechSynthesis.getVoices();
             const select = document.getElementById('voiceSelect');
             select.innerHTML = '';
 
-            let idxGooglePT = -1;
+            // Filtra exclusivamente idiomas de Português (pt-BR / pt-PT / bilingue)
+            vozesFiltradas = todasVozes.filter(v => {
+                const lang = (v.lang || '').toLowerCase();
+                const name = (v.name || '').toLowerCase();
+                return lang.startsWith('pt') || name.includes('portuguese') || name.includes('brasil');
+            });
 
-            vozesDisponiveis.forEach((v, i) => {
+            if (vozesFiltradas.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = 0;
+                opt.textContent = 'Voz Padrão do Sistema (PT)';
+                select.appendChild(opt);
+                return;
+            }
+
+            let idxPadrao = 0;
+            vozesFiltradas.forEach((v, i) => {
                 const opt = document.createElement('option');
                 opt.value = i;
                 opt.textContent = `${v.name} (${v.lang})`;
 
-                // Localiza exatamente a voz Google Português do Brasil como na imagem
                 if (v.name.includes('Google') && (v.lang.includes('pt-BR') || v.lang.includes('pt_BR'))) {
-                    idxGooglePT = i;
-                } else if (idxGooglePT === -1 && v.lang.includes('pt')) {
-                    idxGooglePT = i;
+                    idxPadrao = i;
                 }
-
                 select.appendChild(opt);
             });
 
-            if (idxGooglePT !== -1) {
-                select.value = idxGooglePT;
-            }
+            select.value = idxPadrao;
         }
 
         function falarTextoIA(texto) {
@@ -1290,7 +1304,10 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
 
             const utt = new SpeechSynthesisUtterance(textoLimpo);
             const idx = document.getElementById('voiceSelect').value;
-            if (vozesDisponiveis[idx]) utt.voice = vozesDisponiveis[idx];
+            
+            if (vozesFiltradas[idx]) {
+                utt.voice = vozesFiltradas[idx];
+            }
             utt.rate = 1.0;
             speechSynthesis.speak(utt);
         }
