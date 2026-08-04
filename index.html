@@ -30,7 +30,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Disponibiliza db e funções no escopo global para uso direto nos scripts
         window.db = db;
         window.fbCollection = collection;
         window.fbAddDoc = addDoc;
@@ -200,9 +199,23 @@
             border-color: var(--destaque);
         }
 
+        .qty-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .qty-controls select {
+            width: auto;
+            min-width: 140px;
+            font-weight: bold;
+            color: var(--ouro);
+        }
+
         .qty-selector {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
@@ -210,11 +223,11 @@
             background: var(--bg-principal);
             border: 1px solid var(--border);
             color: var(--texto);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
 
@@ -226,7 +239,7 @@
 
         .cards-selection-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 14px;
             width: 100%;
             margin-top: 10px;
@@ -234,7 +247,7 @@
 
         .card-slot {
             background: var(--bg-principal);
-            border: 1px dashed var(--border);
+            border: 1px solid var(--border);
             border-radius: 10px;
             padding: 12px;
             display: flex;
@@ -256,6 +269,16 @@
             width: 100%;
         }
 
+        .card-preview-container {
+            width: 120px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+            margin: 4px 0;
+        }
+
         .card-preview-img {
             width: 120px;
             height: 200px;
@@ -264,6 +287,32 @@
             border: 1px solid var(--border);
             background: #000;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.4s ease;
+        }
+
+        .card-preview-img.inverted {
+            transform: rotate(180deg);
+        }
+
+        .invert-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--texto);
+            cursor: pointer;
+            user-select: none;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .invert-toggle input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
         }
 
         .btn-primary {
@@ -284,7 +333,7 @@
             background-color: #2ea043;
         }
 
-        /* Mesa Virtual de Cartas Exibidas */
+        /* Mesa Virtual de Cartas */
         .spread-display {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -321,6 +370,11 @@
             object-fit: cover;
             border-radius: 6px;
             border: 1px solid var(--ouro);
+            transition: transform 0.4s ease;
+        }
+
+        .spread-card-item img.inverted {
+            transform: rotate(180deg);
         }
 
         .spread-position-title {
@@ -336,7 +390,13 @@
             color: #fff;
         }
 
-        /* Seção da IA */
+        .spread-card-status {
+            font-size: 0.7rem;
+            color: var(--fogo);
+            font-weight: bold;
+        }
+
+        /* Seção IA */
         .ia-section {
             background: var(--bg-card);
             border: 1px solid var(--ia-color);
@@ -421,7 +481,7 @@
             color: #e6edf3;
         }
 
-        /* Chat / Perguntas de Aprofundamento */
+        /* Chat */
         .chat-section {
             border-top: 1px dashed var(--border);
             padding-top: 12px;
@@ -540,6 +600,8 @@
         </nav>
     </header>
 
+    <datalist id="listaCartasTarot"></datalist>
+
     <div class="app-layout">
         
         <form class="controls" onsubmit="event.preventDefault(); processarLeituraIniciatica();">
@@ -553,17 +615,23 @@
             </div>
 
             <div class="input-group">
-                <label>Quantidade de Cartas Tiradas na Mesa:</label>
-                <div class="qty-selector">
-                    <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1 Carta</button>
-                    <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3 Cartas</button>
-                    <button type="button" class="btn-qty active" onclick="definirQtdCartas(5)">5 Cartas</button>
-                    <button type="button" class="btn-qty" onclick="definirQtdCartas(7)">7 Cartas</button>
+                <label>Quantidade de Cartas Tiradas na Mesa (1 a 12):</label>
+                <div class="qty-controls">
+                    <select id="selectQtdCartas" onchange="definirQtdCartas(parseInt(this.value))">
+                        </select>
+                    <div class="qty-selector">
+                        <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1</button>
+                        <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3</button>
+                        <button type="button" class="btn-qty active" onclick="definirQtdCartas(5)">5</button>
+                        <button type="button" class="btn-qty" onclick="definirQtdCartas(7)">7</button>
+                        <button type="button" class="btn-qty" onclick="definirQtdCartas(10)">10 (Cruz Celta)</button>
+                        <button type="button" class="btn-qty" onclick="definirQtdCartas(12)">12 (Astrológica)</button>
+                    </div>
                 </div>
             </div>
 
             <div class="section-form-title" style="margin-top: 10px;">
-                <span>2. Atribuição de Posições e Escolha das Cartas</span>
+                <span>2. Definição e Busca das Cartas Físicas</span>
             </div>
 
             <div id="slotsContainer" class="cards-selection-grid">
@@ -597,7 +665,7 @@
                 <button class="btn-ia-action" onclick="pararVozIA()">⏹ Parar</button>
             </div>
 
-            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico e clique no botão acima para sintetizar a leitura sob a ótica do Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.</div>
+            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico (marcando se vieram invertidas) e clique no botão acima para sintetizar a leitura sob a ótica do Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.</div>
 
             <div class="chat-section">
                 <div class="section-form-title" style="font-size: 0.8rem; color: var(--ar);">
@@ -624,109 +692,121 @@
     </div>
 
     <script>
-        // ==================== LISTA DAS 78 CARTAS (PASTA cards) ====================
+        // ==================== LISTA INTEGRAL DAS 78 CARTAS ====================
         const TODAS_AS_CARTAS = [
-            { id: "00_Fool", nome: "0 - O Louco (The Fool)", arquivo: "cards/00_Fool.jpg" },
-            { id: "01_Magician", nome: "I - O Mago (The Magician)", arquivo: "cards/01_Magician.jpg" },
-            { id: "02_High_Priestess", nome: "II - A Sacerdotisa (The High Priestess)", arquivo: "cards/02_High_Priestess.jpg" },
-            { id: "03_Empress", nome: "III - A Imperatriz (The Empress)", arquivo: "cards/03_Empress.jpg" },
-            { id: "04_Emperor", nome: "IV - O Imperador (The Emperor)", arquivo: "cards/04_Emperor.jpg" },
-            { id: "05_Hierophant", nome: "V - O Hierofante (The Hierophant)", arquivo: "cards/05_Hierophant.jpg" },
-            { id: "06_Lovers", nome: "VI - Os Enamorados (The Lovers)", arquivo: "cards/06_Lovers.jpg" },
-            { id: "07_Chariot", nome: "VII - O Carro (The Chariot)", arquivo: "cards/07_Chariot.jpg" },
-            { id: "08_Strength", nome: "VIII - A Força (Strength)", arquivo: "cards/08_Strength.jpg" },
-            { id: "09_Hermit", nome: "IX - O Eremita (The Hermit)", arquivo: "cards/09_Hermit.jpg" },
-            { id: "10_Wheel_of_Fortune", nome: "X - Roda da Fortuna (Wheel of Fortune)", arquivo: "cards/10_Wheel_of_Fortune.jpg" },
-            { id: "11_Justice", nome: "XI - A Justiça (Justice)", arquivo: "cards/11_Justice.jpg" },
-            { id: "12_Hanged_Man", nome: "XII - O Pendurado (The Hanged Man)", arquivo: "cards/12_Hanged_Man.jpg" },
-            { id: "13_Death", nome: "XIII - A Morte (Death)", arquivo: "cards/13_Death.jpg" },
-            { id: "14_Temperance", nome: "XIV - A Temperança (Temperance)", arquivo: "cards/14_Temperance.jpg" },
-            { id: "15_Devil", nome: "XV - O Diabo (The Devil)", arquivo: "cards/15_Devil.jpg" },
-            { id: "16_Tower", nome: "XVI - A Torre (The Tower)", arquivo: "cards/16_Tower.jpg" },
-            { id: "17_Star", nome: "XVII - A Estrela (The Star)", arquivo: "cards/17_Star.jpg" },
-            { id: "18_Moon", nome: "XVIII - A Lua (The Moon)", arquivo: "cards/18_Moon.jpg" },
-            { id: "19_Sun", nome: "XIX - O Sol (The Sun)", arquivo: "cards/19_Sun.jpg" },
-            { id: "20_Judgement", nome: "XX - O Julgamento (Judgement)", arquivo: "cards/20_Judgement.jpg" },
-            { id: "21_World", nome: "XXI - O Mundo (The World)", arquivo: "cards/21_World.jpg" },
+            { id: "00_Fool", nome: "0 - O Louco (The Fool)", busca: "0 o louco the fool 00_Fool", arquivo: "cards/00_Fool.jpg" },
+            { id: "01_Magician", nome: "I - O Mago (The Magician)", busca: "1 o mago the magician 01_Magician", arquivo: "cards/01_Magician.jpg" },
+            { id: "02_High_Priestess", nome: "II - A Sacerdotisa (The High Priestess)", busca: "2 a sacerdotiça papisa high priestess 02_High_Priestess", arquivo: "cards/02_High_Priestess.jpg" },
+            { id: "03_Empress", nome: "III - A Imperatriz (The Empress)", busca: "3 a imperatriz empress 03_Empress", arquivo: "cards/03_Empress.jpg" },
+            { id: "04_Emperor", nome: "IV - O Imperador (The Emperor)", busca: "4 o imperador emperor 04_Emperor", arquivo: "cards/04_Emperor.jpg" },
+            { id: "05_Hierophant", nome: "V - O Hierofante / Papa (The Hierophant)", busca: "5 o hierofante papa hierophant 05_Hierophant", arquivo: "cards/05_Hierophant.jpg" },
+            { id: "06_Lovers", nome: "VI - Os Enamorados (The Lovers)", busca: "6 os enamorados amantes lovers 06_Lovers", arquivo: "cards/06_Lovers.jpg" },
+            { id: "07_Chariot", nome: "VII - O Carro (The Chariot)", busca: "7 o carro chariot 07_Chariot", arquivo: "cards/07_Chariot.jpg" },
+            { id: "08_Strength", nome: "VIII - A Força (Strength)", busca: "8 a força strength 08_Strength", arquivo: "cards/08_Strength.jpg" },
+            { id: "09_Hermit", nome: "IX - O Eremita (The Hermit)", busca: "9 o eremita ermitão hermit 09_Hermit", arquivo: "cards/09_Hermit.jpg" },
+            { id: "10_Wheel_of_Fortune", nome: "X - Roda da Fortuna (Wheel of Fortune)", busca: "10 roda da fortuna wheel of fortune 10_Wheel_of_Fortune", arquivo: "cards/10_Wheel_of_Fortune.jpg" },
+            { id: "11_Justice", nome: "XI - A Justiça (Justice)", busca: "11 a justiça justice 11_Justice", arquivo: "cards/11_Justice.jpg" },
+            { id: "12_Hanged_Man", nome: "XII - O Pendurado (The Hanged Man)", busca: "12 o pendurado enforcado hanged man 12_Hanged_Man", arquivo: "cards/12_Hanged_Man.jpg" },
+            { id: "13_Death", nome: "XIII - A Morte (Death)", busca: "13 a morte death 13_Death", arquivo: "cards/13_Death.jpg" },
+            { id: "14_Temperance", nome: "XIV - A Temperança (Temperance)", busca: "14 a temperança temperance 14_Temperance", arquivo: "cards/14_Temperance.jpg" },
+            { id: "15_Devil", nome: "XV - O Diabo (The Devil)", busca: "15 o diabo devil 15_Devil", arquivo: "cards/15_Devil.jpg" },
+            { id: "16_Tower", nome: "XVI - A Torre (The Tower)", busca: "16 a torre tower 16_Tower", arquivo: "cards/16_Tower.jpg" },
+            { id: "17_Star", nome: "XVII - A Estrela (The Star)", busca: "17 a estrela star 17_Star", arquivo: "cards/17_Star.jpg" },
+            { id: "18_Moon", nome: "XVIII - A Lua (The Moon)", busca: "18 a lua moon 18_Moon", arquivo: "cards/18_Moon.jpg" },
+            { id: "19_Sun", nome: "XIX - O Sol (The Sun)", busca: "19 o sol sun 19_Sun", arquivo: "cards/19_Sun.jpg" },
+            { id: "20_Judgement", nome: "XX - O Julgamento (Judgement)", busca: "20 o julgamento judgement 20_Judgement", arquivo: "cards/20_Judgement.jpg" },
+            { id: "21_World", nome: "XXI - O Mundo (The World)", busca: "21 o mundo world 21_World", arquivo: "cards/21_World.jpg" },
 
             // Taças / Cups
-            { id: "Cups01", nome: "Ás de Taças", arquivo: "cards/Cups01.jpg" },
-            { id: "Cups02", nome: "2 de Taças", arquivo: "cards/Cups02.jpg" },
-            { id: "Cups03", nome: "3 de Taças", arquivo: "cards/Cups03.jpg" },
-            { id: "Cups04", nome: "4 de Taças", arquivo: "cards/Cups04.jpg" },
-            { id: "Cups05", nome: "5 de Taças", arquivo: "cards/Cups05.jpg" },
-            { id: "Cups06", nome: "6 de Taças", arquivo: "cards/Cups06.jpg" },
-            { id: "Cups07", nome: "7 de Taças", arquivo: "cards/Cups07.jpg" },
-            { id: "Cups08", nome: "8 de Taças", arquivo: "cards/Cups08.jpg" },
-            { id: "Cups09", nome: "9 de Taças", arquivo: "cards/Cups09.jpg" },
-            { id: "Cups10", nome: "10 de Taças", arquivo: "cards/Cups10.jpg" },
-            { id: "Cups11", nome: "Príncipe/Valete de Taças", arquivo: "cards/Cups11.jpg" },
-            { id: "Cups12", nome: "Cavaleiro de Taças", arquivo: "cards/Cups12.jpg" },
-            { id: "Cups13", nome: "Rainha de Taças", arquivo: "cards/Cups13.jpg" },
-            { id: "Cups14", nome: "Rei de Taças", arquivo: "cards/Cups14.jpg" },
+            { id: "Cups01", nome: "Ás de Taças / Copas (Ace of Cups)", busca: "as de taças copas ace cups Cups01", arquivo: "cards/Cups01.jpg" },
+            { id: "Cups02", nome: "2 de Taças / Copas", busca: "2 de taças copas 2 cups Cups02", arquivo: "cards/Cups02.jpg" },
+            { id: "Cups03", nome: "3 de Taças / Copas", busca: "3 de taças copas 3 cups Cups03", arquivo: "cards/Cups03.jpg" },
+            { id: "Cups04", nome: "4 de Taças / Copas", busca: "4 de taças copas 4 cups Cups04", arquivo: "cards/Cups04.jpg" },
+            { id: "Cups05", nome: "5 de Taças / Copas", busca: "5 de taças copas 5 cups Cups05", arquivo: "cards/Cups05.jpg" },
+            { id: "Cups06", nome: "6 de Taças / Copas", busca: "6 de taças copas 6 cups Cups06", arquivo: "cards/Cups06.jpg" },
+            { id: "Cups07", nome: "7 de Taças / Copas", busca: "7 de taças copas 7 cups Cups07", arquivo: "cards/Cups07.jpg" },
+            { id: "Cups08", nome: "8 de Taças / Copas", busca: "8 de taças copas 8 cups Cups08", arquivo: "cards/Cups08.jpg" },
+            { id: "Cups09", nome: "9 de Taças / Copas", busca: "9 de taças copas 9 cups Cups09", arquivo: "cards/Cups09.jpg" },
+            { id: "Cups10", nome: "10 de Taças / Copas", busca: "10 de taças copas 10 cups Cups10", arquivo: "cards/Cups10.jpg" },
+            { id: "Cups11", nome: "Príncipe/Valete de Taças / Copas (Page)", busca: "valete principe de taças copas page cups Cups11", arquivo: "cards/Cups11.jpg" },
+            { id: "Cups12", nome: "Cavaleiro de Taças / Copas (Knight)", busca: "cavaleiro de taças copas knight cups Cups12", arquivo: "cards/Cups12.jpg" },
+            { id: "Cups13", nome: "Rainha de Taças / Copas (Queen)", busca: "rainha de taças copas queen cups Cups13", arquivo: "cards/Cups13.jpg" },
+            { id: "Cups14", nome: "Rei de Taças / Copas (King)", busca: "rei de taças copas king cups Cups14", arquivo: "cards/Cups14.jpg" },
 
             // Ouros / Pents
-            { id: "Pents01", nome: "Ás de Ouros", arquivo: "cards/Pents01.jpg" },
-            { id: "Pents02", nome: "2 de Ouros", arquivo: "cards/Pents02.jpg" },
-            { id: "Pents03", nome: "3 de Ouros", arquivo: "cards/Pents03.jpg" },
-            { id: "Pents04", nome: "4 de Ouros", arquivo: "cards/Pents04.jpg" },
-            { id: "Pents05", nome: "5 de Ouros", arquivo: "cards/Pents05.jpg" },
-            { id: "Pents06", nome: "6 de Ouros", arquivo: "cards/Pents06.jpg" },
-            { id: "Pents07", nome: "7 de Ouros", arquivo: "cards/Pents07.jpg" },
-            { id: "Pents08", nome: "8 de Ouros", arquivo: "cards/Pents08.jpg" },
-            { id: "Pents09", nome: "9 de Ouros", arquivo: "cards/Pents09.jpg" },
-            { id: "Pents10", nome: "10 de Ouros", arquivo: "cards/Pents10.jpg" },
-            { id: "Pents11", nome: "Príncipe/Valete de Ouros", arquivo: "cards/Pents11.jpg" },
-            { id: "Pents12", nome: "Cavaleiro de Ouros", arquivo: "cards/Pents12.jpg" },
-            { id: "Pents13", nome: "Rainha de Ouros", arquivo: "cards/Pents13.jpg" },
-            { id: "Pents14", nome: "Rei de Ouros", arquivo: "cards/Pents14.jpg" },
+            { id: "Pents01", nome: "Ás de Ouros (Ace of Pentacles)", busca: "as de ouros ace pentacles pents Pents01", arquivo: "cards/Pents01.jpg" },
+            { id: "Pents02", nome: "2 de Ouros", busca: "2 de ouros 2 pentacles Pents02", arquivo: "cards/Pents02.jpg" },
+            { id: "Pents03", nome: "3 de Ouros", busca: "3 de ouros 3 pentacles Pents03", arquivo: "cards/Pents03.jpg" },
+            { id: "Pents04", nome: "4 de Ouros", busca: "4 de ouros 4 pentacles Pents04", arquivo: "cards/Pents04.jpg" },
+            { id: "Pents05", nome: "5 de Ouros", busca: "5 de ouros 5 pentacles Pents05", arquivo: "cards/Pents05.jpg" },
+            { id: "Pents06", nome: "6 de Ouros", busca: "6 de ouros 6 pentacles Pents06", arquivo: "cards/Pents06.jpg" },
+            { id: "Pents07", nome: "7 de Ouros", busca: "7 de ouros 7 pentacles Pents07", arquivo: "cards/Pents07.jpg" },
+            { id: "Pents08", nome: "8 de Ouros", busca: "8 de ouros 8 pentacles Pents08", arquivo: "cards/Pents08.jpg" },
+            { id: "Pents09", nome: "9 de Ouros", busca: "9 de ouros 9 pentacles Pents09", arquivo: "cards/Pents09.jpg" },
+            { id: "Pents10", nome: "10 de Ouros", busca: "10 de ouros 10 pentacles Pents10", arquivo: "cards/Pents10.jpg" },
+            { id: "Pents11", nome: "Príncipe/Valete de Ouros (Page)", busca: "valete principe de ouros page pentacles Pents11", arquivo: "cards/Pents11.jpg" },
+            { id: "Pents12", nome: "Cavaleiro de Ouros (Knight)", busca: "cavaleiro de ouros knight pentacles Pents12", arquivo: "cards/Pents12.jpg" },
+            { id: "Pents13", nome: "Rainha de Ouros (Queen)", busca: "rainha de ouros queen pentacles Pents13", arquivo: "cards/Pents13.jpg" },
+            { id: "Pents14", nome: "Rei de Ouros (King)", busca: "rei de ouros king pentacles Pents14", arquivo: "cards/Pents14.jpg" },
 
             // Espadas / Swords
-            { id: "Swords01", nome: "Ás de Espadas", arquivo: "cards/Swords01.jpg" },
-            { id: "Swords02", nome: "2 de Espadas", arquivo: "cards/Swords02.jpg" },
-            { id: "Swords03", nome: "3 de Espadas", arquivo: "cards/Swords03.jpg" },
-            { id: "Swords04", nome: "4 de Espadas", arquivo: "cards/Swords04.jpg" },
-            { id: "Swords05", nome: "5 de Espadas", arquivo: "cards/Swords05.jpg" },
-            { id: "Swords06", nome: "6 de Espadas", arquivo: "cards/Swords06.jpg" },
-            { id: "Swords07", nome: "7 de Espadas", arquivo: "cards/Swords07.jpg" },
-            { id: "Swords08", nome: "8 de Espadas", arquivo: "cards/Swords08.jpg" },
-            { id: "Swords09", nome: "9 de Espadas", arquivo: "cards/Swords09.jpg" },
-            { id: "Swords10", nome: "10 de Espadas", arquivo: "cards/Swords10.jpg" },
-            { id: "Swords11", nome: "Príncipe/Valete de Espadas", arquivo: "cards/Swords11.jpg" },
-            { id: "Swords12", nome: "Cavaleiro de Espadas", arquivo: "cards/Swords12.jpg" },
-            { id: "Swords13", nome: "Rainha de Espadas", arquivo: "cards/Swords13.jpg" },
-            { id: "Swords14", nome: "Rei de Espadas", arquivo: "cards/Swords14.jpg" },
+            { id: "Swords01", nome: "Ás de Espadas (Ace of Swords)", busca: "as de espadas ace swords Swords01", arquivo: "cards/Swords01.jpg" },
+            { id: "Swords02", nome: "2 de Espadas", busca: "2 de espadas 2 swords Swords02", arquivo: "cards/Swords02.jpg" },
+            { id: "Swords03", nome: "3 de Espadas", busca: "3 de espadas 3 swords Swords03", arquivo: "cards/Swords03.jpg" },
+            { id: "Swords04", nome: "4 de Espadas", busca: "4 de espadas 4 swords Swords04", arquivo: "cards/Swords04.jpg" },
+            { id: "Swords05", nome: "5 de Espadas", busca: "5 de espadas 5 swords Swords05", arquivo: "cards/Swords05.jpg" },
+            { id: "Swords06", nome: "6 de Espadas", busca: "6 de espadas 6 swords Swords06", arquivo: "cards/Swords06.jpg" },
+            { id: "Swords07", nome: "7 de Espadas", busca: "7 de espadas 7 swords Swords07", arquivo: "cards/Swords07.jpg" },
+            { id: "Swords08", nome: "8 de Espadas", busca: "8 de espadas 8 swords Swords08", arquivo: "cards/Swords08.jpg" },
+            { id: "Swords09", nome: "9 de Espadas", busca: "9 de espadas 9 swords Swords09", arquivo: "cards/Swords09.jpg" },
+            { id: "Swords10", nome: "10 de Espadas", busca: "10 de espadas 10 swords Swords10", arquivo: "cards/Swords10.jpg" },
+            { id: "Swords11", nome: "Príncipe/Valete de Espadas (Page)", busca: "valete principe de espadas page swords Swords11", arquivo: "cards/Swords11.jpg" },
+            { id: "Swords12", nome: "Cavaleiro de Espadas (Knight)", busca: "cavaleiro de espadas knight swords Swords12", arquivo: "cards/Swords12.jpg" },
+            { id: "Swords13", nome: "Rainha de Espadas (Queen)", busca: "rainha de espadas queen swords Swords13", arquivo: "cards/Swords13.jpg" },
+            { id: "Swords14", nome: "Rei de Espadas (King)", busca: "rei de espadas king swords Swords14", arquivo: "cards/Swords14.jpg" },
 
             // Paus / Wands
-            { id: "Wands01", nome: "Ás de Paus", arquivo: "cards/Wands01.jpg" },
-            { id: "Wands02", nome: "2 de Paus", arquivo: "cards/Wands02.jpg" },
-            { id: "Wands03", nome: "3 de Paus", arquivo: "cards/Wands03.jpg" },
-            { id: "Wands04", nome: "4 de Paus", arquivo: "cards/Wands04.jpg" },
-            { id: "Wands05", nome: "5 de Paus", arquivo: "cards/Wands05.jpg" },
-            { id: "Wands06", nome: "6 de Paus", arquivo: "cards/Wands06.jpg" },
-            { id: "Wands07", nome: "7 de Paus", arquivo: "cards/Wands07.jpg" },
-            { id: "Wands08", nome: "8 de Paus", arquivo: "cards/Wands08.jpg" },
-            { id: "Wands09", nome: "9 de Paus", arquivo: "cards/Wands09.jpg" },
-            { id: "Wands10", nome: "10 de Paus", arquivo: "cards/Wands10.jpg" },
-            { id: "Wands11", nome: "Príncipe/Valete de Paus", arquivo: "cards/Wands11.jpg" },
-            { id: "Wands12", nome: "Cavaleiro de Paus", arquivo: "cards/Wands12.jpg" },
-            { id: "Wands13", nome: "Rainha de Paus", arquivo: "cards/Wands13.jpg" },
-            { id: "Wands14", nome: "Rei de Paus", arquivo: "cards/Wands14.jpg" }
+            { id: "Wands01", nome: "Ás de Paus (Ace of Wands)", busca: "as de paus ace wands Wands01", arquivo: "cards/Wands01.jpg" },
+            { id: "Wands02", nome: "2 de Paus", busca: "2 de paus 2 wands Wands02", arquivo: "cards/Wands02.jpg" },
+            { id: "Wands03", nome: "3 de Paus", busca: "3 de paus 3 wands Wands03", arquivo: "cards/Wands03.jpg" },
+            { id: "Wands04", nome: "4 de Paus", busca: "4 de paus 4 wands Wands04", arquivo: "cards/Wands04.jpg" },
+            { id: "Wands05", nome: "5 de Paus", busca: "5 de paus 5 wands Wands05", arquivo: "cards/Wands05.jpg" },
+            { id: "Wands06", nome: "6 de Paus", busca: "6 de paus 6 wands Wands06", arquivo: "cards/Wands06.jpg" },
+            { id: "Wands07", nome: "7 de Paus", busca: "7 de paus 7 wands Wands07", arquivo: "cards/Wands07.jpg" },
+            { id: "Wands08", nome: "8 de Paus", busca: "8 de paus 8 wands Wands08", arquivo: "cards/Wands08.jpg" },
+            { id: "Wands09", nome: "9 de Paus", busca: "9 de paus 9 wands Wands09", arquivo: "cards/Wands09.jpg" },
+            { id: "Wands10", nome: "10 de Paus", busca: "10 de paus 10 wands Wands10", arquivo: "cards/Wands10.jpg" },
+            { id: "Wands11", nome: "Príncipe/Valete de Paus (Page)", busca: "valete principe de paus page wands Wands11", arquivo: "cards/Wands11.jpg" },
+            { id: "Wands12", nome: "Cavaleiro de Paus (Knight)", busca: "cavaleiro de paus knight wands Wands12", arquivo: "cards/Wands12.jpg" },
+            { id: "Wands13", nome: "Rainha de Paus (Queen)", busca: "rainha de paus queen wands Wands13", arquivo: "cards/Wands13.jpg" },
+            { id: "Wands14", nome: "Rei de Paus (King)", busca: "rei de paus king wands Wands14", arquivo: "cards/Wands14.jpg" }
         ];
 
-        // ==================== PROXIES WORKERS COM FALLBACK AUTOMÁTICO ====================
+        // ==================== PROXIES WORKERS DE IA ====================
         const PROXIES_WORKERS = [
             "https://shiny-sky-21dd.genesisgns.workers.dev",
             "https://astro-gns-proxy.genesisgns.workers.dev",
             "https://astro2.genesisgns.workers.dev"
         ];
 
-        // Rótulos padrão para quando a quantidade é selecionada
+        // Rótulos Padrão de Posições
         const ROTULOS_PADRAO = {
             1: ["1. Síntese Geral / Resposta Central"],
-            3: ["1. Passado / Causa", "2. Presente / Desafio", "3. Futuro / Tendência"],
-            5: ["1. O Momento Atual", "2. O Desafio / Obstáculo", "3. Influências Inconscientes", "4. Recurso / Conselho", "5. Desfecho / Alquimia"],
-            7: ["1. Estado Mental/Espiritual", "2. Influência Externa", "3. Desafio Central", "4. Causa Raiz", "5. Potencial Oculto", "6. Conselho da Razão", "7. Síntese Final"]
+            2: ["1. Tese / Situação", "2. Antítese / Desafio"],
+            3: ["1. Passado / Causa", "2. Presente / Momento", "3. Futuro / Tendência"],
+            4: ["1. Situação", "2. Desafio", "3. Conselho", "4. Resultado"],
+            5: ["1. O Momento Atual", "2. O Desafio / Obstáculo", "3. Inconsciente / Raiz", "4. Conselho / Recurso", "5. Desfecho / Alquimia"],
+            6: ["1. Passado", "2. Presente", "3. Futuro", "4. O que ajuda", "5. O que obstaculiza", "6. Síntese Final"],
+            7: ["1. Estado Espiritual", "2. Influência Externa", "3. Desafio Central", "4. Causa Raiz", "5. Potencial Oculto", "6. Conselho da Razão", "7. Síntese Alquímica"],
+            10: [
+                "1. Situação Atual (Significador)", "2. O Obstáculo (Cruzamento)", "3. Inconsciente / Fundação", "4. Passado Recente", 
+                "5. Coroa / Melhores Anseios", "6. Futuro Próximo", "7. Atitude Pessoal", "8. Ambiente / Outros", "9. Desejos e Temores", "10. Resultado Final"
+            ],
+            12: [
+                "1. Casa I - O Eu / Início", "2. Casa II - Recursos e Valores", "3. Casa III - Mente e Comunicação", "4. Casa IV - Lar e Origens",
+                "5. Casa V - Criatividade e Expressão", "6. Casa VI - Trabalho e Saúde", "7. Casa VII - Parcerias e Relacionamentos", "8. Casa VIII - Transmutação e Sombra",
+                "9. Casa IX - Filosofia e Expansão", "10. Casa X - Propósito e Carreira", "11. Casa XI - Coletivo e Projetos", "12. Casa XII - Inconsciente e Síntese"
+            ]
         };
 
         let qtdCartasSelecionada = 5;
@@ -734,10 +814,40 @@
         let historicoChat = [];
         let vozesDisponiveis = [];
 
+        function popularDatalist() {
+            const dl = document.getElementById('listaCartasTarot');
+            dl.innerHTML = '';
+            TODAS_AS_CARTAS.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.nome;
+                dl.appendChild(opt);
+            });
+        }
+
+        function popularSelectQtd() {
+            const sel = document.getElementById('selectQtdCartas');
+            sel.innerHTML = '';
+            for (let i = 1; i <= 12; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `${i} ${i === 1 ? 'Carta' : 'Cartas'}`;
+                if (i === 5) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        }
+
         function definirQtdCartas(qtd) {
             qtdCartasSelecionada = qtd;
-            document.querySelectorAll('.btn-qty').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            document.getElementById('selectQtdCartas').value = qtd;
+            
+            document.querySelectorAll('.btn-qty').forEach(b => {
+                const bQtd = parseInt(b.innerText);
+                if (bQtd === qtd || (qtd === 10 && b.innerText.includes('10')) || (qtd === 12 && b.innerText.includes('12'))) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
             renderizarSlots();
         }
 
@@ -750,25 +860,43 @@
                 const slotDiv = document.createElement('div');
                 slotDiv.className = 'card-slot';
 
-                const rotuloPadrao = rotulos[i] || `Carta ${i + 1}`;
+                const rotuloPadrao = rotulos[i] || `${i + 1}. Posição ${i + 1}`;
+                const cartaInicial = TODAS_AS_CARTAS[i % TODAS_AS_CARTAS.length];
 
                 slotDiv.innerHTML = `
                     <div class="card-slot-header">POSIÇÃO ${i + 1}</div>
-                    <input type="text" id="rotulo_${i}" value="${rotuloPadrao}" placeholder="Significado desta posição">
-                    <img id="preview_${i}" src="${TODAS_AS_CARTAS[0].arquivo}" class="card-preview-img" alt="Preview">
-                    <select id="select_card_${i}" onchange="atualizarPreviewCard(${i})">
-                        ${TODAS_AS_CARTAS.map(c => `<option value="${c.id}">${c.nome}</option>`).join('')}
-                    </select>
+                    <input type="text" id="rotulo_${i}" value="${rotuloPadrao}" placeholder="Significado da Posição">
+                    
+                    <div class="card-preview-container">
+                        <img id="preview_${i}" src="${cartaInicial.arquivo}" class="card-preview-img" alt="Preview">
+                    </div>
+
+                    <label class="invert-toggle">
+                        <input type="checkbox" id="invert_${i}" onchange="toggleInverterCard(${i})">
+                        <span>🔄 Carta Invertida</span>
+                    </label>
+
+                    <input type="text" id="input_card_${i}" list="listaCartasTarot" value="${cartaInicial.nome}" placeholder="Digite o nome da carta..." onchange="atualizarCardPorInput(${i})" onkeyup="atualizarCardPorInput(${i})">
                 `;
                 container.appendChild(slotDiv);
             }
         }
 
-        function atualizarPreviewCard(idx) {
-            const cardId = document.getElementById(`select_card_${idx}`).value;
-            const carta = TODAS_AS_CARTAS.find(c => c.id === cardId);
+        function atualizarCardPorInput(idx) {
+            const val = document.getElementById(`input_card_${idx}`).value.toLowerCase().trim();
+            const carta = TODAS_AS_CARTAS.find(c => c.nome.toLowerCase() === val || c.busca.toLowerCase().includes(val) || c.id.toLowerCase() === val);
             if (carta) {
                 document.getElementById(`preview_${idx}`).src = carta.arquivo;
+            }
+        }
+
+        function toggleInverterCard(idx) {
+            const isInverted = document.getElementById(`invert_${idx}`).checked;
+            const img = document.getElementById(`preview_${idx}`);
+            if (isInverted) {
+                img.classList.add('inverted');
+            } else {
+                img.classList.remove('inverted');
             }
         }
 
@@ -782,52 +910,75 @@
                 grid.innerHTML += `
                     <div class="spread-card-item">
                         <div class="spread-position-title">${item.posicao}</div>
-                        <img src="${item.arquivo}" alt="${item.nomeCarta}">
+                        <img src="${item.arquivo}" alt="${item.nomeCarta}" class="${item.invertida ? 'inverted' : ''}">
                         <div class="spread-card-name">${item.nomeCarta}</div>
+                        ${item.invertida ? '<div class="spread-card-status">🔄 INVERTIDA</div>' : ''}
                     </div>
                 `;
             });
         }
 
-        // ==================== CHAMADA COM FALLBACK ENTRE OS 3 PROXIES ====================
-        async function fazerRequisicaoIAComFallback(payloadPrompt) {
+        // ==================== REQUISIÇÃO COMPATÍVEL COM TODOS OS WORKERS ====================
+        async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
             let ultimoErro = null;
+
+            // Payload universal aceito pelos Workers proxy
+            const payload = {
+                system: systemPrompt,
+                prompt: userPrompt,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
+                contents: [
+                    { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
+                ]
+            };
 
             for (let i = 0; i < PROXIES_WORKERS.length; i++) {
                 const proxyUrl = PROXIES_WORKERS[i];
                 try {
-                    console.log(`Tentando requisição no Proxy ${i + 1}: ${proxyUrl}`);
+                    console.log(`Conectando ao Proxy ${i + 1}: ${proxyUrl}`);
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payloadPrompt)
+                        body: JSON.stringify(payload)
                     });
 
                     if (response.ok) {
                         const data = await response.json();
-                        return data.resultado || data.resposta || data.content || JSON.stringify(data);
+                        // Trata todas as estruturas possíveis de retorno
+                        if (typeof data === 'string') return data;
+                        if (data.resultado) return data.resultado;
+                        if (data.resposta) return data.resposta;
+                        if (data.content) return data.content;
+                        if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                            return data.candidates[0].content.parts[0].text;
+                        }
+                        if (data.choices && data.choices[0]?.message?.content) {
+                            return data.choices[0].message.content;
+                        }
+                        return JSON.stringify(data);
                     } else {
-                        console.warn(`Proxy ${i + 1} respondeu com erro status ${response.status}. Migrando para o próximo...`);
+                        console.warn(`Proxy ${i + 1} retornou status HTTP ${response.status}`);
                     }
                 } catch (err) {
-                    console.warn(`Erro de conexão com Proxy ${i + 1}: ${err.message}. Migrando para o próximo...`);
+                    console.warn(`Falha na chamada ao Proxy ${i + 1}: ${err.message}`);
                     ultimoErro = err;
                 }
             }
 
-            throw new Error(`Todos os 3 proxies de IA atingiram o limite ou falharam. Último erro: ${ultimoErro ? ultimoErro.message : 'Sem resposta'}`);
+            throw new Error(`Serviço temporariamente indisponível nos proxies de IA. (${ultimoErro ? ultimoErro.message : 'Sem resposta'})`);
         }
 
-        // ==================== PROMPT SISTEMA DE ALTA PRECISÃO OCULTISTA/JUNGUIANA ====================
         function construirSystemPrompt() {
             return `Você é um Guardião do Ocultismo Sério, Mestre em Tarô Hermético e Analista Junguiano de Alta Rigorozidade.
 Sua análise DEVE obrigatoriamente seguir a ótica:
 1. Hermetismo, Gnosticismo e Tradição da Hermetic Order of the Golden Dawn.
-2. Árvore da Vida / Cabala: Sempre que citar termos cabalísticos (como Kether, Chokmah, Binah, Tiphereth, Yesod, Geburah, Chesed, Hod, Netzach, Malkuth ou os Caminhos), VOCÊ DEVE EXPLICAR O QUE O TERMO SIGNIFICA E O QUE ELE ESTÁ REPRESENTANDO na dinâmica espiritual da questão.
+2. Árvore da Vida / Cabala: Sempre que citar termos cabalísticos (como Kether, Chokmah, Binah, Tiphereth, Yesod, Geburah, Chesed, Hod, Netzach, Malkuth ou os Caminhos), VOCÊ DEVE EXPLICAR O QUE O TERMO SIGNIFICA E O QUE ELE ESTÁ REPRESENTANDO na dinâmica espiritual e psíquica da questão.
 3. Psicologia Analítica de Carl G. Jung: Arquétipos, Inconsciente Pessoal e Coletivo, Sombra, Anima/Animus, Persona, Processo de Individuação e Sincronicidade.
-4. Foco constante no desenvolvimento pessoal, alquimia interior, espiritualidade e elevação da consciência.
-
-Seja profundo, solene, claro, revelador e estruturado.`;
+4. ATENÇÃO ÀS CARTAS INVERTIDAS: Quando uma carta for indicada como "INVERTIDA", analise seu aspecto de sombra, energia bloqueada, introversão da força do arcano ou desafio de integração.
+5. Manter foco absoluto na elevação espiritual, alquimia interior e desenvolvimento pessoal.`;
         }
 
         async function processarLeituraIniciatica() {
@@ -837,40 +988,39 @@ Seja profundo, solene, claro, revelador e estruturado.`;
             const cartasTiradas = [];
             for (let i = 0; i < qtdCartasSelecionada; i++) {
                 const rotulo = document.getElementById(`rotulo_${i}`).value || `Posição ${i + 1}`;
-                const cardId = document.getElementById(`select_card_${i}`).value;
-                const cartaObj = TODAS_AS_CARTAS.find(c => c.id === cardId);
+                const valInput = document.getElementById(`input_card_${i}`).value.toLowerCase().trim();
+                const isInverted = document.getElementById(`invert_${i}`).checked;
+                
+                const cartaObj = TODAS_AS_CARTAS.find(c => c.nome.toLowerCase() === valInput || c.busca.toLowerCase().includes(valInput) || c.id.toLowerCase() === valInput) || TODAS_AS_CARTAS[0];
+
                 cartasTiradas.push({
                     posicao: rotulo,
-                    cardId: cardId,
-                    nomeCarta: cartaObj ? cartaObj.nome : cardId,
-                    arquivo: cartaObj ? cartaObj.arquivo : ''
+                    cardId: cartaObj.id,
+                    nomeCarta: cartaObj.nome,
+                    arquivo: cartaObj.arquivo,
+                    invertida: isInverted
                 });
             }
 
             renderizarMesaVirtual(cartasTiradas);
 
             const out = document.getElementById('iaOutput');
-            out.innerText = "Consultando a Tradição Hermética e sintetizando os Arcanos... Aguarde...";
+            out.innerText = "Sintetizando os arcanos sob a Tradição Hermética e Psicologia Analítica... Aguarde...";
             document.getElementById('chatMessages').innerHTML = '';
             historicoChat = [];
 
-            const promptUsuario = `
+            const userPrompt = `
 QUESTÃO PRINCIPAL DO CONSULENTE: "${questao}"
 
 MESA DE CARTAS TIRADAS:
-${cartasTiradas.map((c, idx) => `- Posição ${idx + 1} (${c.posicao}): Carta "${c.nomeCarta}"`).join('\n')}
+${cartasTiradas.map((c, idx) => `- Posição ${idx + 1} (${c.posicao}): Carta "${c.nomeCarta}" ${c.invertida ? '[CARTA INVERTIDA / INVERTED]' : '[CARTA NORMAL / UPRIGHT]'}`).join('\n')}
 
 INSTRUÇÃO DA LEITURA:
-Faça a síntese completa desta tiragem. Analise a relação entre cada carta e sua respectiva posição.
-Conecte as cartas com o Hermetismo, a Cabala (explicando cada Sephira ou Caminho citado), a Filosofia da Golden Dawn e os Arquétipos de Carl Jung (Individuação, Sombra, Self, etc.). Finalize com um Conselho Alquímico de Ação Prática e Elevação Espiritual.`;
-
-            const payload = {
-                system: construirSystemPrompt(),
-                messages: [{ role: 'user', content: promptUsuario }]
-            };
+Faça a síntese completa desta tiragem. Analise a relação entre cada carta e sua posição.
+Conecte com a Hermética, Golden Dawn, Cabala (explicando o significado exato de cada Sephira/Caminho citado) e Arquétipos Junguianos. Para as cartas que saíram INVERTIDAS, detalhe a interpretação da sombra ou do bloqueio do arcano. Finalize com um Conselho Alquímico Prático.`;
 
             try {
-                const respostaTexto = await fazerRequisicaoIAComFallback(payload);
+                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
                 out.innerText = respostaTexto;
 
                 leituraAtual = {
@@ -882,12 +1032,12 @@ Conecte as cartas com o Hermetismo, a Cabala (explicando cada Sephira ou Caminho
 
                 salvarLeituraFirebase(leituraAtual);
             } catch (err) {
-                out.innerText = `Erro durante a síntese iniciática: ${err.message}`;
+                out.innerText = `Erro na síntese da IA: ${err.message}`;
             }
         }
 
         async function gerarOuRegerarIA() {
-            if (!leituraAtual) return alert("Faça primeiro uma síntese para gerar a interpretação.");
+            if (!leituraAtual) return alert("Monte uma tiragem para gerar a interpretação.");
             processarLeituraIniciatica();
         }
 
@@ -900,44 +1050,34 @@ Conecte as cartas com o Hermetismo, a Cabala (explicando cada Sephira ou Caminho
             if (!leituraAtual) return alert("Realize a leitura inicial antes de fazer perguntas de aprofundamento.");
 
             const chatMessages = document.getElementById('chatMessages');
-            
-            // Adiciona mensagem do usuário
             chatMessages.innerHTML += `<div class="chat-msg user"><b>Você:</b> ${pergunta}</div>`;
             input.value = '';
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            historicoChat.push({ role: 'user', content: pergunta });
-
             const msgLoading = document.createElement('div');
             msgLoading.className = 'chat-msg assistant';
-            msgLoading.innerText = 'Consultando os mistérios...';
+            msgLoading.innerText = 'Consultando a Tradição...';
             chatMessages.appendChild(msgLoading);
 
-            const contextPrompt = `
-CONTEXTO DA LEITURA ATUAL:
+            const userPrompt = `
+CONTEXTO DA LEITURA DE TARÔ:
 Questão: "${leituraAtual.questao}"
-Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta}`).join(', ')}
-Interpretação Anterior: "${leituraAtual.interpretação}"
+Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(', ')}
+Interpretação Base: "${leituraAtual.interpretação}"
 
-NOVA PERGUNTA DE APROFUNDAMENTO DO CONSULENTE: "${pergunta}"
-Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Hermetismo e Psicologia Junguiana.`;
-
-            const payload = {
-                system: construirSystemPrompt(),
-                messages: [{ role: 'user', content: contextPrompt }]
-            };
+PERGUNTA DE APROFUNDAMENTO DO CONSULENTE: "${pergunta}"
+Responda mantendo rigor no Ocultismo, Golden Dawn, Cabala e Psicologia Junguiana.`;
 
             try {
-                const respostaAprofundada = await fazerRequisicaoIAComFallback(payload);
+                const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
                 msgLoading.innerHTML = `<b>IA Iniciática:</b> ${respostaAprofundada}`;
-                historicoChat.push({ role: 'assistant', content: respostaAprofundada });
             } catch (err) {
                 msgLoading.innerText = `Erro ao responder: ${err.message}`;
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        // ==================== FIREBASE FIRESTORE INTEGRATION ====================
+        // ==================== FIREBASE FIRESTORE ====================
         async function salvarLeituraFirebase(dados) {
             try {
                 if (!window.db) return;
@@ -946,7 +1086,6 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
                     ...dados,
                     timestamp: new Date()
                 });
-                console.log("Leitura salva com sucesso no Firestore!");
                 carregarHistoricoFirebase();
             } catch (e) {
                 console.error("Erro ao salvar no Firebase: ", e);
@@ -956,7 +1095,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
         async function carregarHistoricoFirebase() {
             const container = document.getElementById('historyGrid');
             if (!window.db) {
-                container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Firebase carregando ou não inicializado.</div>';
+                container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Conectando ao banco de dados...</div>';
                 return;
             }
 
@@ -966,7 +1105,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
                 const querySnapshot = await window.fbGetDocs(q);
 
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura registrada no Firebase.</div>';
+                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura registrada.</div>';
                     return;
                 }
 
@@ -1009,7 +1148,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
                 await window.fbDeleteDoc(docRef);
                 carregarHistoricoFirebase();
             } catch (err) {
-                alert("Erro ao excluir documento: " + err.message);
+                alert("Erro ao excluir: " + err.message);
             }
         }
 
@@ -1023,11 +1162,11 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
             window.scrollTo({ top: document.getElementById('spreadDisplay').offsetTop - 20, behavior: 'smooth' });
         }
 
-        // ==================== EXPORTAÇÕES (TXT / PDF) ====================
+        // ==================== EXPORTAÇÃO (TXT / PDF) ====================
         function exportarTXT() {
             if (!leituraAtual) return alert("Nenhuma leitura ativa para exportar.");
             const texto = document.getElementById('iaOutput').innerText;
-            const conteudo = `ASTRO TAROT — REGISTRO DE LEITURA INICIÁTICA\nData: ${new Date().toLocaleString('pt-BR')}\nQuestão: ${leituraAtual.questao}\n\nCARTAS TIRADAS:\n${leituraAtual.cartas.map(c => `- ${c.posicao}: ${c.nomeCarta}`).join('\n')}\n\n=========================================\n${texto}`;
+            const conteudo = `ASTRO TAROT — REGISTRO DE LEITURA INICIÁTICA\nData: ${new Date().toLocaleString('pt-BR')}\nQuestão: ${leituraAtual.questao}\n\nCARTAS TIRADAS:\n${leituraAtual.cartas.map(c => `- ${c.posicao}: ${c.nomeCarta} ${c.invertida ? '[INVERTIDA]' : ''}`).join('\n')}\n\n=========================================\n${texto}`;
 
             const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
             const link = document.createElement('a');
@@ -1056,7 +1195,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
                     <div class="meta">
                         <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}<br>
                         <strong>Questão Principal:</strong> ${leituraAtual.questao}<br>
-                        <strong>Cartas:</strong> ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta}`).join(' | ')}
+                        <strong>Cartas:</strong> ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(' | ')}
                     </div>
                     <div class="content">${texto}</div>
                 </body>
@@ -1066,7 +1205,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
             win.print();
         }
 
-        // ==================== VOZ (SPEECH SYNTHESIS NATIVA) ====================
+        // ==================== VOZ (SPEECH SYNTHESIS) ====================
         function carregarVozes() {
             if (!('speechSynthesis' in window)) return;
             vozesDisponiveis = speechSynthesis.getVoices().filter(v => v.lang.includes('pt') || v.lang.includes('es') || v.lang.includes('en'));
@@ -1082,7 +1221,7 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
         }
 
         function falarTextoIA() {
-            if (!('speechSynthesis' in window)) return alert('Navegador não suporta leitura de voz.');
+            if (!('speechSynthesis' in window)) return alert('Navegador não suporta síntese de voz.');
             speechSynthesis.cancel();
             const texto = document.getElementById('iaOutput').innerText;
             if (!texto) return;
@@ -1104,6 +1243,8 @@ Responda sob a mesma ótica da Golden Dawn, Cabala (explicando os termos), Herme
 
         // Inicialização
         window.onload = () => {
+            popularDatalist();
+            popularSelectQtd();
             renderizarSlots();
 
             setTimeout(() => {
