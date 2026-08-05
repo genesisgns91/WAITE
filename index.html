@@ -267,6 +267,7 @@
             font-size: 0.88rem;
             line-height: 1.7;
             white-space: pre-wrap;
+            text-align: justify;
             color: #e6edf3;
             display: none;
         }
@@ -2076,10 +2077,16 @@
 
 REGRA CRÍTICA DE FORMATO:
 Vá direto ao conteúdo. NÃO escreva saudações, introduções ou meta comentários como "vamos explorar" ou "neste tópico". Comece imediatamente pelo conteúdo.
-Você DEVE escrever em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN (sem cardinal #, asteriscos *, travessões, hífens -, sublinhados _, ou qualquer outro caractere especial de formatação). O texto pode eventualmente ser lido por um sintetizador de voz.
+Você DEVE escrever em TEXTO DISSERTATIVO, com parágrafos bem construídos e encadeados logicamente, como em um ensaio ou artigo. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres especiais decorativos (sem cardinal #, asteriscos *, travessões duplos, hífens usados como marcador de lista, sublinhados _, emojis ou bullets). Não use listas nem tópicos soltos: toda ideia deve ser desenvolvida em forma de texto corrido, dentro de parágrafos. Não repita excessivamente quebras de linha; separe apenas parágrafos de fato distintos.
+
+LINGUAGEM:
+Escreva em linguagem simples, clara e acessível a qualquer leitor, mesmo sem conhecimento prévio de esoterismo. Sempre que precisar usar um termo técnico da Cabala, da Alquimia, do Hermetismo ou de outra tradição afim (por exemplo: sefirá, caminho, nigredo, athanor, mercúrio filosófico, tikun), explique brevemente e em linguagem cotidiana o que aquele termo significa logo na primeira vez em que ele aparecer no texto, de forma natural e integrada à frase, sem soar como um glossário.
+
+CITAÇÃO E CRÉDITOS:
+Se em algum momento você reproduzir uma ideia, conceito, classificação ou formulação claramente associada a um autor ou autora específico (por exemplo Carl Gustav Jung, Aleister Crowley, Arthur Edward Waite, Éliphas Lévi, Papus, entre outros), atribua essa ideia ao autor correspondente de forma explícita dentro do próprio texto corrido, mencionando seu nome (exemplo: "conforme descreveu Carl Gustav Jung" ou "na formulação de Arthur Edward Waite"). Nunca apresente como sendo sua uma ideia ou formulação que pertença claramente a um autor identificável.
 
 TAREFA:
-Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente o eixo temático "${topico.titulo}" (${topico.descricao}). Não desenvolva os demais eixos temáticos do estudo completo desta carta (histórico, simbólico, psicológico, espiritual, hermético-alquímico, cabalístico, astrológico, tarot ocultista) além do eixo especificado aqui; mantenha o foco estrito neste único eixo temático. Desenvolva o texto em três a cinco parágrafos, com profundidade real, precisão conceitual e exemplos concretos, evitando generalidades vagas.`;
+Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente o eixo temático "${topico.titulo}" (${topico.descricao}). Não desenvolva os demais eixos temáticos do estudo completo desta carta (histórico, simbólico, psicológico, espiritual, hermético-alquímico, cabalístico, astrológico, tarot ocultista) além do eixo especificado aqui; mantenha o foco estrito neste único eixo temático. Desenvolva o texto com profundidade real, em cinco a oito parágrafos bem elaborados, trazendo precisão conceitual, exemplos concretos e nuances, evitando generalidades vagas ou repetição de ideias já óbvias.`;
         }
 
         async function gerarTopicoEstudo(topicoId, ehComplemento = false) {
@@ -2759,11 +2766,9 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             }
 
             const folhas = selecionadas.map(({ data }, idx) => {
-                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
                 return `
                     <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
                         <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
-                        <div class="meta"><strong>Data:</strong> ${dateStr}</div>
                         <div class="cartas-grid">
                             <div class="carta-bloco">
                                 <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
