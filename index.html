@@ -276,17 +276,6 @@
             display: block;
         }
 
-        .topico-estudo-corpo .aprofundamento-label {
-            color: var(--ar);
-            font-weight: 700;
-            display: block;
-            margin-top: 12px;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         @media (min-width: 1080px) {
             .app-layout {
                 display: grid;
@@ -2061,15 +2050,24 @@
 
             corpo.classList.add('show');
             let html = escapeTexto(dadosTopico.texto).replace(/\n/g, '<br>');
-            (dadosTopico.complementos || []).forEach((c, i) => {
-                html += `<span class="aprofundamento-label">🔎 Aprofundamento ${i + 1}</span>${escapeTexto(c).replace(/\n/g, '<br>')}`;
+            (dadosTopico.complementos || []).forEach((c) => {
+                html += `<br><br>${escapeTexto(c).replace(/\n/g, '<br>')}`;
             });
             corpo.innerHTML = html;
 
             acoes.innerHTML = `
+                <button type="button" class="btn-ia-action" id="btnToggle_${topicoId}" onclick="alternarTopicoCorpo('${topicoId}')">▲ Recolher</button>
                 <button type="button" class="btn-ia-action" onclick="gerarTopicoEstudo('${topicoId}')">↻ Gerar novamente</button>
                 <button type="button" class="btn-ia-action" onclick="gerarTopicoEstudo('${topicoId}', true)">🔎 Aprofundar este tópico</button>
             `;
+        }
+
+        function alternarTopicoCorpo(topicoId) {
+            const corpo = document.getElementById(`topicoCorpo_${topicoId}`);
+            const btn = document.getElementById(`btnToggle_${topicoId}`);
+            if (!corpo) return;
+            const expandido = corpo.classList.toggle('show');
+            if (btn) btn.innerText = expandido ? '▲ Recolher' : '▼ Expandir';
         }
 
         function construirSystemPromptEstudo(topico) {
@@ -2077,7 +2075,8 @@
 
 REGRA CRÍTICA DE FORMATO:
 Vá direto ao conteúdo. NÃO escreva saudações, introduções ou meta comentários como "vamos explorar" ou "neste tópico". Comece imediatamente pelo conteúdo.
-Você DEVE escrever em TEXTO DISSERTATIVO, com parágrafos bem construídos e encadeados logicamente, como em um ensaio ou artigo. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres especiais decorativos (sem cardinal #, asteriscos *, travessões duplos, hífens usados como marcador de lista, sublinhados _, emojis ou bullets). Não use listas nem tópicos soltos: toda ideia deve ser desenvolvida em forma de texto corrido, dentro de parágrafos. Não repita excessivamente quebras de linha; separe apenas parágrafos de fato distintos.
+Você DEVE escrever em TEXTO DISSERTATIVO, com parágrafos bem construídos e encadeados logicamente, como em um ensaio ou artigo. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres especiais decorativos (sem cardinal #, asteriscos *, travessões duplos, hífens usados como marcador de lista, sublinhados _, emojis, bullets ou barras verticais |). É TERMINANTEMENTE PROIBIDO montar tabelas de qualquer tipo (nada de linhas separadas por | nem colunas alinhadas). Não use listas nem tópicos soltos: toda ideia deve ser desenvolvida em forma de texto corrido, dentro de parágrafos. Não repita excessivamente quebras de linha; separe apenas parágrafos de fato distintos.
+Quando precisar apresentar uma sequência de nomes, autores, datas ou eventos (por exemplo, uma linha do tempo histórica), NUNCA organize isso em forma de tabela. Em vez disso, escreva no formato de frase corrida, assim: "Boécio, por volta do ano 524, estabeleceu o conceito filosófico da Roda da Fortuna, entendida como o ciclo de ascensão e queda que rege a sorte humana, lançando as bases simbólicas da carta." Cada nome, data e contribuição deve ser incorporado naturalmente à frase, nunca em uma linha isolada ou em colunas.
 
 LINGUAGEM:
 Escreva em linguagem simples, clara e acessível a qualquer leitor, mesmo sem conhecimento prévio de esoterismo. Sempre que precisar usar um termo técnico da Cabala, da Alquimia, do Hermetismo ou de outra tradição afim (por exemplo: sefirá, caminho, nigredo, athanor, mercúrio filosófico, tikun), explique brevemente e em linguagem cotidiana o que aquele termo significa logo na primeira vez em que ele aparecer no texto, de forma natural e integrada à frase, sem soar como um glossário.
@@ -2175,7 +2174,7 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
                         }
 
                         // Remove toda a formatação markdown para não prejudicar o leitor de voz
-                        return textoRes.replace(/[#*`_~>-]/g, '').trim();
+                        return textoRes.replace(/[#*`_~>|-]/g, '').trim();
                     }
                 } catch (err) {
                     ultimoErro = err;
@@ -2197,7 +2196,7 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
 REGRA CRÍTICA DE FORMATO:
 Vá direto ao conteúdo da leitura. NÃO escreva saudações, introduções, meta comentários sobre o que você vai fazer, nem frases de abertura como "vamos analisar" ou "nesta leitura". Comece imediatamente pela primeira carta ou pela contextualização simbólica da questão.
 Você DEVE escrever sua resposta estritamente em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES.
-NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO.
+NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_), barras verticais (|) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO. É TERMINANTEMENTE PROIBIDO montar tabelas de qualquer tipo. Qualquer sequência de nomes, datas ou correspondências deve ser escrita em forma de frase corrida, nunca em linhas ou colunas separadas.
 O texto será lido por um sintetizador de voz (TTS) e qualquer caractere de formatação atrapalha a leitura.
 A ÚNICA EXCEÇÃO a estas regras de formatação são as duas linhas de cabeçalho literais "CARTA n:" e "SÍNTESE DA PERGUNTA PRINCIPAL:", exigidas exclusivamente quando a estrutura do modo aprofundado (descrita abaixo) estiver em vigor. Fora desses dois cabeçalhos específicos, quando exigidos, mantenha-se estritamente ao texto corrido, sem nenhum outro tipo de marcador, título ou numeração.
 
@@ -2742,8 +2741,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 if (!dadosTopico || !dadosTopico.texto) return;
                 html += `<h2 class="subtitulo-carta">${t.numero}. ${escapeTexto(t.titulo)}</h2>`;
                 html += textoParaParagrafosHtml(dadosTopico.texto);
-                (dadosTopico.complementos || []).forEach((c, i) => {
-                    html += `<div class="aprofundamento-pdf">Aprofundamento ${i + 1}</div>`;
+                (dadosTopico.complementos || []).forEach((c) => {
                     html += textoParaParagrafosHtml(c);
                 });
             });
@@ -2768,7 +2766,9 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             const folhas = selecionadas.map(({ data }, idx) => {
                 return `
                     <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
+                        <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
                         <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
+                        <div class="ornamento">◆</div>
                         <div class="cartas-grid">
                             <div class="carta-bloco">
                                 <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
@@ -2786,25 +2786,25 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                     <style>
                         @page {
                             size: A4;
-                            margin: 2cm 1.8cm 2.2cm 1.8cm;
+                            margin: 2.4cm 2.2cm 2.6cm 2.2cm;
                         }
                         @page {
-                            @bottom-right {
-                                content: counter(page) " / " counter(pages);
-                                font-size: 9pt;
+                            @bottom-center {
+                                content: "— " counter(page) " —";
+                                font-family: Georgia, 'Times New Roman', serif;
+                                font-size: 9.5pt;
                                 color: #666;
                             }
                         }
-                        body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; text-align: justify; }
-                        h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; text-align: left; }
-                        h2 { color: #6e40c9; font-size: 13pt; margin-top: 6px; text-align: left; }
-                        .subtitulo-carta { color: #6e40c9; font-size: 12.5pt; margin-top: 18px; margin-bottom: 4px; text-align: left; }
-                        .meta { font-size: 10pt; color: #555; margin: 12px 0 16px; text-align: left; }
-                        p { font-size: 11pt; margin: 0 0 8px; text-align: justify; }
-                        .cartas-grid { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
-                        .carta-bloco { width: 150px; text-align: center; font-size: 9pt; }
-                        .carta-bloco img { width: 140px; height: auto; border: 1px solid #999; border-radius: 4px; }
-                        .aprofundamento-pdf { margin-top: 10px; margin-bottom: 2px; font-size: 10.5pt; font-weight: bold; color: #6e40c9; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
+                        body { font-family: Georgia, 'Times New Roman', serif; padding: 10px; color: #1a1a1a; line-height: 1.7; text-align: justify; }
+                        .capitulo-rotulo { text-align: center; text-transform: uppercase; letter-spacing: 3px; font-size: 9.5pt; color: #8a6d1f; margin-top: 6px; }
+                        h1 { color: #3a2a5c; font-size: 24pt; font-weight: normal; text-align: center; margin-top: 6px; letter-spacing: 1px; font-variant: small-caps; }
+                        .ornamento { text-align: center; color: #8a6d1f; font-size: 13pt; margin: 4px 0 20px; letter-spacing: 8px; }
+                        h2, .subtitulo-carta { color: #3a2a5c; font-size: 13.5pt; font-weight: normal; font-variant: small-caps; letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 10px; text-align: center; border-top: 1px solid #d8cdb0; padding-top: 14px; }
+                        p { font-size: 11.5pt; margin: 0 0 10px; text-align: justify; text-indent: 1.2em; }
+                        .cartas-grid { display: flex; justify-content: center; margin: 8px 0 22px; }
+                        .carta-bloco { width: 160px; text-align: center; font-size: 9pt; }
+                        .carta-bloco img { width: 150px; height: auto; border: 1px solid #b8a969; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
                         .folha-leitura { page-break-inside: avoid; }
                         @media print {
                             .folha-leitura { page-break-inside: auto; }
@@ -2947,13 +2947,9 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             }
 
             const folhas = selecionadas.map(({ data }, idx) => {
-                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
                 return `
                     <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
                         <h1>${escapeTexto(data.questao || 'Sem Pergunta')}</h1>
-                        <div class="meta">
-                            <strong>Data:</strong> ${dateStr}
-                        </div>
                         ${montarBlocoCartasImpressao(data.cartas)}
                         ${montarBlocoAnaliseImpressao(data.interpretação)}
                         ${montarBlocoChatImpressao(data.historicoChat)}
@@ -3068,7 +3064,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             if (!('speechSynthesis' in window)) return showToast('Navegador não suporta síntese de voz.', 'erro');
             speechSynthesis.cancel();
 
-            const textoLimpo = (texto || document.getElementById('iaOutput').innerText).replace(/[#*`_~>-]/g, '').trim();
+            const textoLimpo = (texto || document.getElementById('iaOutput').innerText).replace(/[#*`_~>|-]/g, '').trim();
             if (!textoLimpo) return;
 
             const utt = new SpeechSynthesisUtterance(textoLimpo);
