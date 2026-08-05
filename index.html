@@ -180,6 +180,112 @@
             gap: 16px;
         }
 
+        /* Alternância entre modo Tiragem e modo Estudo Individual */
+        .modo-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 0 auto 4px;
+            max-width: 1400px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .modo-tab {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--texto-fraco);
+            padding: 10px 16px;
+            border-radius: var(--raio-sm);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transicao);
+        }
+
+        .modo-tab:hover:not(.active) {
+            border-color: var(--destaque);
+            color: #fff;
+        }
+
+        .modo-tab.active {
+            background: var(--destaque);
+            color: #0d1117;
+            border-color: var(--destaque);
+        }
+
+        /* Cartões de tópicos do Estudo Individual da Carta */
+        .topicos-estudo-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .topico-estudo-card {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .topico-estudo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .topico-estudo-titulo {
+            font-family: var(--fonte-display);
+            color: var(--ouro);
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .topico-estudo-desc {
+            font-size: 0.72rem;
+            color: var(--texto-fraco);
+            margin-top: 3px;
+        }
+
+        .topico-estudo-acoes {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .topico-estudo-corpo {
+            background: var(--bg-card);
+            border: 1px solid var(--border-suave);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            color: #e6edf3;
+            display: none;
+        }
+
+        .topico-estudo-corpo.show {
+            display: block;
+        }
+
+        .topico-estudo-corpo .aprofundamento-label {
+            color: var(--ar);
+            font-weight: 700;
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         @media (min-width: 1080px) {
             .app-layout {
                 display: grid;
@@ -1165,7 +1271,12 @@
 
     <datalist id="listaCartasTarot"></datalist>
 
-    <div class="app-layout">
+    <div class="modo-tabs" id="modoTabs">
+        <button type="button" class="modo-tab active" id="modoTabTiragem" onclick="alternarModoApp('tiragem')">🔮 Tiragem de Cartas</button>
+        <button type="button" class="modo-tab" id="modoTabEstudo" onclick="alternarModoApp('estudo')">📖 Estudo Individual da Carta</button>
+    </div>
+
+    <div class="app-layout" id="secaoTiragem">
 
         <div class="col-left">
             <form class="controls" id="readingForm" onsubmit="event.preventDefault(); processarLeituraIniciatica();">
@@ -1293,6 +1404,55 @@
                     <div class="skeleton"></div>
                     <div class="skeleton"></div>
                 </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="app-layout" id="secaoEstudo" style="display: none;">
+
+        <div class="col-left">
+            <div class="controls" id="painelEstudoCarta">
+                <div class="section-form-title">
+                    <span>📖 Escolha a Carta para Estudo</span>
+                </div>
+
+                <div class="input-group">
+                    <div class="card-preview-container" style="margin: 4px auto;" onclick="abrirSeletorCartaEstudo()" role="button" tabindex="0" aria-label="Escolher carta para estudo individual">
+                        <img id="previewCartaEstudo" src="cards/00_Fool.jpg" class="card-preview-img" alt="Carta selecionada para estudo">
+                        <span class="card-preview-zoom-hint">🔍 escolher</span>
+                    </div>
+                    <input type="text" id="inputCartaEstudo" list="listaCartasTarot" placeholder="Ou digite o nome da carta..." onchange="atualizarCartaEstudoPorInput()" onkeyup="atualizarCartaEstudoPorInput()">
+                    <div class="autosave-hint show" id="nomeCartaEstudoLabel" style="text-align:center;">Nenhuma carta selecionada ainda.</div>
+                </div>
+
+                <button type="button" class="btn-save-reading" id="btnSalvarEstudo" onclick="salvarEstudoAtualManual()" disabled style="width:100%; justify-content:center; margin-top:4px;">💾 Guardar este Estudo no Histórico</button>
+            </div>
+
+            <div class="history-section" id="historyEstudoSection">
+                <div class="section-form-title">
+                    <span>📜 Histórico de Estudos Salvos (Firebase Cloud)</span>
+                    <button type="button" class="btn-ia-action" onclick="carregarHistoricoEstudos()">🔄 Atualizar</button>
+                </div>
+                <div class="history-toolbar">
+                    <input type="search" id="historyEstudoSearch" placeholder="🔎 Buscar por nome da carta..." oninput="filtrarHistoricoEstudos()">
+                    <button type="button" class="btn-ia-action" id="btnSelecionarTodosHistEstudo" onclick="alternarSelecionarTodosHistoricoEstudos()">☑️ Selecionar todas</button>
+                    <button type="button" class="btn-save-reading" id="btnExportarSelecionadasPDFEstudo" onclick="exportarPDFHistoricoEstudoSelecionado()" disabled>📑 Exportar PDF (0 selecionadas)</button>
+                </div>
+                <div class="autosave-hint show" style="text-align:center;">A exportação em PDF está disponível apenas para estudos já salvos no histórico. Marque a caixa em cada estudo para incluí-lo.</div>
+                <div id="historyEstudoGrid" class="history-grid">
+                    <div class="empty-state">Nenhum estudo carregado ainda.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-right">
+            <div class="ia-section">
+                <div class="ia-header">
+                    <h3 id="tituloEstudoAtual">✨ Estudo Iniciático da Carta</h3>
+                </div>
+                <div class="autosave-hint show" style="text-align:left;">Selecione uma carta e gere cada tópico individualmente. Depois de gerado, você pode pedir um aprofundamento complementar sobre o mesmo tópico.</div>
+                <div id="topicosEstudoContainer" class="topicos-estudo-grid"></div>
             </div>
         </div>
 
@@ -1433,6 +1593,24 @@
                 "9. Casa IX - Filosofia", "10. Casa X - Propósito", "11. Casa XI - Coletivo", "12. Casa XII - Inconsciente"
             ]
         };
+
+        // ==================== TÓPICOS DO ESTUDO INDIVIDUAL DA CARTA ====================
+        const TOPICOS_ESTUDO = [
+            { id: 'historico', numero: 'I', titulo: 'Histórico', descricao: 'origem, evolução e autores' },
+            { id: 'simbolico', numero: 'II', titulo: 'Simbólico', descricao: 'imagens, cores, números, objetos e personagens' },
+            { id: 'psicologico', numero: 'III', titulo: 'Psicológico', descricao: 'Jung, arquétipos, sombra, inconsciente' },
+            { id: 'espiritual', numero: 'IV', titulo: 'Espiritual', descricao: 'consciência, iniciação, evolução e transcendência' },
+            { id: 'hermetico_alquimico', numero: 'V', titulo: 'Hermético-Alquímico', descricao: 'princípios herméticos, operações e transformação' },
+            { id: 'cabalistico', numero: 'VI', titulo: 'Cabalístico', descricao: 'Sephiroth, caminhos, letras hebraicas e Árvore da Vida' },
+            { id: 'astrologico', numero: 'VII', titulo: 'Astrológico', descricao: 'planetas, signos, elementos e dignidades' },
+            { id: 'tarot_ocultista', numero: 'VIII', titulo: 'Tarot Ocultista', descricao: 'Golden Dawn, Waite, Smith, correspondências e tradição iniciática' }
+        ];
+
+        let cartaEstudoSelecionada = null;
+        let estudoAtual = null;
+        let modoSeletorCartas = 'slot'; // 'slot' (tiragem) ou 'estudo' (estudo individual)
+        let historicoEstudosCompleto = [];
+        let estudosSelecionadosPDF = new Set();
 
         let qtdCartasSelecionada = 5;
         let leituraAtual = null;
@@ -1581,6 +1759,73 @@
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        // ==================== ESTRUTURA CARTA A CARTA (parsing da resposta da IA) ====================
+        // Detecta o padrão "CARTA n: ..." e "SÍNTESE DA PERGUNTA PRINCIPAL:" produzido pela IA no modo
+        // aprofundado. Retorna null quando o texto não segue esse padrão (modos breve/padrão), permitindo
+        // fallback para exibição como texto corrido único.
+        function parsearInterpretacaoPorCarta(texto) {
+            if (!texto) return null;
+            const regexCarta = /^CARTA\s+(\d+)\s*:\s*(.+)$/gim;
+            const matches = [...texto.matchAll(regexCarta)];
+            if (matches.length === 0) return null;
+
+            const regexSintese = /^S[ÍI]NTESE\s+DA\s+PERGUNTA\s+PRINCIPAL\s*:\s*/im;
+            const sinteseMatch = texto.match(regexSintese);
+
+            const blocos = [];
+            for (let i = 0; i < matches.length; i++) {
+                const atual = matches[i];
+                const inicioTexto = atual.index + atual[0].length;
+                const proximaCarta = (i + 1 < matches.length) ? matches[i + 1].index : null;
+                const fimTexto = proximaCarta !== null
+                    ? proximaCarta
+                    : (sinteseMatch ? sinteseMatch.index : texto.length);
+                blocos.push({
+                    numero: atual[1],
+                    cabecalho: atual[2].trim(),
+                    texto: texto.slice(inicioTexto, fimTexto).trim()
+                });
+            }
+
+            const sintese = sinteseMatch ? texto.slice(sinteseMatch.index + sinteseMatch[0].length).trim() : '';
+            return { blocos, sintese };
+        }
+
+        // Converte um bloco de texto corrido em parágrafos HTML seguros (escapados), preservando
+        // quebras de linha simples como <br> e quebras duplas como novos parágrafos.
+        function textoParaParagrafosHtml(texto) {
+            if (!texto) return '';
+            return texto.split(/\n{2,}/)
+                .map(par => par.trim())
+                .filter(par => par.length > 0)
+                .map(par => `<p>${escapeTexto(par).replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        // Renderiza a saída da IA na tela: se a estrutura carta a carta for detectada, exibe cada carta
+        // com seu cabeçalho em destaque seguido da síntese final; caso contrário, exibe como texto corrido.
+        function renderizarSaidaIA(texto) {
+            const out = document.getElementById('iaOutput');
+            out.classList.remove('placeholder');
+
+            const estrutura = parsearInterpretacaoPorCarta(texto);
+            if (!estrutura) {
+                out.innerText = texto || '';
+                return;
+            }
+
+            let html = '';
+            estrutura.blocos.forEach(b => {
+                html += `<p style="color: var(--ouro); font-weight: 700; margin-bottom: 4px;">Carta ${escapeTexto(b.numero)}: ${escapeTexto(b.cabecalho)}</p>`;
+                html += textoParaParagrafosHtml(b.texto);
+            });
+            if (estrutura.sintese) {
+                html += `<p style="color: var(--ouro); font-weight: 700; margin: 14px 0 4px;">Síntese da Pergunta Principal</p>`;
+                html += textoParaParagrafosHtml(estrutura.sintese);
+            }
+            out.innerHTML = html;
+        }
+
         function toggleNotaSlot(idx) {
             const area = document.getElementById(`notaArea_${idx}`);
             const btn = document.getElementById(`toggleNota_${idx}`);
@@ -1632,9 +1877,21 @@
 
         // ==================== SELETOR VISUAL DE CARTAS (MODAL) ====================
         function abrirSeletorCartas(idx) {
+            modoSeletorCartas = 'slot';
             slotAlvoModal = idx;
             const rotulo = document.getElementById(`rotulo_${idx}`).value;
             document.getElementById('modalTituloSlot').innerText = `Escolher carta — ${rotulo || 'Posição ' + (idx + 1)}`;
+            document.getElementById('modalSearchInput').value = '';
+            renderizarGridModal(TODAS_AS_CARTAS);
+            document.getElementById('cardPickerModal').hidden = false;
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('modalSearchInput').focus(), 50);
+        }
+
+        function abrirSeletorCartaEstudo() {
+            modoSeletorCartas = 'estudo';
+            slotAlvoModal = null;
+            document.getElementById('modalTituloSlot').innerText = 'Escolher carta para Estudo Individual';
             document.getElementById('modalSearchInput').value = '';
             renderizarGridModal(TODAS_AS_CARTAS);
             document.getElementById('cardPickerModal').hidden = false;
@@ -1670,9 +1927,16 @@
         }
 
         function selecionarCartaModal(cardId) {
-            if (slotAlvoModal === null) return;
             const carta = TODAS_AS_CARTAS.find(c => c.id === cardId);
             if (!carta) return;
+
+            if (modoSeletorCartas === 'estudo') {
+                definirCartaEstudo(carta);
+                fecharSeletorCartas();
+                return;
+            }
+
+            if (slotAlvoModal === null) return;
             document.getElementById(`input_card_${slotAlvoModal}`).value = carta.nome;
             document.getElementById(`preview_${slotAlvoModal}`).src = carta.arquivo;
             fecharSeletorCartas();
@@ -1712,6 +1976,156 @@
             });
 
             display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ==================== ALTERNÂNCIA ENTRE MODO TIRAGEM E MODO ESTUDO INDIVIDUAL ====================
+        function alternarModoApp(modo) {
+            const secTiragem = document.getElementById('secaoTiragem');
+            const secEstudo = document.getElementById('secaoEstudo');
+            document.getElementById('modoTabTiragem').classList.toggle('active', modo === 'tiragem');
+            document.getElementById('modoTabEstudo').classList.toggle('active', modo === 'estudo');
+
+            if (modo === 'estudo') {
+                secTiragem.style.display = 'none';
+                secEstudo.style.display = '';
+            } else {
+                secEstudo.style.display = 'none';
+                secTiragem.style.display = '';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== ESTUDO INDIVIDUAL DA CARTA ====================
+
+        function definirCartaEstudo(carta) {
+            cartaEstudoSelecionada = carta;
+            estudoAtual = {
+                cardId: carta.id,
+                nomeCarta: carta.nome,
+                arquivo: carta.arquivo,
+                topicos: {}
+            };
+            document.getElementById('previewCartaEstudo').src = carta.arquivo;
+            document.getElementById('inputCartaEstudo').value = carta.nome;
+            document.getElementById('nomeCartaEstudoLabel').innerText = `Carta selecionada: ${carta.nome}`;
+            document.getElementById('tituloEstudoAtual').innerHTML = `✨ Estudo Iniciático — ${escapeTexto(carta.nome)}`;
+            document.getElementById('btnSalvarEstudo').disabled = true;
+            renderizarTopicosEstudo();
+        }
+
+        function atualizarCartaEstudoPorInput() {
+            const val = document.getElementById('inputCartaEstudo').value.toLowerCase().trim();
+            const carta = TODAS_AS_CARTAS.find(c => c.nome.toLowerCase() === val || c.busca.toLowerCase().includes(val) || c.id.toLowerCase() === val);
+            if (carta) definirCartaEstudo(carta);
+        }
+
+        function renderizarTopicosEstudo() {
+            const container = document.getElementById('topicosEstudoContainer');
+            container.innerHTML = '';
+            TOPICOS_ESTUDO.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'topico-estudo-card';
+                div.id = `topicoCard_${t.id}`;
+                div.innerHTML = `
+                    <div class="topico-estudo-header">
+                        <div>
+                            <div class="topico-estudo-titulo">${t.numero}. ${t.titulo}</div>
+                            <div class="topico-estudo-desc">${t.descricao}</div>
+                        </div>
+                        <div class="topico-estudo-acoes" id="topicoAcoes_${t.id}">
+                            <button type="button" class="btn-ia-action" id="btnGerar_${t.id}" onclick="gerarTopicoEstudo('${t.id}')" ${cartaEstudoSelecionada ? '' : 'disabled'}>📜 Gerar este tópico</button>
+                        </div>
+                    </div>
+                    <div class="topico-estudo-corpo" id="topicoCorpo_${t.id}"></div>
+                `;
+                container.appendChild(div);
+            });
+
+            if (estudoAtual && estudoAtual.topicos) {
+                Object.keys(estudoAtual.topicos).forEach(topicoId => renderizarTopicoCorpo(topicoId));
+            }
+        }
+
+        function renderizarTopicoCorpo(topicoId) {
+            const dadosTopico = estudoAtual ? estudoAtual.topicos[topicoId] : null;
+            const corpo = document.getElementById(`topicoCorpo_${topicoId}`);
+            const acoes = document.getElementById(`topicoAcoes_${topicoId}`);
+            if (!corpo || !acoes) return;
+
+            if (!dadosTopico || !dadosTopico.texto) {
+                corpo.classList.remove('show');
+                corpo.innerHTML = '';
+                return;
+            }
+
+            corpo.classList.add('show');
+            let html = escapeTexto(dadosTopico.texto).replace(/\n/g, '<br>');
+            (dadosTopico.complementos || []).forEach((c, i) => {
+                html += `<span class="aprofundamento-label">🔎 Aprofundamento ${i + 1}</span>${escapeTexto(c).replace(/\n/g, '<br>')}`;
+            });
+            corpo.innerHTML = html;
+
+            acoes.innerHTML = `
+                <button type="button" class="btn-ia-action" onclick="gerarTopicoEstudo('${topicoId}')">↻ Gerar novamente</button>
+                <button type="button" class="btn-ia-action" onclick="gerarTopicoEstudo('${topicoId}', true)">🔎 Aprofundar este tópico</button>
+            `;
+        }
+
+        function construirSystemPromptEstudo(topico) {
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, especialista em Tarot, versado em Hermetismo, Cabala, Alquimia, Astrologia e Psicologia Analítica.
+
+REGRA CRÍTICA DE FORMATO:
+Vá direto ao conteúdo. NÃO escreva saudações, introduções ou meta comentários como "vamos explorar" ou "neste tópico". Comece imediatamente pelo conteúdo.
+Você DEVE escrever em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN (sem cardinal #, asteriscos *, travessões, hífens -, sublinhados _, ou qualquer outro caractere especial de formatação). O texto pode eventualmente ser lido por um sintetizador de voz.
+
+TAREFA:
+Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente o eixo temático "${topico.titulo}" (${topico.descricao}). Não desenvolva os demais eixos temáticos do estudo completo desta carta (histórico, simbólico, psicológico, espiritual, hermético-alquímico, cabalístico, astrológico, tarot ocultista) além do eixo especificado aqui; mantenha o foco estrito neste único eixo temático. Desenvolva o texto em três a cinco parágrafos, com profundidade real, precisão conceitual e exemplos concretos, evitando generalidades vagas.`;
+        }
+
+        async function gerarTopicoEstudo(topicoId, ehComplemento = false) {
+            if (!cartaEstudoSelecionada || !estudoAtual) {
+                return showToast('Selecione uma carta para estudar primeiro.', 'erro');
+            }
+            const topico = TOPICOS_ESTUDO.find(t => t.id === topicoId);
+            if (!topico) return;
+
+            const corpo = document.getElementById(`topicoCorpo_${topicoId}`);
+            const acoes = document.getElementById(`topicoAcoes_${topicoId}`);
+            const botoesAcoes = acoes ? Array.from(acoes.querySelectorAll('button')) : [];
+            botoesAcoes.forEach(b => b.disabled = true);
+
+            corpo.classList.add('show');
+            corpo.innerHTML += `<div style="margin-top:8px;"><span class="spinner"></span> consultando os arcanos<span class="dots-loading"></span></div>`;
+
+            const nomeCarta = cartaEstudoSelecionada.nome;
+            let userPrompt;
+
+            if (!ehComplemento) {
+                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.`;
+            } else {
+                const dadosAtuais = estudoAtual.topicos[topicoId] || { texto: '', complementos: [] };
+                const complementosAnteriores = (dadosAtuais.complementos || []).join('\n\n');
+                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEste é o texto já escrito sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta:\n"${dadosAtuais.texto}"\n${complementosAnteriores ? `\nAprofundamentos complementares já feitos anteriormente sobre este mesmo eixo:\n"${complementosAnteriores}"\n` : ''}\nAgora escreva um APROFUNDAMENTO complementar sobre este mesmo eixo temático, trazendo camadas, nuances, exemplos ou conexões adicionais que ainda não foram mencionadas nos textos acima. Não repita o que já foi dito.`;
+            }
+
+            try {
+                const resposta = await fazerRequisicaoIAComFallback(construirSystemPromptEstudo(topico), userPrompt);
+
+                if (!ehComplemento) {
+                    estudoAtual.topicos[topicoId] = { texto: resposta, complementos: [] };
+                } else {
+                    if (!estudoAtual.topicos[topicoId]) estudoAtual.topicos[topicoId] = { texto: '', complementos: [] };
+                    estudoAtual.topicos[topicoId].complementos.push(resposta);
+                }
+
+                renderizarTopicoCorpo(topicoId);
+                document.getElementById('btnSalvarEstudo').disabled = false;
+                showToast(`✨ Tópico "${topico.titulo}" ${ehComplemento ? 'aprofundado' : 'gerado'} com sucesso.`, 'sucesso');
+            } catch (err) {
+                corpo.innerHTML += `<div style="color:var(--fogo); margin-top:8px;">Erro ao gerar este tópico: ${escapeTexto(err.message)}</div>`;
+                botoesAcoes.forEach(b => b.disabled = false);
+                showToast('Não foi possível gerar este tópico agora.', 'erro');
+            }
         }
 
         async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
@@ -1768,7 +2182,7 @@
             const instrucaoEstrutura = {
                 breve: 'ESTRUTURA OBRIGATÓRIA (modo breve): Produza de 2 a 3 parágrafos ao todo. Não desenvolva uma análise individual extensa para cada carta separadamente; toque no papel de cada carta de forma sucinta apenas na medida em que ela alimenta a leitura de conjunto, e dedique a maior parte do texto à análise GLOBAL, isto é, a como todas as cartas juntas, em suas posições, respondem à questão do consulente como um único movimento simbólico.',
                 padrao: 'ESTRUTURA OBRIGATÓRIA (modo padrão): Mencione brevemente, em poucas frases cada, o papel simbólico de cada carta em sua posição — sem se estender demais em nenhuma delas isoladamente — e então dedique a maior parte do texto (a porção mais longa e mais elaborada da resposta) à análise GLOBAL: a leitura de conjunto, mostrando como as cartas dialogam entre si, se reforçam, se tensionam ou se completam para responder à questão como um todo integrado. A análise global é o foco principal e deve ser proporcionalmente mais extensa do que as menções individuais.',
-                profunda: 'ESTRUTURA OBRIGATÓRIA (modo aprofundado): Esta resposta tem DUAS PARTES, nesta ordem, e ambas devem ficar claras na progressão do texto (sem usar títulos ou marcadores, apenas por meio da progressão natural do texto dissertativo):\nPARTE 1 — ANÁLISE CARTA A CARTA: dedique dois ou mais parágrafos a cada carta, na ordem de suas posições na tiragem, explorando com detalhe suas correspondências astrológicas, elementares, cabalísticas, herméticas, junguianas e alquímicas, sempre relacionando o significado da carta ao aspecto específico da questão que aquela posição representa.\nPARTE 2 — ANÁLISE GLOBAL DO CONJUNTO: depois de percorrer todas as cartas individualmente, escreva uma análise de síntese completa e extensa (esta deve ser a parte mais longa e mais importante do texto) que integre todas as cartas como um único movimento simbólico, mostrando as conexões, tensões, progressões e complementaridades entre elas, e como esse conjunto, e não cada carta isolada, responde de fato à questão do consulente.'
+                profunda: 'ESTRUTURA OBRIGATÓRIA E LITERAL (modo aprofundado — leitura carta a carta): Sua resposta DEVE seguir exatamente esta estrutura, na ordem das posições da tiragem, sem pular nenhuma etapa e sem adicionar nenhum outro tipo de título, marcador ou numeração além dos dois cabeçalhos especificados abaixo.\nPara CADA carta da tiragem, comece uma linha nova exatamente neste formato: CARTA seguido do número da posição, dois pontos, o nome completo da carta em português-brasileiro (incluindo seu número ou grau quando houver) seguido de ponto final, e então uma frase curta indicando qual aspecto específico da questão do consulente aquela carta está respondendo naquela posição, também seguida de ponto final. Um exemplo da forma da linha, apenas para ilustrar o formato e não o conteúdo: CARTA 1: A Torre. O abalo estrutural que sustenta o dilema do consulente. Logo abaixo dessa linha, sem nenhum título adicional, escreva dois ou mais parágrafos explorando com profundidade as correspondências astrológicas, elementares, cabalísticas, herméticas, junguianas e alquímicas daquela carta específica, sempre amarrando a análise ao aspecto da questão que aquela posição representa. Repita esse padrão, uma linha de cabeçalho CARTA seguida dos parágrafos daquela carta, para cada uma das cartas da tiragem, sempre respeitando a ordem das posições, uma carta de cada vez, até esgotar todas as cartas tiradas.\nDepois de concluir a análise de todas as cartas individualmente, insira uma linha exatamente neste formato: SÍNTESE DA PERGUNTA PRINCIPAL: e, na sequência, escreva a análise de síntese completa e extensa, que deve ser a parte mais longa e mais importante de todo o texto, integrando todas as cartas como um único movimento simbólico e respondendo de fato, de forma clara e direta, à questão original do consulente.\nNão utilize nenhum outro título, marcador, travessão decorativo, numeração romana ou símbolo de formatação além das duas linhas de cabeçalho descritas acima (CARTA n: e SÍNTESE DA PERGUNTA PRINCIPAL:).'
             }[profundidade] || 'ESTRUTURA OBRIGATÓRIA: Mencione brevemente o papel de cada carta e dedique a maior parte do texto à análise global de conjunto, que é o foco principal da leitura.';
 
             return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, versado em Hermetismo, Cabala, Alquimia e Psicologia Analítica.
@@ -1778,6 +2192,7 @@ Vá direto ao conteúdo da leitura. NÃO escreva saudações, introduções, met
 Você DEVE escrever sua resposta estritamente em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES.
 NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO.
 O texto será lido por um sintetizador de voz (TTS) e qualquer caractere de formatação atrapalha a leitura.
+A ÚNICA EXCEÇÃO a estas regras de formatação são as duas linhas de cabeçalho literais "CARTA n:" e "SÍNTESE DA PERGUNTA PRINCIPAL:", exigidas exclusivamente quando a estrutura do modo aprofundado (descrita abaixo) estiver em vigor. Fora desses dois cabeçalhos específicos, quando exigidos, mantenha-se estritamente ao texto corrido, sem nenhum outro tipo de marcador, título ou numeração.
 
 PRINCÍPIO CENTRAL DA LEITURA:
 Cada carta fala de um aspecto específico da questão, de acordo com o significado de sua posição na tiragem. Porém a resposta real do oráculo à pergunta do consulente emerge do CONJUNTO das cartas, não de nenhuma carta isolada. Por isso, a análise global e integradora de todas as cartas juntas é sempre o foco principal e o objetivo final de toda leitura, independentemente do nível de profundidade escolhido.
@@ -1845,7 +2260,7 @@ Lembre-se: responda em texto dissertativo corrido, sem introdução ou saudaçã
 
             try {
                 const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
-                out.innerText = respostaTexto;
+                renderizarSaidaIA(respostaTexto);
 
                 leituraAtual = {
                     data: new Date().toISOString(),
@@ -2128,13 +2543,293 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 renderizarMesaVirtual(data.cartas);
             }
 
-            const out = document.getElementById('iaOutput');
-            out.classList.remove('placeholder');
-            out.innerText = data.interpretação || 'Sem interpretação gravada.';
+            renderizarSaidaIA(data.interpretação || 'Sem interpretação gravada.');
 
             atualizarStepDots();
             showToast('📜 Leitura carregada do histórico. Você pode continuar o diálogo ou gerar uma nova síntese.', 'info');
             window.scrollTo({ top: document.getElementById('spreadDisplay').offsetTop - 20, behavior: 'smooth' });
+        }
+
+        // ==================== SALVAR, HISTÓRICO E PDF DO ESTUDO INDIVIDUAL DA CARTA ====================
+        async function salvarEstudoAtualManual() {
+            if (!cartaEstudoSelecionada || !estudoAtual || Object.keys(estudoAtual.topicos).length === 0) {
+                return showToast('Gere ao menos um tópico antes de salvar o estudo.', 'erro');
+            }
+            const btn = document.getElementById('btnSalvarEstudo');
+            btn.disabled = true;
+            try {
+                if (!window.db) throw new Error('Banco de dados indisponível.');
+                const colRef = window.fbCollection(window.db, "estudos_tarot");
+                await window.fbAddDoc(colRef, {
+                    cardId: estudoAtual.cardId,
+                    nomeCarta: estudoAtual.nomeCarta,
+                    arquivo: estudoAtual.arquivo,
+                    topicos: estudoAtual.topicos,
+                    timestamp: new Date()
+                });
+                showToast('✨ Estudo salvo com sucesso no Histórico!', 'sucesso');
+                carregarHistoricoEstudos();
+            } catch (e) {
+                showToast('Erro ao salvar estudo: ' + e.message, 'erro', 6000);
+            }
+            btn.disabled = false;
+        }
+
+        async function carregarHistoricoEstudos() {
+            const container = document.getElementById('historyEstudoGrid');
+            container.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+            if (!window.db) {
+                container.innerHTML = '<div class="empty-state">Conectando ao banco de dados...</div>';
+                return;
+            }
+
+            try {
+                const colRef = window.fbCollection(window.db, "estudos_tarot");
+                const q = window.fbQuery(colRef, window.fbOrderBy("timestamp", "desc"));
+                const querySnapshot = await window.fbGetDocs(q);
+
+                historicoEstudosCompleto = [];
+                querySnapshot.forEach((docSnap) => {
+                    historicoEstudosCompleto.push({ id: docSnap.id, data: docSnap.data() });
+                });
+
+                renderizarHistoricoEstudos(historicoEstudosCompleto);
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state" style="color:#f85149;">Erro ao carregar histórico: ${err.message}</div>`;
+            }
+        }
+
+        function renderizarHistoricoEstudos(lista) {
+            const container = document.getElementById('historyEstudoGrid');
+
+            if (lista.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhum estudo salvo encontrado.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            lista.forEach(({ id: docId, data }) => {
+                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
+                const topicosGerados = data.topicos ? Object.keys(data.topicos) : [];
+                const numerosGerados = topicosGerados
+                    .map(id => TOPICOS_ESTUDO.find(t => t.id === id)?.numero)
+                    .filter(Boolean)
+                    .join(', ');
+                const marcada = estudosSelecionadosPDF.has(docId);
+
+                const cardEl = document.createElement('div');
+                cardEl.className = `history-card${marcada ? ' selecionada' : ''}`;
+                cardEl.innerHTML = `
+                    <div class="history-card-header">
+                        <label class="history-select-checkbox" title="Selecionar para exportar em PDF">
+                            <input type="checkbox" id="checkHistEstudo_${docId}" ${marcada ? 'checked' : ''}>
+                            <span>📅 ${dateStr}</span>
+                        </label>
+                        <span>${topicosGerados.length} tópico${topicosGerados.length === 1 ? '' : 's'}</span>
+                    </div>
+                    <div class="history-card-quest">${escapeTexto(data.nomeCarta || 'Carta desconhecida')}</div>
+                    <div class="history-card-preview">${escapeTexto(numerosGerados ? `Tópicos: ${numerosGerados}` : 'Nenhum tópico gerado ainda')}</div>
+                    <div class="history-card-footer">
+                        <button type="button" class="btn-del-hist" onclick="excluirEstudoFirebase('${docId}', event)">✕ Excluir</button>
+                    </div>
+                `;
+
+                cardEl.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                        carregarEstudoDoHistorico(data);
+                    }
+                };
+
+                const checkboxEl = cardEl.querySelector(`#checkHistEstudo_${docId}`);
+                checkboxEl.onclick = (e) => e.stopPropagation();
+                checkboxEl.onchange = (e) => {
+                    toggleSelecaoHistoricoEstudo(docId, e.target.checked);
+                    cardEl.classList.toggle('selecionada', e.target.checked);
+                };
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        function filtrarHistoricoEstudos() {
+            const termo = document.getElementById('historyEstudoSearch').value.toLowerCase().trim();
+            if (!termo) return renderizarHistoricoEstudos(historicoEstudosCompleto);
+            const filtrado = historicoEstudosCompleto.filter(({ data }) => (data.nomeCarta || '').toLowerCase().includes(termo));
+            renderizarHistoricoEstudos(filtrado);
+        }
+
+        async function excluirEstudoFirebase(docId, event) {
+            event.stopPropagation();
+            if (!confirm("Deseja realmente excluir este estudo do histórico?")) return;
+
+            try {
+                const docRef = window.fbDoc(window.db, "estudos_tarot", docId);
+                await window.fbDeleteDoc(docRef);
+                showToast('Estudo excluído do histórico.', 'info');
+                carregarHistoricoEstudos();
+            } catch (err) {
+                showToast('Erro ao excluir: ' + err.message, 'erro');
+            }
+        }
+
+        function carregarEstudoDoHistorico(data) {
+            const carta = TODAS_AS_CARTAS.find(c => c.id === data.cardId) || { id: data.cardId, nome: data.nomeCarta, arquivo: data.arquivo };
+            cartaEstudoSelecionada = carta;
+            estudoAtual = {
+                cardId: data.cardId,
+                nomeCarta: data.nomeCarta,
+                arquivo: data.arquivo,
+                topicos: data.topicos || {}
+            };
+
+            document.getElementById('previewCartaEstudo').src = carta.arquivo;
+            document.getElementById('inputCartaEstudo').value = carta.nome || '';
+            document.getElementById('nomeCartaEstudoLabel').innerText = `Carta selecionada: ${carta.nome || ''}`;
+            document.getElementById('tituloEstudoAtual').innerHTML = `✨ Estudo Iniciático — ${escapeTexto(carta.nome || '')}`;
+            document.getElementById('btnSalvarEstudo').disabled = false;
+
+            renderizarTopicosEstudo();
+
+            showToast('📖 Estudo carregado do histórico. Você pode gerar novos tópicos ou aprofundar os existentes.', 'info');
+            alternarModoApp('estudo');
+        }
+
+        // ==================== SELEÇÃO E EXPORTAÇÃO EM PDF DO ESTUDO INDIVIDUAL ====================
+        function toggleSelecaoHistoricoEstudo(docId, marcado) {
+            if (marcado) estudosSelecionadosPDF.add(docId);
+            else estudosSelecionadosPDF.delete(docId);
+            atualizarBotaoExportarSelecionadasEstudo();
+        }
+
+        function atualizarBotaoExportarSelecionadasEstudo() {
+            const btn = document.getElementById('btnExportarSelecionadasPDFEstudo');
+            if (!btn) return;
+            const qtd = estudosSelecionadosPDF.size;
+            btn.disabled = qtd === 0;
+            btn.innerText = `📑 Exportar PDF (${qtd} selecionada${qtd === 1 ? '' : 's'})`;
+        }
+
+        function alternarSelecionarTodosHistoricoEstudos() {
+            const listaAtual = historicoEstudosCompleto.filter(({ id }) => !!document.getElementById(`checkHistEstudo_${id}`));
+            const todasJaMarcadas = listaAtual.length > 0 && listaAtual.every(({ id }) => estudosSelecionadosPDF.has(id));
+
+            listaAtual.forEach(({ id }) => {
+                if (todasJaMarcadas) estudosSelecionadosPDF.delete(id);
+                else estudosSelecionadosPDF.add(id);
+            });
+
+            const termo = document.getElementById('historyEstudoSearch').value.toLowerCase().trim();
+            const listaFiltrada = termo
+                ? historicoEstudosCompleto.filter(({ data }) => (data.nomeCarta || '').toLowerCase().includes(termo))
+                : historicoEstudosCompleto;
+            renderizarHistoricoEstudos(listaFiltrada);
+            atualizarBotaoExportarSelecionadasEstudo();
+        }
+
+        function montarBlocoTopicosImpressaoEstudo(topicos) {
+            if (!topicos) return '';
+            let html = '';
+            TOPICOS_ESTUDO.forEach(t => {
+                const dadosTopico = topicos[t.id];
+                if (!dadosTopico || !dadosTopico.texto) return;
+                html += `<h2 class="subtitulo-carta">${t.numero}. ${escapeTexto(t.titulo)}</h2>`;
+                html += textoParaParagrafosHtml(dadosTopico.texto);
+                (dadosTopico.complementos || []).forEach((c, i) => {
+                    html += `<div class="aprofundamento-pdf">Aprofundamento ${i + 1}</div>`;
+                    html += textoParaParagrafosHtml(c);
+                });
+            });
+            return html;
+        }
+
+        function exportarPDFHistoricoEstudoSelecionado() {
+            if (estudosSelecionadosPDF.size === 0) {
+                return showToast('Selecione ao menos um estudo salvo no histórico para exportar.', 'erro');
+            }
+
+            const selecionadas = historicoEstudosCompleto.filter(({ id }) => estudosSelecionadosPDF.has(id));
+            if (selecionadas.length === 0) {
+                return showToast('Os estudos selecionados não foram encontrados. Atualize o histórico e tente novamente.', 'erro');
+            }
+
+            const win = window.open('', '', 'width=900,height=700');
+            if (!win) {
+                return showToast('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'erro');
+            }
+
+            const folhas = selecionadas.map(({ data }, idx) => {
+                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
+                return `
+                    <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
+                        <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
+                        <div class="meta"><strong>Data:</strong> ${dateStr}</div>
+                        <div class="cartas-grid">
+                            <div class="carta-bloco">
+                                <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
+                            </div>
+                        </div>
+                        ${montarBlocoTopicosImpressaoEstudo(data.topicos)}
+                    </section>
+                `;
+            }).join('');
+
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Astro Tarot - Estudos de Cartas Exportados</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 2cm 1.8cm 2.2cm 1.8cm;
+                        }
+                        @page {
+                            @bottom-right {
+                                content: counter(page) " / " counter(pages);
+                                font-size: 9pt;
+                                color: #666;
+                            }
+                        }
+                        body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; text-align: justify; }
+                        h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; text-align: left; }
+                        h2 { color: #6e40c9; font-size: 13pt; margin-top: 6px; text-align: left; }
+                        .subtitulo-carta { color: #6e40c9; font-size: 12.5pt; margin-top: 18px; margin-bottom: 4px; text-align: left; }
+                        .meta { font-size: 10pt; color: #555; margin: 12px 0 16px; text-align: left; }
+                        p { font-size: 11pt; margin: 0 0 8px; text-align: justify; }
+                        .cartas-grid { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
+                        .carta-bloco { width: 150px; text-align: center; font-size: 9pt; }
+                        .carta-bloco img { width: 140px; height: auto; border: 1px solid #999; border-radius: 4px; }
+                        .aprofundamento-pdf { margin-top: 10px; margin-bottom: 2px; font-size: 10.5pt; font-weight: bold; color: #6e40c9; text-align: left; text-transform: uppercase; letter-spacing: 0.5px; }
+                        .folha-leitura { page-break-inside: avoid; }
+                        @media print {
+                            .folha-leitura { page-break-inside: auto; }
+                        }
+                    </style>
+                </head>
+                <body>${folhas}</body>
+                </html>
+            `);
+            win.document.close();
+
+            const imgs = win.document.images;
+            let restantes = imgs.length;
+            if (restantes === 0) {
+                setTimeout(() => win.print(), 300);
+            } else {
+                let disparado = false;
+                const tentarImprimir = () => {
+                    if (disparado) return;
+                    disparado = true;
+                    win.print();
+                };
+                Array.from(imgs).forEach(img => {
+                    img.addEventListener('load', () => { restantes--; if (restantes <= 0) tentarImprimir(); });
+                    img.addEventListener('error', () => { restantes--; if (restantes <= 0) tentarImprimir(); });
+                });
+                setTimeout(tentarImprimir, 3000);
+            }
+
+            showToast(`📑 Preparando impressão de ${selecionadas.length} estudo(s).`, 'info');
         }
 
         // ==================== EXPORTAÇÃO EM PDF (APENAS LEITURAS SALVAS NO HISTÓRICO) ====================
@@ -2195,11 +2890,32 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             `).join('')}</div>`;
         }
 
+        // Monta o corpo da análise para o PDF: se a interpretação seguir a estrutura carta a carta
+        // (modo aprofundado), gera um subtítulo por carta seguido de sua análise, e por fim a síntese
+        // da pergunta principal. Caso contrário (modos breve/padrão), cai no texto corrido único.
+        function montarBlocoAnaliseImpressao(interpretacaoTexto) {
+            const estrutura = parsearInterpretacaoPorCarta(interpretacaoTexto);
+            if (!estrutura) {
+                return `<div class="content">${textoParaParagrafosHtml(interpretacaoTexto || '')}</div>`;
+            }
+
+            let html = '';
+            estrutura.blocos.forEach(b => {
+                html += `<h2 class="subtitulo-carta">Carta ${escapeTexto(b.numero)}: ${escapeTexto(b.cabecalho)}</h2>`;
+                html += `<div class="content">${textoParaParagrafosHtml(b.texto)}</div>`;
+            });
+            if (estrutura.sintese) {
+                html += `<h2 class="subtitulo-carta">Síntese da Pergunta Principal</h2>`;
+                html += `<div class="content">${textoParaParagrafosHtml(estrutura.sintese)}</div>`;
+            }
+            return html;
+        }
+
         function montarBlocoChatImpressao(historicoChatSalvo) {
             if (!historicoChatSalvo || !historicoChatSalvo.length) return '';
             const itens = historicoChatSalvo.map(msg => {
                 if (msg.role === 'user') return `<div class="pergunta-chat">Pergunta: ${escapeTexto(msg.texto)}</div>`;
-                return `<div class="resposta-chat">${escapeTexto(msg.texto)}</div>`;
+                return `<div class="resposta-chat">${escapeTexto(msg.texto).replace(/\n/g, '<br>')}</div>`;
             }).join('');
             return `
                 <div class="secao-chat">
@@ -2229,13 +2945,12 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
                 return `
                     <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
-                        <h1>ASTRO TAROT — SÍNTESE E REGISTRO INICIÁTICO</h1>
+                        <h1>${escapeTexto(data.questao || 'Sem Pergunta')}</h1>
                         <div class="meta">
-                            <strong>Data:</strong> ${dateStr}<br>
-                            <strong>Questão Principal:</strong> ${escapeTexto(data.questao || 'Sem Pergunta')}
+                            <strong>Data:</strong> ${dateStr}
                         </div>
                         ${montarBlocoCartasImpressao(data.cartas)}
-                        <div class="content">${escapeTexto(data.interpretação || '')}</div>
+                        ${montarBlocoAnaliseImpressao(data.interpretação)}
                         ${montarBlocoChatImpressao(data.historicoChat)}
                     </section>
                 `;
@@ -2246,20 +2961,33 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 <head>
                     <title>Astro Tarot - Leituras Exportadas</title>
                     <style>
-                        body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; }
-                        h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; }
-                        h2 { color: #6e40c9; font-size: 13pt; margin-top: 6px; }
-                        .meta { font-size: 10pt; color: #555; margin: 12px 0 16px; }
-                        .content { font-size: 11pt; white-space: pre-wrap; margin-top: 10px; }
+                        @page {
+                            size: A4;
+                            margin: 2cm 1.8cm 2.2cm 1.8cm;
+                        }
+                        @page {
+                            @bottom-right {
+                                content: counter(page) " / " counter(pages);
+                                font-size: 9pt;
+                                color: #666;
+                            }
+                        }
+                        body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; text-align: justify; }
+                        h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; text-align: left; }
+                        h2 { color: #6e40c9; font-size: 13pt; margin-top: 6px; text-align: left; }
+                        .subtitulo-carta { color: #6e40c9; font-size: 12.5pt; margin-top: 18px; margin-bottom: 4px; text-align: left; }
+                        .meta { font-size: 10pt; color: #555; margin: 12px 0 16px; text-align: left; }
+                        .content { font-size: 11pt; margin-top: 6px; text-align: justify; }
+                        .content p { margin: 0 0 8px; text-align: justify; }
                         .cartas-grid { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
                         .carta-bloco { width: 120px; text-align: center; font-size: 9pt; }
                         .carta-bloco img { width: 110px; height: auto; border: 1px solid #999; border-radius: 4px; }
                         .carta-bloco img.invertida { transform: rotate(180deg); }
-                        .carta-legenda { margin-top: 4px; }
+                        .carta-legenda { margin-top: 4px; text-align: center; }
                         .tag-invertida { color: #b02a2a; }
                         .secao-chat { margin-top: 20px; border-top: 1px dashed #999; padding-top: 10px; }
-                        .pergunta-chat { font-weight: bold; margin-top: 10px; font-size: 10.5pt; }
-                        .resposta-chat { margin-top: 4px; white-space: pre-wrap; font-size: 10.5pt; }
+                        .pergunta-chat { font-weight: bold; margin-top: 10px; font-size: 10.5pt; text-align: left; }
+                        .resposta-chat { margin-top: 4px; font-size: 10.5pt; text-align: justify; }
                         .folha-leitura { page-break-inside: avoid; }
                         @media print {
                             .folha-leitura { page-break-inside: auto; }
@@ -2385,9 +3113,11 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             renderizarSlots();
             restaurarRascunho();
             atualizarStepDots();
+            renderizarTopicosEstudo();
 
             setTimeout(() => {
                 carregarHistoricoFirebase();
+                carregarHistoricoEstudos();
             }, 1000);
 
             if ('speechSynthesis' in window) {
