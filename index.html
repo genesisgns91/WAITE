@@ -14,6 +14,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Astro Tarot">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -44,23 +48,48 @@
         :root {
             --bg-principal: #0d1117;
             --bg-card: #161b22;
+            --bg-elevado: #1c2129;
             --border: #30363d;
+            --border-suave: #21262d;
             --texto: #c9d1d9;
+            --texto-fraco: #8b949e;
             --destaque: #a371f7;
+            --destaque-fraco: rgba(163, 113, 247, 0.15);
             --ouro: #e3b341;
+            --ouro-fraco: rgba(227, 179, 65, 0.15);
             --fogo: #f85149;
             --terra: #7ee787;
             --ar: #79c0ff;
             --agua: #d2a8ff;
             --ia-color: #a371f7;
+            --raio: 12px;
+            --raio-sm: 8px;
+            --sombra: 0 8px 24px rgba(0,0,0,0.35);
+            --transicao: 0.2s ease;
+            --fonte-display: 'Cinzel', serif;
+            --fonte-corpo: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: var(--fonte-corpo);
             -webkit-tap-highlight-color: transparent;
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--destaque);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         html, body {
@@ -68,7 +97,12 @@
             max-width: 100vw;
             overflow-x: hidden;
             background-color: var(--bg-principal);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(163, 113, 247, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 10%, rgba(227, 179, 65, 0.06), transparent);
+            background-attachment: fixed;
             color: var(--texto);
+            scroll-behavior: smooth;
         }
 
         body {
@@ -77,21 +111,24 @@
             align-items: center;
             min-height: 100vh;
             padding: 10px;
+            padding-bottom: 90px;
         }
 
         header {
             width: 100%;
             max-width: 1400px;
-            padding: 14px;
+            padding: 16px 14px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             text-align: center;
-            border-radius: 12px;
+            border-radius: var(--raio);
             margin-bottom: 12px;
+            position: relative;
         }
 
         header h1 {
-            font-size: 1.3rem;
+            font-family: var(--fonte-display);
+            font-size: 1.25rem;
             color: var(--ouro);
             font-weight: 700;
             letter-spacing: 2px;
@@ -100,7 +137,7 @@
 
         header p {
             font-size: 0.82rem;
-            color: #8b949e;
+            color: var(--texto-fraco);
             margin-top: 4px;
         }
 
@@ -108,20 +145,20 @@
             display: flex;
             gap: 8px;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
 
         .nav-tab {
             text-decoration: none;
-            color: #8b949e;
+            color: var(--texto-fraco);
             background: var(--bg-principal);
             border: 1px solid var(--border);
             padding: 8px 14px;
-            border-radius: 8px;
+            border-radius: var(--raio-sm);
             font-size: 0.82rem;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: all var(--transicao);
         }
 
         .nav-tab:hover {
@@ -143,15 +180,56 @@
             gap: 16px;
         }
 
+        @media (min-width: 1080px) {
+            .app-layout {
+                display: grid;
+                grid-template-columns: minmax(360px, 420px) 1fr;
+                align-items: start;
+            }
+            .col-left {
+                position: sticky;
+                top: 10px;
+                max-height: calc(100vh - 20px);
+                overflow-y: auto;
+                padding-right: 4px;
+            }
+            .col-left::-webkit-scrollbar { width: 6px; }
+            .col-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        }
+
+        .col-left, .col-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Indicador de etapas */
+        .step-indicator {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .step-dot {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            transition: background var(--transicao);
+        }
+
+        .step-dot.done { background: var(--ouro); }
+
         .controls {
             background: var(--bg-card);
             padding: 16px;
-            border-radius: 12px;
+            border-radius: var(--raio);
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             gap: 14px;
             width: 100%;
+            box-shadow: var(--sombra);
         }
 
         .section-form-title {
@@ -165,6 +243,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 8px;
         }
 
         .input-group {
@@ -175,8 +254,19 @@
 
         label {
             font-size: 0.78rem;
-            color: #8b949e;
+            color: var(--texto-fraco);
             font-weight: 600;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-counter {
+            font-size: 0.7rem;
+            color: var(--texto-fraco);
         }
 
         input, select, textarea {
@@ -184,10 +274,11 @@
             border: 1px solid var(--border);
             color: #fff;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: var(--raio-sm);
             outline: none;
             font-size: 0.9rem;
             width: 100%;
+            transition: border-color var(--transicao);
         }
 
         textarea {
@@ -196,6 +287,46 @@
         }
 
         input:focus, select:focus, textarea:focus {
+            border-color: var(--destaque);
+        }
+
+        .autosave-hint {
+            font-size: 0.68rem;
+            color: var(--texto-fraco);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 14px;
+        }
+
+        .autosave-hint.show { color: var(--terra); }
+
+        /* Chips de profundidade */
+        .chip-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            color: var(--texto);
+            padding: 7px 13px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transicao);
+        }
+
+        .chip.active {
+            background: var(--destaque);
+            border-color: var(--destaque);
+            color: #0d1117;
+        }
+
+        .chip:hover:not(.active) {
             border-color: var(--destaque);
         }
 
@@ -228,13 +359,32 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 0.8rem;
-            transition: all 0.2s;
+            transition: all var(--transicao);
         }
 
         .btn-qty.active {
             background: var(--destaque);
             color: #0d1117;
             border-color: var(--destaque);
+        }
+
+        .btn-random {
+            background: var(--bg-principal);
+            border: 1px dashed var(--ouro);
+            color: var(--ouro);
+            padding: 8px 14px;
+            border-radius: var(--raio-sm);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all var(--transicao);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-random:hover {
+            background: var(--ouro-fraco);
         }
 
         .cards-selection-grid {
@@ -255,7 +405,7 @@
             gap: 8px;
             align-items: center;
             text-align: center;
-            transition: border-color 0.2s;
+            transition: border-color var(--transicao);
         }
 
         .card-slot:hover {
@@ -277,6 +427,26 @@
             justify-content: center;
             perspective: 1000px;
             margin: 4px 0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .card-preview-container:hover .card-preview-zoom-hint {
+            opacity: 1;
+        }
+
+        .card-preview-zoom-hint {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity var(--transicao);
+            pointer-events: none;
         }
 
         .card-preview-img {
@@ -315,6 +485,30 @@
             cursor: pointer;
         }
 
+        .slot-note-toggle {
+            font-size: 0.7rem;
+            color: var(--destaque);
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 2px;
+        }
+
+        .slot-note-area {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slot-note-area.open { display: flex; }
+
+        .slot-note-area textarea {
+            min-height: 44px;
+            font-size: 0.78rem;
+        }
+
         .btn-primary {
             background-color: #238636;
             color: white;
@@ -325,12 +519,23 @@
             width: 100%;
             font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color var(--transicao);
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: #2ea043;
+        }
+
+        .btn-primary:disabled {
+            background-color: #2d4a34;
+            cursor: not-allowed;
+            opacity: 0.8;
         }
 
         .btn-save-reading {
@@ -342,7 +547,7 @@
             font-weight: bold;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transicao);
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -352,15 +557,49 @@
             background-color: #f3c14b;
         }
 
+        .btn-save-reading:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: girar 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes girar {
+            to { transform: rotate(360deg); }
+        }
+
+        .dots-loading::after {
+            content: '';
+            animation: dots 1.4s infinite steps(4);
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+
         /* Mesa Virtual de Cartas */
         .spread-display {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: var(--raio);
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            box-shadow: var(--sombra);
         }
 
         .spread-grid {
@@ -381,6 +620,12 @@
             align-items: center;
             gap: 8px;
             text-align: center;
+            animation: surgir 0.5s ease backwards;
+        }
+
+        @keyframes surgir {
+            from { opacity: 0; transform: translateY(10px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .spread-card-item img {
@@ -390,6 +635,7 @@
             border-radius: 6px;
             border: 1px solid var(--ouro);
             transition: transform 0.4s ease;
+            cursor: pointer;
         }
 
         .spread-card-item img.inverted {
@@ -415,15 +661,22 @@
             font-weight: bold;
         }
 
+        .spread-card-note {
+            font-size: 0.7rem;
+            color: var(--texto-fraco);
+            font-style: italic;
+        }
+
         /* Seção IA */
         .ia-section {
             background: var(--bg-card);
             border: 1px solid var(--ia-color);
-            border-radius: 12px;
+            border-radius: var(--raio);
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 14px;
+            box-shadow: var(--sombra);
         }
 
         .ia-header {
@@ -437,6 +690,7 @@
         }
 
         .ia-header h3 {
+            font-family: var(--fonte-display);
             color: var(--ia-color);
             font-size: 1.05rem;
             display: flex;
@@ -461,12 +715,17 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            transition: all 0.2s;
+            transition: all var(--transicao);
         }
 
-        .btn-ia-action:hover {
+        .btn-ia-action:hover:not(:disabled) {
             border-color: var(--ia-color);
             color: #fff;
+        }
+
+        .btn-ia-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .voice-controls {
@@ -484,6 +743,11 @@
             padding: 4px 8px;
             font-size: 0.8rem;
             max-width: 250px;
+            width: auto;
+        }
+
+        .voice-controls input[type="range"] {
+            width: 90px;
         }
 
         .ia-output {
@@ -495,9 +759,14 @@
             max-height: 600px;
             overflow-y: auto;
             font-size: 0.95rem;
-            line-height: 1.7;
+            line-height: 1.75;
             white-space: pre-wrap;
             color: #e6edf3;
+        }
+
+        .ia-output.placeholder {
+            color: var(--texto-fraco);
+            font-style: italic;
         }
 
         /* Chat */
@@ -557,11 +826,24 @@
         .history-section {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: var(--raio);
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            box-shadow: var(--sombra);
+        }
+
+        .history-toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .history-toolbar input[type="search"] {
+            flex: 1;
+            min-width: 160px;
         }
 
         .history-grid {
@@ -579,27 +861,62 @@
             flex-direction: column;
             gap: 6px;
             cursor: pointer;
-            transition: border-color 0.2s;
+            transition: all var(--transicao);
         }
 
         .history-card:hover {
             border-color: var(--ouro);
+            transform: translateY(-2px);
         }
 
         .history-card-header {
             display: flex;
             justify-content: space-between;
             font-size: 0.72rem;
-            color: #8b949e;
+            color: var(--texto-fraco);
+        }
+
+        .history-select-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .history-select-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .history-card.selecionada {
+            border-color: var(--ouro);
+            box-shadow: 0 0 0 1px var(--ouro);
         }
 
         .history-card-quest {
             font-weight: 600;
             color: var(--ouro);
             font-size: 0.88rem;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
+        }
+
+        .history-card-preview {
+            font-size: 0.72rem;
+            color: var(--texto-fraco);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-card-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 4px;
         }
 
         .btn-del-hist {
@@ -610,16 +927,234 @@
             border-radius: 4px;
             font-size: 0.7rem;
             cursor: pointer;
-            align-self: flex-end;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-principal) 25%, var(--border-suave) 50%, var(--bg-principal) 75%);
+            background-size: 200% 100%;
+            animation: brilho 1.4s infinite;
+            border-radius: 8px;
+            height: 84px;
+        }
+
+        @keyframes brilho {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .empty-state {
+            font-size: 0.82rem;
+            color: var(--texto-fraco);
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 2000;
+            width: min(92vw, 420px);
+            align-items: center;
+        }
+
+        .toast {
+            background: var(--bg-elevado);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: var(--raio-sm);
+            font-size: 0.85rem;
+            box-shadow: var(--sombra);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: subir-toast 0.25s ease;
+            width: 100%;
+        }
+
+        @keyframes subir-toast {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast.sucesso { border-color: var(--terra); }
+        .toast.erro { border-color: var(--fogo); }
+        .toast.info { border-color: var(--ar); }
+
+        /* FAB mobile */
+        .fab {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--destaque);
+            color: #0d1117;
+            border: none;
+            font-size: 1.4rem;
+            box-shadow: 0 6px 18px rgba(163, 113, 247, 0.5);
+            cursor: pointer;
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--transicao);
+        }
+
+        .fab:active { transform: scale(0.92); }
+
+        .fab.show { display: flex; }
+
+        /* Modal seletor de cartas */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.72);
+            z-index: 3000;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        @media (min-width: 720px) {
+            .modal-overlay { align-items: center; }
+        }
+
+        .modal-overlay[hidden] { display: none; }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 720px;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @media (min-width: 720px) {
+            .modal-box { border-radius: var(--raio); max-height: 80vh; }
+        }
+
+        .modal-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h3 {
+            font-family: var(--fonte-display);
+            color: var(--ouro);
+            font-size: 1rem;
+        }
+
+        .modal-close {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .modal-search {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-grid {
+            padding: 14px 16px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+        }
+
+        .modal-card-option {
+            background: var(--bg-principal);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all var(--transicao);
+            text-align: center;
+        }
+
+        .modal-card-option:hover {
+            border-color: var(--destaque);
+            transform: translateY(-2px);
+        }
+
+        .modal-card-option img {
+            width: 100%;
+            aspect-ratio: 2 / 3.3;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .modal-card-option span {
+            font-size: 0.65rem;
+            color: var(--texto);
+            line-height: 1.2;
+        }
+
+        /* Lightbox de imagem */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 3500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .lightbox-overlay[hidden] { display: none; }
+
+        .lightbox-overlay img {
+            max-width: 88vw;
+            max-height: 82vh;
+            border-radius: 10px;
+            border: 2px solid var(--ouro);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+
+        .lightbox-overlay img.inverted { transform: rotate(180deg); }
+
+        @media (max-width: 640px) {
+            header h1 { font-size: 1.05rem; letter-spacing: 1px; }
+            .card-preview-container, .card-preview-img { width: 100px; height: 168px; }
+            .fab { bottom: 14px; right: 14px; }
         }
     </style>
 </head>
 <body>
 
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
     <header>
         <h1>ASTRO TAROT — DIÁRIO & SÍNTESE INICIÁTICA</h1>
         <p>Registro Físico, Hermetismo, Cabala, Psicologia Analítica (Jung) & Firebase Cloud</p>
-        
+
         <nav class="app-nav">
             <a href="index.html" class="nav-tab">Mapa Natal</a>
             <a href="revolucao_solar.html" class="nav-tab">Revolução Solar</a>
@@ -631,94 +1166,155 @@
     <datalist id="listaCartasTarot"></datalist>
 
     <div class="app-layout">
-        
-        <form class="controls" onsubmit="event.preventDefault(); processarLeituraIniciatica();">
-            <div class="section-form-title">
-                <span>1. Questão Principal & Tiragem Físico-Virtual</span>
+
+        <div class="col-left">
+            <form class="controls" id="readingForm" onsubmit="event.preventDefault(); processarLeituraIniciatica();">
+
+                <div class="step-indicator" aria-hidden="true">
+                    <div class="step-dot done"></div>
+                    <div class="step-dot" id="stepDot2"></div>
+                    <div class="step-dot" id="stepDot3"></div>
+                </div>
+
+                <div class="section-form-title">
+                    <span>1. Questão Principal</span>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="questaoInput">Qual é a Questão / Pergunta Principal?</label>
+                        <span class="char-counter" id="charCounter">0</span>
+                    </div>
+                    <textarea id="questaoInput" placeholder="Ex: Qual é a dinâmica espiritual e o obstáculo arquetípico no meu atual ciclo profissional?" required oninput="onQuestaoInput()"></textarea>
+                    <div class="autosave-hint" id="autosaveHint"></div>
+                </div>
+
+                <div class="input-group">
+                    <label>Profundidade da Interpretação</label>
+                    <div class="chip-group" id="profundidadeChips">
+                        <button type="button" class="chip" data-valor="breve" onclick="definirProfundidade('breve')">Breve</button>
+                        <button type="button" class="chip active" data-valor="padrao" onclick="definirProfundidade('padrao')">Padrão</button>
+                        <button type="button" class="chip" data-valor="profunda" onclick="definirProfundidade('profunda')">Aprofundada</button>
+                    </div>
+                </div>
+
+                <div class="section-form-title" style="margin-top: 10px;">
+                    <span>2. Quantidade & Tiragem Físico-Virtual</span>
+                </div>
+
+                <div class="input-group">
+                    <label>Quantidade de Cartas Tiradas na Mesa (1 a 12):</label>
+                    <div class="qty-controls">
+                        <select id="selectQtdCartas" onchange="definirQtdCartas(parseInt(this.value))"></select>
+                        <div class="qty-selector">
+                            <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1</button>
+                            <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3</button>
+                            <button type="button" class="btn-qty active" onclick="definirQtdCartas(5)">5</button>
+                            <button type="button" class="btn-qty" onclick="definirQtdCartas(7)">7</button>
+                            <button type="button" class="btn-qty" onclick="definirQtdCartas(10)">10 (Cruz Celta)</button>
+                            <button type="button" class="btn-qty" onclick="definirQtdCartas(12)">12 (Astrológica)</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-random" onclick="sortearCartasAleatorias()">🎲 Sortear cartas aleatoriamente</button>
+                </div>
+
+                <div class="section-form-title" style="margin-top: 10px;">
+                    <span>3. Definição e Busca das Cartas Físicas</span>
+                    <span style="font-size:0.68rem; color: var(--texto-fraco); text-transform:none; letter-spacing:0;">toque na imagem para escolher visualmente</span>
+                </div>
+
+                <div id="slotsContainer" class="cards-selection-grid"></div>
+
+                <button type="submit" class="btn-primary" id="btnSintetizar">
+                    <span id="btnSintetizarLabel">✨ SINTETIZAR LEITURA INICIÁTICA</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="col-right">
+            <div class="spread-display" id="spreadDisplay" style="display: none;">
+                <div class="section-form-title">
+                    <span>Mesa Virtual da Tiragem</span>
+                </div>
+                <div id="spreadGrid" class="spread-grid"></div>
             </div>
 
-            <div class="input-group">
-                <label for="questaoInput">Qual é a Questão / Pergunta Principal?</label>
-                <textarea id="questaoInput" placeholder="Ex: Qual é a dinâmica espiritual e o obstáculo arquetípico no meu atual ciclo profissional?" required></textarea>
-            </div>
+            <div class="ia-section">
+                <div class="ia-header">
+                    <h3>✨ Interpretação Iniciática & Alquímica</h3>
+                    <div class="ia-actions">
+                        <button class="btn-ia-action" id="btnNovaInterpretacao" onclick="gerarOuRegerarIA()">🤖 Nova Interpretação</button>
+                        <button class="btn-ia-action" onclick="copiarTextoIA()">📋 Copiar</button>
+                        <button class="btn-ia-action" onclick="exportarTXT()">📄 Exportar TXT</button>
+                    </div>
+                </div>
 
-            <div class="input-group">
-                <label>Quantidade de Cartas Tiradas na Mesa (1 a 12):</label>
-                <div class="qty-controls">
-                    <select id="selectQtdCartas" onchange="definirQtdCartas(parseInt(this.value))"></select>
-                    <div class="qty-selector">
-                        <button type="button" class="btn-qty" onclick="definirQtdCartas(1)">1</button>
-                        <button type="button" class="btn-qty" onclick="definirQtdCartas(3)">3</button>
-                        <button type="button" class="btn-qty active" onclick="definirQtdCartas(5)">5</button>
-                        <button type="button" class="btn-qty" onclick="definirQtdCartas(7)">7</button>
-                        <button type="button" class="btn-qty" onclick="definirQtdCartas(10)">10 (Cruz Celta)</button>
-                        <button type="button" class="btn-qty" onclick="definirQtdCartas(12)">12 (Astrológica)</button>
+                <div class="voice-controls">
+                    <label for="voiceSelect">📢 Voz PT-BR / Bilíngue:</label>
+                    <select id="voiceSelect"></select>
+                    <label for="voiceRate" style="margin-left:4px;">Velocidade</label>
+                    <input type="range" id="voiceRate" min="0.6" max="1.4" step="0.1" value="1">
+                    <button class="btn-ia-action" onclick="falarTextoIA(document.getElementById('iaOutput').innerText)">▶ Ouvir</button>
+                    <button class="btn-ia-action" onclick="pausarVozIA()">⏸ Pausar</button>
+                    <button class="btn-ia-action" onclick="pararVozIA()">⏹ Parar</button>
+                </div>
+
+                <div id="iaOutput" class="ia-output placeholder" aria-live="polite">Defina sua questão, selecione as cartas tiradas do seu baralho físico e clique no botão acima para sintetizar a leitura.</div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                    <button type="button" class="btn-save-reading" id="btnSalvarLeitura" onclick="salvarLeituraAtualManual()">💾 Guardar esta Leitura no Histórico</button>
+                </div>
+
+                <div class="chat-section">
+                    <div class="section-form-title" style="font-size: 0.8rem; color: var(--ar);">
+                        <span>💬 Diálogo de Aprofundamento com a IA</span>
+                    </div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Faça uma pergunta sobre os símbolos ou aspectos desta leitura..." onkeypress="if(event.key==='Enter') enviarPerguntaChat();">
+                        <button type="button" class="btn-ia-action" id="btnEnviarChat" style="background: var(--destaque); color:#0d1117; font-weight:bold;" onclick="enviarPerguntaChat()">Enviar</button>
                     </div>
                 </div>
             </div>
 
-            <div class="section-form-title" style="margin-top: 10px;">
-                <span>2. Definição e Busca das Cartas Físicas</span>
-            </div>
-
-            <div id="slotsContainer" class="cards-selection-grid"></div>
-
-            <button type="submit" class="btn-primary">✨ SINTETIZAR LEITURA INICIÁTICA</button>
-        </form>
-
-        <div class="spread-display" id="spreadDisplay" style="display: none;">
-            <div class="section-form-title">
-                <span>Mesa Virtual da Tiragem</span>
-            </div>
-            <div id="spreadGrid" class="spread-grid"></div>
-        </div>
-
-        <div class="ia-section">
-            <div class="ia-header">
-                <h3>✨ Interpretação Iniciática & Alquímica</h3>
-                <div class="ia-actions">
-                    <button class="btn-ia-action" onclick="gerarOuRegerarIA()">🤖 Nova Interpretação</button>
-                    <button class="btn-ia-action" onclick="exportarTXT()">📄 Exportar TXT</button>
-                    <button class="btn-ia-action" onclick="exportarPDF()">📑 Exportar PDF</button>
+            <div class="history-section">
+                <div class="section-form-title">
+                    <span>📜 Histórico de Leituras Salvas (Firebase Cloud)</span>
+                    <button type="button" class="btn-ia-action" onclick="carregarHistoricoFirebase()">🔄 Atualizar</button>
                 </div>
-            </div>
-
-            <div class="voice-controls">
-                <label for="voiceSelect">📢 Voz PT-BR / Bilíngue:</label>
-                <select id="voiceSelect"></select>
-                <button class="btn-ia-action" onclick="falarTextoIA(document.getElementById('iaOutput').innerText)">▶ Ouvir Interpretação</button>
-                <button class="btn-ia-action" onclick="pausarVozIA()">⏸ Pausar</button>
-                <button class="btn-ia-action" onclick="pararVozIA()">⏹ Parar</button>
-            </div>
-
-            <div id="iaOutput" class="ia-output">Defina sua questão, selecione as cartas tiradas do seu baralho físico e clique no botão acima para sintetizar a leitura.</div>
-
-            <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                <button type="button" class="btn-save-reading" onclick="salvarLeituraAtualManual()">💾 Guardar esta Leitura no Histórico</button>
-            </div>
-
-            <div class="chat-section">
-                <div class="section-form-title" style="font-size: 0.8rem; color: var(--ar);">
-                    <span>💬 Diálogo de Aprofundamento com a IA</span>
+                <div class="history-toolbar">
+                    <input type="search" id="historySearch" placeholder="🔎 Buscar por palavra na questão..." oninput="filtrarHistorico()">
+                    <button type="button" class="btn-ia-action" id="btnSelecionarTodosHist" onclick="alternarSelecionarTodosHistorico()">☑️ Selecionar todas</button>
+                    <button type="button" class="btn-save-reading" id="btnExportarSelecionadasPDF" onclick="exportarPDFHistoricoSelecionado()" disabled>📑 Exportar PDF (0 selecionadas)</button>
                 </div>
-                <div id="chatMessages" class="chat-messages"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Faça uma pergunta sobre os símbolos ou aspectos desta leitura..." onkeypress="if(event.key==='Enter') enviarPerguntaChat();">
-                    <button type="button" class="btn-ia-action" style="background: var(--destaque); color:#0d1117; font-weight:bold;" onclick="enviarPerguntaChat()">Enviar</button>
+                <div class="autosave-hint show" style="text-align:center;">A exportação em PDF está disponível apenas para leituras já salvas no histórico. Marque a caixa em cada leitura para incluí-la.</div>
+                <div id="historyGrid" class="history-grid">
+                    <div class="skeleton"></div>
+                    <div class="skeleton"></div>
+                    <div class="skeleton"></div>
                 </div>
             </div>
         </div>
 
-        <div class="history-section">
-            <div class="section-form-title">
-                <span>📜 Histórico de Leituras Salvas (Firebase Cloud)</span>
-                <button type="button" class="btn-ia-action" onclick="carregarHistoricoFirebase()">🔄 Atualizar</button>
-            </div>
-            <div id="historyGrid" class="history-grid">
-                <div style="font-size:0.8rem; color:#8b949e;">Carregando histórico do banco de dados...</div>
-            </div>
-        </div>
+    </div>
 
+    <button class="fab" id="fabSubmit" title="Sintetizar leitura" onclick="document.getElementById('readingForm').requestSubmit()">✨</button>
+
+    <div class="modal-overlay" id="cardPickerModal" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTituloSlot">Escolher carta</h3>
+                <button class="modal-close" onclick="fecharSeletorCartas()" aria-label="Fechar">✕</button>
+            </div>
+            <div class="modal-search">
+                <input type="search" id="modalSearchInput" placeholder="Buscar carta (ex: lua, espadas, 7...)" oninput="filtrarModalCartas()">
+            </div>
+            <div class="modal-grid" id="modalGrid"></div>
+        </div>
+    </div>
+
+    <div class="lightbox-overlay" id="lightboxOverlay" hidden onclick="fecharLightbox()">
+        <img id="lightboxImg" src="" alt="Carta ampliada">
     </div>
 
     <script>
@@ -828,7 +1424,7 @@
             6: ["1. Passado", "2. Presente", "3. Futuro", "4. O que ajuda", "5. O que obstaculiza", "6. Síntese Final"],
             7: ["1. Estado Espiritual", "2. Influência Externa", "3. Desafio Central", "4. Causa Raiz", "5. Potencial Oculto", "6. Conselho da Razão", "7. Síntese Alquímica"],
             10: [
-                "1. Situação Atual", "2. O Obstáculo", "3. Inconsciente", "4. Passado Recente", 
+                "1. Situação Atual", "2. O Obstáculo", "3. Inconsciente", "4. Passado Recente",
                 "5. Anseios Superiores", "6. Futuro Próximo", "7. Atitude Pessoal", "8. Ambiente Externo", "9. Desejos e Temores", "10. Resultado Final"
             ],
             12: [
@@ -842,6 +1438,62 @@
         let leituraAtual = null;
         let historicoChat = [];
         let vozesFiltradas = [];
+        let profundidadeSelecionada = 'padrao';
+        let slotAlvoModal = null;
+        let historicoCompleto = [];
+        let leiturasSelecionadasPDF = new Set();
+
+        // ==================== TOASTS (substitui alert() em fluxos não bloqueantes) ====================
+        function showToast(mensagem, tipo = 'info', duracaoMs = 3600) {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast ${tipo}`;
+            el.textContent = mensagem;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => el.remove(), 300);
+            }, duracaoMs);
+        }
+
+        // ==================== AUTOSAVE DA QUESTÃO (localStorage) ====================
+        function onQuestaoInput() {
+            const val = document.getElementById('questaoInput').value;
+            document.getElementById('charCounter').innerText = val.length;
+            atualizarStepDots();
+            try {
+                localStorage.setItem('astrotarot_rascunho_questao', val);
+                const hint = document.getElementById('autosaveHint');
+                hint.innerText = val ? '✓ rascunho salvo automaticamente neste dispositivo' : '';
+                hint.classList.toggle('show', !!val);
+            } catch (e) { /* localStorage indisponível - ignora silenciosamente */ }
+        }
+
+        function restaurarRascunho() {
+            try {
+                const val = localStorage.getItem('astrotarot_rascunho_questao');
+                if (val) {
+                    document.getElementById('questaoInput').value = val;
+                    onQuestaoInput();
+                }
+            } catch (e) { /* ignora */ }
+        }
+
+        function atualizarStepDots() {
+            const temQuestao = document.getElementById('questaoInput').value.trim().length > 0;
+            const temCartas = qtdCartasSelecionada > 0;
+            document.getElementById('stepDot2').classList.toggle('done', temQuestao);
+            document.getElementById('stepDot3').classList.toggle('done', temQuestao && temCartas && !!leituraAtual);
+        }
+
+        // ==================== PROFUNDIDADE ====================
+        function definirProfundidade(valor) {
+            profundidadeSelecionada = valor;
+            document.querySelectorAll('#profundidadeChips .chip').forEach(c => {
+                c.classList.toggle('active', c.dataset.valor === valor);
+            });
+        }
 
         function popularDatalist() {
             const dl = document.getElementById('listaCartasTarot');
@@ -868,7 +1520,7 @@
         function definirQtdCartas(qtd) {
             qtdCartasSelecionada = qtd;
             document.getElementById('selectQtdCartas').value = qtd;
-            
+
             document.querySelectorAll('.btn-qty').forEach(b => {
                 const bQtd = parseInt(b.innerText);
                 if (bQtd === qtd || (qtd === 10 && b.innerText.includes('10')) || (qtd === 12 && b.innerText.includes('12'))) {
@@ -878,9 +1530,10 @@
                 }
             });
             renderizarSlots();
+            atualizarStepDots();
         }
 
-        function renderizarSlots() {
+        function renderizarSlots(cartasPreDefinidas) {
             const container = document.getElementById('slotsContainer');
             container.innerHTML = '';
             const rotulos = ROTULOS_PADRAO[qtdCartasSelecionada] || [];
@@ -889,26 +1542,51 @@
                 const slotDiv = document.createElement('div');
                 slotDiv.className = 'card-slot';
 
-                const rotuloPadrao = rotulos[i] || `${i + 1}. Posição ${i + 1}`;
-                const cartaInicial = TODAS_AS_CARTAS[i % TODAS_AS_CARTAS.length];
+                const predefinida = cartasPreDefinidas && cartasPreDefinidas[i];
+                const rotuloPadrao = (predefinida && predefinida.posicao) || rotulos[i] || `${i + 1}. Posição ${i + 1}`;
+                const cartaInicial = (predefinida && TODAS_AS_CARTAS.find(c => c.id === predefinida.cardId)) || TODAS_AS_CARTAS[i % TODAS_AS_CARTAS.length];
+                const invertidaInicial = predefinida ? !!predefinida.invertida : false;
+                const notaInicial = (predefinida && predefinida.nota) || '';
 
                 slotDiv.innerHTML = `
                     <div class="card-slot-header">POSIÇÃO ${i + 1}</div>
-                    <input type="text" id="rotulo_${i}" value="${rotuloPadrao}" placeholder="Significado da Posição">
-                    
-                    <div class="card-preview-container">
-                        <img id="preview_${i}" src="${cartaInicial.arquivo}" class="card-preview-img" alt="Preview">
+                    <input type="text" id="rotulo_${i}" value="${escapeAtributo(rotuloPadrao)}" placeholder="Significado da Posição">
+
+                    <div class="card-preview-container" onclick="abrirSeletorCartas(${i})" role="button" tabindex="0" aria-label="Escolher carta visualmente para a posição ${i + 1}">
+                        <img id="preview_${i}" src="${cartaInicial.arquivo}" class="card-preview-img ${invertidaInicial ? 'inverted' : ''}" alt="Preview da carta">
+                        <span class="card-preview-zoom-hint">🔍 escolher</span>
                     </div>
 
                     <label class="invert-toggle">
-                        <input type="checkbox" id="invert_${i}" onchange="toggleInverterCard(${i})">
+                        <input type="checkbox" id="invert_${i}" ${invertidaInicial ? 'checked' : ''} onchange="toggleInverterCard(${i})">
                         <span>🔄 Carta Invertida</span>
                     </label>
 
-                    <input type="text" id="input_card_${i}" list="listaCartasTarot" value="${cartaInicial.nome}" placeholder="Digite o nome da carta..." onchange="atualizarCardPorInput(${i})" onkeyup="atualizarCardPorInput(${i})">
+                    <input type="text" id="input_card_${i}" list="listaCartasTarot" value="${escapeAtributo(cartaInicial.nome)}" placeholder="Digite o nome da carta..." onchange="atualizarCardPorInput(${i})" onkeyup="atualizarCardPorInput(${i})">
+
+                    <button type="button" class="slot-note-toggle" onclick="toggleNotaSlot(${i})" id="toggleNota_${i}">+ impressão pessoal (opcional)</button>
+                    <div class="slot-note-area ${notaInicial ? 'open' : ''}" id="notaArea_${i}">
+                        <textarea id="nota_${i}" placeholder="O que essa carta evoca em você diante da pergunta?">${escapeTexto(notaInicial)}</textarea>
+                    </div>
                 `;
                 container.appendChild(slotDiv);
             }
+        }
+
+        function escapeAtributo(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        }
+
+        function escapeTexto(str) {
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function toggleNotaSlot(idx) {
+            const area = document.getElementById(`notaArea_${idx}`);
+            const btn = document.getElementById(`toggleNota_${idx}`);
+            const abrindo = !area.classList.contains('open');
+            area.classList.toggle('open');
+            btn.innerText = abrindo ? '− ocultar impressão pessoal' : '+ impressão pessoal (opcional)';
         }
 
         function atualizarCardPorInput(idx) {
@@ -929,22 +1607,111 @@
             }
         }
 
+        // ==================== SORTEIO ALEATÓRIO ====================
+        function sortearCartasAleatorias() {
+            const usadas = new Set();
+            for (let i = 0; i < qtdCartasSelecionada; i++) {
+                let carta;
+                let tentativas = 0;
+                do {
+                    carta = TODAS_AS_CARTAS[Math.floor(Math.random() * TODAS_AS_CARTAS.length)];
+                    tentativas++;
+                } while (usadas.has(carta.id) && tentativas < 200);
+                usadas.add(carta.id);
+
+                const invertida = Math.random() < 0.25;
+
+                document.getElementById(`input_card_${i}`).value = carta.nome;
+                document.getElementById(`preview_${i}`).src = carta.arquivo;
+                document.getElementById(`invert_${i}`).checked = invertida;
+                const img = document.getElementById(`preview_${i}`);
+                img.classList.toggle('inverted', invertida);
+            }
+            showToast('🎲 Cartas sorteadas virtualmente. Ajuste manualmente se sua tiragem física for diferente.', 'info');
+        }
+
+        // ==================== SELETOR VISUAL DE CARTAS (MODAL) ====================
+        function abrirSeletorCartas(idx) {
+            slotAlvoModal = idx;
+            const rotulo = document.getElementById(`rotulo_${idx}`).value;
+            document.getElementById('modalTituloSlot').innerText = `Escolher carta — ${rotulo || 'Posição ' + (idx + 1)}`;
+            document.getElementById('modalSearchInput').value = '';
+            renderizarGridModal(TODAS_AS_CARTAS);
+            document.getElementById('cardPickerModal').hidden = false;
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('modalSearchInput').focus(), 50);
+        }
+
+        function fecharSeletorCartas() {
+            document.getElementById('cardPickerModal').hidden = true;
+            document.body.style.overflow = '';
+            slotAlvoModal = null;
+        }
+
+        function renderizarGridModal(lista) {
+            const grid = document.getElementById('modalGrid');
+            if (lista.length === 0) {
+                grid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">Nenhuma carta encontrada.</div>';
+                return;
+            }
+            grid.innerHTML = lista.map(c => `
+                <div class="modal-card-option" onclick="selecionarCartaModal('${c.id}')">
+                    <img src="${c.arquivo}" alt="${escapeAtributo(c.nome)}" loading="lazy">
+                    <span>${c.nome}</span>
+                </div>
+            `).join('');
+        }
+
+        function filtrarModalCartas() {
+            const termo = document.getElementById('modalSearchInput').value.toLowerCase().trim();
+            if (!termo) return renderizarGridModal(TODAS_AS_CARTAS);
+            const filtradas = TODAS_AS_CARTAS.filter(c => c.busca.toLowerCase().includes(termo) || c.nome.toLowerCase().includes(termo));
+            renderizarGridModal(filtradas);
+        }
+
+        function selecionarCartaModal(cardId) {
+            if (slotAlvoModal === null) return;
+            const carta = TODAS_AS_CARTAS.find(c => c.id === cardId);
+            if (!carta) return;
+            document.getElementById(`input_card_${slotAlvoModal}`).value = carta.nome;
+            document.getElementById(`preview_${slotAlvoModal}`).src = carta.arquivo;
+            fecharSeletorCartas();
+        }
+
+        // ==================== LIGHTBOX ====================
+        function abrirLightbox(src, invertida) {
+            const img = document.getElementById('lightboxImg');
+            img.src = src;
+            img.classList.toggle('inverted', !!invertida);
+            document.getElementById('lightboxOverlay').hidden = false;
+        }
+
+        function fecharLightbox() {
+            document.getElementById('lightboxOverlay').hidden = true;
+        }
+
         function renderizarMesaVirtual(cartasTiradas) {
             const display = document.getElementById('spreadDisplay');
             const grid = document.getElementById('spreadGrid');
             grid.innerHTML = '';
             display.style.display = 'flex';
 
-            cartasTiradas.forEach(item => {
-                grid.innerHTML += `
-                    <div class="spread-card-item">
-                        <div class="spread-position-title">${item.posicao}</div>
-                        <img src="${item.arquivo}" alt="${item.nomeCarta}" class="${item.invertida ? 'inverted' : ''}">
-                        <div class="spread-card-name">${item.nomeCarta}</div>
-                        ${item.invertida ? '<div class="spread-card-status">🔄 INVERTIDA</div>' : ''}
-                    </div>
+            cartasTiradas.forEach((item, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'spread-card-item';
+                wrapper.style.animationDelay = `${idx * 0.06}s`;
+                wrapper.innerHTML = `
+                    <div class="spread-position-title">${item.posicao}</div>
+                    <img src="${item.arquivo}" alt="${escapeAtributo(item.nomeCarta)}" class="${item.invertida ? 'inverted' : ''}">
+                    <div class="spread-card-name">${item.nomeCarta}</div>
+                    ${item.invertida ? '<div class="spread-card-status">🔄 INVERTIDA</div>' : ''}
+                    ${item.nota ? `<div class="spread-card-note">"${escapeTexto(item.nota)}"</div>` : ''}
                 `;
+                wrapper.querySelector('img').onclick = () => abrirLightbox(item.arquivo, item.invertida);
+                grid.appendChild(wrapper);
             });
+
+            display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
@@ -997,31 +1764,50 @@
             throw new Error(`Serviço indisponível no momento. (${ultimoErro ? ultimoErro.message : 'Sem resposta'})`);
         }
 
-        function construirSystemPrompt() {
-            return `Você é um Ocultista e Analista Junguiano.
+        function construirSystemPrompt(profundidade) {
+            const instrucaoEstrutura = {
+                breve: 'ESTRUTURA OBRIGATÓRIA (modo breve): Produza de 2 a 3 parágrafos ao todo. Não desenvolva uma análise individual extensa para cada carta separadamente; toque no papel de cada carta de forma sucinta apenas na medida em que ela alimenta a leitura de conjunto, e dedique a maior parte do texto à análise GLOBAL, isto é, a como todas as cartas juntas, em suas posições, respondem à questão do consulente como um único movimento simbólico.',
+                padrao: 'ESTRUTURA OBRIGATÓRIA (modo padrão): Mencione brevemente, em poucas frases cada, o papel simbólico de cada carta em sua posição — sem se estender demais em nenhuma delas isoladamente — e então dedique a maior parte do texto (a porção mais longa e mais elaborada da resposta) à análise GLOBAL: a leitura de conjunto, mostrando como as cartas dialogam entre si, se reforçam, se tensionam ou se completam para responder à questão como um todo integrado. A análise global é o foco principal e deve ser proporcionalmente mais extensa do que as menções individuais.',
+                profunda: 'ESTRUTURA OBRIGATÓRIA (modo aprofundado): Esta resposta tem DUAS PARTES, nesta ordem, e ambas devem ficar claras na progressão do texto (sem usar títulos ou marcadores, apenas por meio da progressão natural do texto dissertativo):\nPARTE 1 — ANÁLISE CARTA A CARTA: dedique dois ou mais parágrafos a cada carta, na ordem de suas posições na tiragem, explorando com detalhe suas correspondências astrológicas, elementares, cabalísticas, herméticas, junguianas e alquímicas, sempre relacionando o significado da carta ao aspecto específico da questão que aquela posição representa.\nPARTE 2 — ANÁLISE GLOBAL DO CONJUNTO: depois de percorrer todas as cartas individualmente, escreva uma análise de síntese completa e extensa (esta deve ser a parte mais longa e mais importante do texto) que integre todas as cartas como um único movimento simbólico, mostrando as conexões, tensões, progressões e complementaridades entre elas, e como esse conjunto, e não cada carta isolada, responde de fato à questão do consulente.'
+            }[profundidade] || 'ESTRUTURA OBRIGATÓRIA: Mencione brevemente o papel de cada carta e dedique a maior parte do texto à análise global de conjunto, que é o foco principal da leitura.';
+
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, versado em Hermetismo, Cabala, Alquimia e Psicologia Analítica.
+
 REGRA CRÍTICA DE FORMATO:
+Vá direto ao conteúdo da leitura. NÃO escreva saudações, introduções, meta comentários sobre o que você vai fazer, nem frases de abertura como "vamos analisar" ou "nesta leitura". Comece imediatamente pela primeira carta ou pela contextualização simbólica da questão.
 Você DEVE escrever sua resposta estritamente em TEXTO DISSERTATIVO LISO, PARÁGRAFOS CORRIDOS E TEXTO SIMPLES.
 NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN. É PROIBIDO O USO DE cardinal (#), asteriscos (*), travessões, hífens (-), sublinhados (_) OU QUALQUER OUTRO CARACTERE ESPECIAL DE FORMATAÇÃO.
 O texto será lido por um sintetizador de voz (TTS) e qualquer caractere de formatação atrapalha a leitura.
 
-CONTEÚDO DA RESPOSTA:
-1. Hermetismo e Golden Dawn.
-2. Cabala e Árvore da Vida: Ao citar qualquer termo cabalístico, explique em linguagem fluida o que ele representa psiquicamente.
-3. Psicologia Junguiana: Arquétipos, Inconsciente e Individuação.
-4. Cartas Invertidas: Se houver indicação de carta invertida, explique a energia bloqueada ou a sombra do arcano.
-5. Conclua com um conselho prático integrador.`;
+PRINCÍPIO CENTRAL DA LEITURA:
+Cada carta fala de um aspecto específico da questão, de acordo com o significado de sua posição na tiragem. Porém a resposta real do oráculo à pergunta do consulente emerge do CONJUNTO das cartas, não de nenhuma carta isolada. Por isso, a análise global e integradora de todas as cartas juntas é sempre o foco principal e o objetivo final de toda leitura, independentemente do nível de profundidade escolhido.
+
+${instrucaoEstrutura}
+
+PERSPECTIVAS OBRIGATÓRIAS A ARTICULAR (tanto nas menções individuais quanto, principalmente, na análise global):
+1. Golden Dawn: atribuições astrológicas, elementares e de trilha na Árvore da Vida de cada arcano, conforme o sistema da Ordem Hermética da Golden Dawn.
+2. Cabala: ao citar qualquer termo cabalístico (sefirot, caminhos, mundos), explique em linguagem fluida e acessível o que ele representa psiquicamente, sem pressupor conhecimento prévio do consulente.
+3. Psicologia Junguiana: arquétipos, inconsciente pessoal e coletivo, sombra, anima/animus e o processo de individuação evocados pelo conjunto das cartas.
+4. Hermetismo e Ocultismo: os princípios herméticos (correspondência, polaridade, vibração, entre outros) e as correspondências simbólicas e ocultas pertinentes.
+5. Alquimia: relacione as cartas às operações alquímicas (nigredo, albedo, citrinitas, rubedo) e à ideia de transmutação psíquica, especialmente na leitura do conjunto.
+6. Cartas Invertidas: se houver indicação de carta invertida, explique a energia bloqueada, represada ou a sombra do arcano nessa posição, e como isso afeta a leitura global.
+
+Se o consulente tiver registrado uma impressão pessoal sobre alguma carta, incorpore essa percepção ao diálogo interpretativo, articulando-a com as camadas simbólicas acima, sem simplesmente repeti-la.
+
+Conclua a análise global com um conselho prático e integrador, coerente com todas as camadas simbólicas exploradas e com a questão original do consulente.`;
         }
 
         async function processarLeituraIniciatica() {
             const questao = document.getElementById('questaoInput').value;
-            if (!questao) return alert("Por favor, digite a Questão Principal.");
+            if (!questao) return showToast('Por favor, digite a Questão Principal.', 'erro');
 
             const cartasTiradas = [];
             for (let i = 0; i < qtdCartasSelecionada; i++) {
                 const rotulo = document.getElementById(`rotulo_${i}`).value || `Posição ${i + 1}`;
                 const valInput = document.getElementById(`input_card_${i}`).value.toLowerCase().trim();
                 const isInverted = document.getElementById(`invert_${i}`).checked;
-                
+                const nota = (document.getElementById(`nota_${i}`)?.value || '').trim();
+
                 const cartaObj = TODAS_AS_CARTAS.find(c => c.nome.toLowerCase() === valInput || c.busca.toLowerCase().includes(valInput) || c.id.toLowerCase() === valInput) || TODAS_AS_CARTAS[0];
 
                 cartasTiradas.push({
@@ -1029,43 +1815,84 @@ CONTEÚDO DA RESPOSTA:
                     cardId: cartaObj.id,
                     nomeCarta: cartaObj.nome,
                     arquivo: cartaObj.arquivo,
-                    invertida: isInverted
+                    invertida: isInverted,
+                    nota: nota
                 });
             }
 
             renderizarMesaVirtual(cartasTiradas);
+            definirEstadoCarregandoPrincipal(true);
 
             const out = document.getElementById('iaOutput');
-            out.innerText = "Sintetizando a leitura em texto dissertativo para áudio... Aguarde...";
+            out.classList.remove('placeholder');
+            out.innerText = "Sintetizando a leitura em texto dissertativo para áudio...";
             document.getElementById('chatMessages').innerHTML = '';
             historicoChat = [];
+
+            const linhasCartas = cartasTiradas.map((c, idx) => {
+                let linha = `Posição ${idx + 1} (${c.posicao}): ${c.nomeCarta} ${c.invertida ? 'INVERTIDA' : 'NORMAL'}`;
+                if (c.nota) linha += ` — impressão pessoal do consulente: "${c.nota}"`;
+                return linha;
+            }).join('\n');
 
             const userPrompt = `
 QUESTÃO: "${questao}"
 
 CARTAS TIRADAS:
-${cartasTiradas.map((c, idx) => `Posição ${idx + 1} (${c.posicao}): ${c.nomeCarta} ${c.invertida ? 'INVERTIDA' : 'NORMAL'}`).join('\n')}
+${linhasCartas}
 
-Lembre-se: Responda em texto dissertativo corrido sem usar nenhum asterisco, cardinal ou formatação especial.`;
+Lembre-se: responda em texto dissertativo corrido, sem introdução ou saudação, e sem nenhum asterisco, cardinal ou formatação especial.`;
 
             try {
-                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
+                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
                 out.innerText = respostaTexto;
 
                 leituraAtual = {
                     data: new Date().toISOString(),
                     questao: questao,
                     cartas: cartasTiradas,
-                    interpretação: respostaTexto
+                    interpretação: respostaTexto,
+                    profundidade: profundidadeSelecionada
                 };
+                historicoChat = [];
+                atualizarStepDots();
+                showToast('✨ Leitura sintetizada com sucesso.', 'sucesso');
             } catch (err) {
                 out.innerText = `Erro na síntese da IA: ${err.message}`;
+                showToast('Não foi possível sintetizar a leitura agora.', 'erro');
+            } finally {
+                definirEstadoCarregandoPrincipal(false);
+            }
+        }
+
+        function definirEstadoCarregandoPrincipal(carregando) {
+            const btn = document.getElementById('btnSintetizar');
+            const label = document.getElementById('btnSintetizarLabel');
+            btn.disabled = carregando;
+            document.getElementById('btnNovaInterpretacao').disabled = carregando;
+            document.getElementById('btnSalvarLeitura').disabled = carregando;
+            if (carregando) {
+                label.innerHTML = `<span class="spinner"></span> Consultando os Arcanos<span class="dots-loading"></span>`;
+            } else {
+                label.innerText = '✨ SINTETIZAR LEITURA INICIÁTICA';
             }
         }
 
         async function gerarOuRegerarIA() {
-            if (!leituraAtual) return alert("Monte uma tiragem para gerar a interpretação.");
+            if (!leituraAtual) return showToast('Monte uma tiragem para gerar a interpretação.', 'erro');
             processarLeituraIniciatica();
+        }
+
+        // ==================== CÓPIA RÁPIDA ====================
+        async function copiarTextoIA() {
+            const texto = document.getElementById('iaOutput').innerText;
+            if (!leituraAtual || !texto) return showToast('Nenhuma interpretação para copiar ainda.', 'erro');
+            try {
+                await navigator.clipboard.writeText(texto);
+                showToast('📋 Texto copiado para a área de transferência.', 'sucesso');
+            } catch (e) {
+                showToast('Não foi possível copiar automaticamente. Selecione o texto manualmente.', 'erro');
+            }
         }
 
         // ==================== CHAT DE APROFUNDAMENTO ====================
@@ -1075,11 +1902,13 @@ Lembre-se: Responda em texto dissertativo corrido sem usar nenhum asterisco, car
             const pergunta = input.value.trim();
             if (!pergunta) return;
 
-            if (!leituraAtual) return alert("Realize a leitura inicial antes de fazer perguntas de aprofundamento.");
+            if (!leituraAtual) return showToast('Realize a leitura inicial antes de fazer perguntas de aprofundamento.', 'erro');
 
             const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML += `<div class="chat-msg user"><b>Você:</b> ${pergunta}</div>`;
+            chatMessages.innerHTML += `<div class="chat-msg user"><b>Você:</b> ${escapeTexto(pergunta)}</div>`;
             input.value = '';
+            input.disabled = true;
+            document.getElementById('btnEnviarChat').disabled = true;
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             chatCounter++;
@@ -1088,67 +1917,86 @@ Lembre-se: Responda em texto dissertativo corrido sem usar nenhum asterisco, car
             const msgLoading = document.createElement('div');
             msgLoading.className = 'chat-msg assistant';
             msgLoading.id = msgId;
-            msgLoading.innerText = 'Processando resposta...';
+            msgLoading.innerHTML = `<span class="spinner"></span> refletindo sobre os símbolos<span class="dots-loading"></span>`;
             chatMessages.appendChild(msgLoading);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const historicoTexto = historicoChat.slice(-6).map(h => `${h.role === 'user' ? 'Consulente' : 'IA'}: ${h.texto}`).join('\n');
 
             const userPrompt = `
 CONTEXTO DA LEITURA:
-Questão: "${leituraAtual.questao}"
+Questão original: "${leituraAtual.questao}"
 Cartas: ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(', ')}
+${historicoTexto ? `\nHISTÓRICO DO DIÁLOGO ATÉ AGORA:\n${historicoTexto}\n` : ''}
+NOVA PERGUNTA DO CONSULENTE: "${pergunta}"
 
-PERGUNTA ADICIONAL DO CONSULENTE: "${pergunta}"
-
-Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum tipo de caractere especial de formatação como asteriscos ou cardinais.`;
+Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudação ou introdução, e sem nenhum tipo de caractere especial de formatação como asteriscos ou cardinais.`;
 
             try {
-                const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(), userPrompt);
-                
+                const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
+
+                historicoChat.push({ role: 'user', texto: pergunta });
+                historicoChat.push({ role: 'assistant', texto: respostaAprofundada });
+
                 const el = document.getElementById(msgId);
                 el.innerHTML = `
-                    <div><b>IA Iniciática:</b> ${respostaAprofundada}</div>
+                    <div><b>IA Iniciática:</b> ${escapeTexto(respostaAprofundada)}</div>
                     <div class="chat-msg-controls">
                         <button class="btn-ia-action" id="btn_speak_${msgId}">▶ Ouvir Resposta</button>
                     </div>
                 `;
 
-                // Garante que a leitura do áudio funcione sem erros de sintaxe ou de aspas
                 document.getElementById(`btn_speak_${msgId}`).onclick = () => {
                     falarTextoIA(`Pergunta: ${pergunta}. Resposta: ${respostaAprofundada}`);
                 };
 
             } catch (err) {
                 document.getElementById(msgId).innerText = `Erro ao responder: ${err.message}`;
+                showToast('Não foi possível obter resposta agora.', 'erro');
             }
+            input.disabled = false;
+            document.getElementById('btnEnviarChat').disabled = false;
+            input.focus();
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         // ==================== SALVAR MANUAL E FIREBASE ====================
         async function salvarLeituraAtualManual() {
             if (!leituraAtual) {
-                return alert("Não há nenhuma leitura gerada para guardar.");
+                return showToast('Não há nenhuma leitura gerada para guardar.', 'erro');
             }
-            await salvarLeituraFirebase(leituraAtual);
+            const btn = document.getElementById('btnSalvarLeitura');
+            btn.disabled = true;
+            // Inclui o diálogo de aprofundamento (perguntas extras feitas à IA) junto com a leitura
+            const dadosParaSalvar = {
+                ...leituraAtual,
+                historicoChat: historicoChat
+            };
+            await salvarLeituraFirebase(dadosParaSalvar);
+            btn.disabled = false;
         }
 
         async function salvarLeituraFirebase(dados) {
             try {
-                if (!window.db) return alert("Banco de dados indisponível.");
+                if (!window.db) return showToast('Banco de dados indisponível.', 'erro');
                 const colRef = window.fbCollection(window.db, "leituras_tarot");
                 await window.fbAddDoc(colRef, {
                     ...dados,
                     timestamp: new Date()
                 });
-                alert("✨ Leitura salva com sucesso no Histórico!");
+                showToast('✨ Leitura salva com sucesso no Histórico!', 'sucesso');
                 carregarHistoricoFirebase();
             } catch (e) {
-                alert("Erro ao salvar no Firebase: " + e.message + "\n\n(Lembre-se de definir as Regras do Firestore para públicas: allow read, write: if true;)");
+                showToast('Erro ao salvar no Firebase: ' + e.message, 'erro', 6000);
             }
         }
 
         async function carregarHistoricoFirebase() {
             const container = document.getElementById('historyGrid');
+            container.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
             if (!window.db) {
-                container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Conectando ao banco de dados...</div>';
+                container.innerHTML = '<div class="empty-state">Conectando ao banco de dados...</div>';
                 return;
             }
 
@@ -1157,39 +2005,69 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
                 const q = window.fbQuery(colRef, window.fbOrderBy("timestamp", "desc"));
                 const querySnapshot = await window.fbGetDocs(q);
 
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<div style="font-size:0.8rem; color:#8b949e;">Nenhuma leitura salva encontrada.</div>';
-                    return;
-                }
-
-                container.innerHTML = '';
+                historicoCompleto = [];
                 querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const docId = docSnap.id;
-                    const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
-
-                    const cardEl = document.createElement('div');
-                    cardEl.className = 'history-card';
-                    cardEl.innerHTML = `
-                        <div class="history-card-header">
-                            <span>📅 ${dateStr}</span>
-                            <span>${data.cartas ? data.cartas.length : 0} cartas</span>
-                        </div>
-                        <div class="history-card-quest">${data.questao || 'Sem Pergunta'}</div>
-                        <button type="button" class="btn-del-hist" onclick="excluirLeituraFirebase('${docId}', event)">✕ Excluir</button>
-                    `;
-
-                    cardEl.onclick = (e) => {
-                        if (e.target.tagName !== 'BUTTON') {
-                            carregarLeituraDoHistorico(data);
-                        }
-                    };
-
-                    container.appendChild(cardEl);
+                    historicoCompleto.push({ id: docSnap.id, data: docSnap.data() });
                 });
+
+                renderizarHistorico(historicoCompleto);
             } catch (err) {
-                container.innerHTML = `<div style="font-size:0.8rem; color:#f85149;">Erro ao carregar histórico: ${err.message}</div>`;
+                container.innerHTML = `<div class="empty-state" style="color:#f85149;">Erro ao carregar histórico: ${err.message}</div>`;
             }
+        }
+
+        function renderizarHistorico(lista) {
+            const container = document.getElementById('historyGrid');
+
+            if (lista.length === 0) {
+                container.innerHTML = '<div class="empty-state">Nenhuma leitura salva encontrada.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            lista.forEach(({ id: docId, data }) => {
+                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
+                const marcada = leiturasSelecionadasPDF.has(docId);
+
+                const cardEl = document.createElement('div');
+                cardEl.className = `history-card${marcada ? ' selecionada' : ''}`;
+                cardEl.innerHTML = `
+                    <div class="history-card-header">
+                        <label class="history-select-checkbox" title="Selecionar para exportar em PDF">
+                            <input type="checkbox" id="checkHist_${docId}" ${marcada ? 'checked' : ''}>
+                            <span>📅 ${dateStr}</span>
+                        </label>
+                        <span>${data.cartas ? data.cartas.length : 0} cartas${data.historicoChat && data.historicoChat.length ? ` · 💬 ${Math.floor(data.historicoChat.length / 2)}` : ''}</span>
+                    </div>
+                    <div class="history-card-quest">${escapeTexto(data.questao || 'Sem Pergunta')}</div>
+                    <div class="history-card-preview">${escapeTexto((data.interpretação || '').slice(0, 140))}${(data.interpretação || '').length > 140 ? '…' : ''}</div>
+                    <div class="history-card-footer">
+                        <button type="button" class="btn-del-hist" onclick="excluirLeituraFirebase('${docId}', event)">✕ Excluir</button>
+                    </div>
+                `;
+
+                cardEl.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                        carregarLeituraDoHistorico(data);
+                    }
+                };
+
+                const checkboxEl = cardEl.querySelector(`#checkHist_${docId}`);
+                checkboxEl.onclick = (e) => e.stopPropagation();
+                checkboxEl.onchange = (e) => {
+                    toggleSelecaoHistorico(docId, e.target.checked);
+                    cardEl.classList.toggle('selecionada', e.target.checked);
+                };
+
+                container.appendChild(cardEl);
+            });
+        }
+
+        function filtrarHistorico() {
+            const termo = document.getElementById('historySearch').value.toLowerCase().trim();
+            if (!termo) return renderizarHistorico(historicoCompleto);
+            const filtrado = historicoCompleto.filter(({ data }) => (data.questao || '').toLowerCase().includes(termo));
+            renderizarHistorico(filtrado);
         }
 
         async function excluirLeituraFirebase(docId, event) {
@@ -1199,63 +2077,221 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
             try {
                 const docRef = window.fbDoc(window.db, "leituras_tarot", docId);
                 await window.fbDeleteDoc(docRef);
+                showToast('Leitura excluída do histórico.', 'info');
                 carregarHistoricoFirebase();
             } catch (err) {
-                alert("Erro ao excluir: " + err.message);
+                showToast('Erro ao excluir: ' + err.message, 'erro');
             }
+        }
+
+        // Reconstrói visualmente na área de chat as perguntas extras salvas junto com a leitura
+        function reconstruirChatSalvo(historicoSalvo) {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            if (!historicoSalvo || !historicoSalvo.length) return;
+
+            historicoSalvo.forEach((msg, i) => {
+                if (msg.role === 'user') {
+                    chatMessages.innerHTML += `<div class="chat-msg user"><b>Você:</b> ${escapeTexto(msg.texto)}</div>`;
+                } else {
+                    const msgId = `chat_hist_${i}_${Date.now()}`;
+                    chatMessages.innerHTML += `
+                        <div class="chat-msg assistant" id="${msgId}">
+                            <div><b>IA Iniciática:</b> ${escapeTexto(msg.texto)}</div>
+                            <div class="chat-msg-controls">
+                                <button class="btn-ia-action" id="btn_speak_${msgId}">▶ Ouvir Resposta</button>
+                            </div>
+                        </div>
+                    `;
+                    // Anexa o handler depois de inserir no DOM, evitando problemas de aspas no texto
+                    setTimeout(() => {
+                        const btn = document.getElementById(`btn_speak_${msgId}`);
+                        if (btn) btn.onclick = () => falarTextoIA(msg.texto);
+                    }, 0);
+                }
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function carregarLeituraDoHistorico(data) {
             document.getElementById('questaoInput').value = data.questao || '';
+            onQuestaoInput();
             leituraAtual = data;
-            if (data.cartas) {
+
+            // Restaura o diálogo de aprofundamento (perguntas extras) salvo junto com a leitura
+            historicoChat = Array.isArray(data.historicoChat) ? data.historicoChat.slice() : [];
+            reconstruirChatSalvo(historicoChat);
+
+            if (data.cartas && data.cartas.length) {
+                definirQtdCartas(data.cartas.length);
+                renderizarSlots(data.cartas);
                 renderizarMesaVirtual(data.cartas);
             }
-            document.getElementById('iaOutput').innerText = data.interpretação || 'Sem interpretação gravada.';
+
+            const out = document.getElementById('iaOutput');
+            out.classList.remove('placeholder');
+            out.innerText = data.interpretação || 'Sem interpretação gravada.';
+
+            atualizarStepDots();
+            showToast('📜 Leitura carregada do histórico. Você pode continuar o diálogo ou gerar uma nova síntese.', 'info');
             window.scrollTo({ top: document.getElementById('spreadDisplay').offsetTop - 20, behavior: 'smooth' });
         }
 
-        // ==================== EXPORTAÇÃO (TXT / PDF) ====================
-        function exportarTXT() {
-            if (!leituraAtual) return alert("Nenhuma leitura ativa para exportar.");
-            const texto = document.getElementById('iaOutput').innerText;
-            const conteudo = `ASTRO TAROT — REGISTRO DE LEITURA INICIÁTICA\nData: ${new Date().toLocaleString('pt-BR')}\nQuestão: ${leituraAtual.questao}\n\nCARTAS TIRADAS:\n${leituraAtual.cartas.map(c => `- ${c.posicao}: ${c.nomeCarta} ${c.invertida ? '[INVERTIDA]' : ''}`).join('\n')}\n\n=========================================\n${texto}`;
-
-            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Tarot_${new Date().toISOString().split('T')[0]}.txt`;
-            link.click();
+        // ==================== EXPORTAÇÃO EM PDF (APENAS LEITURAS SALVAS NO HISTÓRICO) ====================
+        function toggleSelecaoHistorico(docId, marcado) {
+            if (marcado) leiturasSelecionadasPDF.add(docId);
+            else leiturasSelecionadasPDF.delete(docId);
+            atualizarBotaoExportarSelecionadas();
         }
 
-        function exportarPDF() {
-            if (!leituraAtual) return alert("Nenhuma leitura ativa para exportar.");
-            const texto = document.getElementById('iaOutput').innerText;
-            const win = window.open('', '', 'width=800,height=600');
+        function atualizarBotaoExportarSelecionadas() {
+            const btn = document.getElementById('btnExportarSelecionadasPDF');
+            if (!btn) return;
+            const qtd = leiturasSelecionadasPDF.size;
+            btn.disabled = qtd === 0;
+            btn.innerText = `📑 Exportar PDF (${qtd} selecionada${qtd === 1 ? '' : 's'})`;
+        }
+
+        function alternarSelecionarTodosHistorico() {
+            const listaAtual = historicoCompleto.filter(({ id }) => {
+                // respeita o filtro de busca atualmente aplicado na tela
+                const cardVisivel = document.getElementById(`checkHist_${id}`);
+                return !!cardVisivel;
+            });
+            const todasJaMarcadas = listaAtual.length > 0 && listaAtual.every(({ id }) => leiturasSelecionadasPDF.has(id));
+
+            listaAtual.forEach(({ id }) => {
+                if (todasJaMarcadas) leiturasSelecionadasPDF.delete(id);
+                else leiturasSelecionadasPDF.add(id);
+            });
+
+            const termo = document.getElementById('historySearch').value.toLowerCase().trim();
+            const listaFiltrada = termo
+                ? historicoCompleto.filter(({ data }) => (data.questao || '').toLowerCase().includes(termo))
+                : historicoCompleto;
+            renderizarHistorico(listaFiltrada);
+            atualizarBotaoExportarSelecionadas();
+        }
+
+        function urlAbsolutaImagemCarta(caminho) {
+            try {
+                return new URL(caminho, document.baseURI).href;
+            } catch (e) {
+                return caminho;
+            }
+        }
+
+        function montarBlocoCartasImpressao(cartas) {
+            if (!cartas || !cartas.length) return '';
+            return `<div class="cartas-grid">${cartas.map(c => `
+                <div class="carta-bloco">
+                    <img src="${urlAbsolutaImagemCarta(c.arquivo)}" class="${c.invertida ? 'invertida' : ''}" alt="${escapeAtributo(c.nomeCarta)}">
+                    <div class="carta-legenda">
+                        <strong>${escapeTexto(c.posicao)}</strong><br>
+                        ${escapeTexto(c.nomeCarta)}${c.invertida ? ' <span class="tag-invertida">(Invertida)</span>' : ''}
+                        ${c.nota ? `<br><em>"${escapeTexto(c.nota)}"</em>` : ''}
+                    </div>
+                </div>
+            `).join('')}</div>`;
+        }
+
+        function montarBlocoChatImpressao(historicoChatSalvo) {
+            if (!historicoChatSalvo || !historicoChatSalvo.length) return '';
+            const itens = historicoChatSalvo.map(msg => {
+                if (msg.role === 'user') return `<div class="pergunta-chat">Pergunta: ${escapeTexto(msg.texto)}</div>`;
+                return `<div class="resposta-chat">${escapeTexto(msg.texto)}</div>`;
+            }).join('');
+            return `
+                <div class="secao-chat">
+                    <h2>Diálogo de Aprofundamento</h2>
+                    ${itens}
+                </div>
+            `;
+        }
+
+        function exportarPDFHistoricoSelecionado() {
+            if (leiturasSelecionadasPDF.size === 0) {
+                return showToast('Selecione ao menos uma leitura salva no histórico para exportar.', 'erro');
+            }
+
+            // Mantém a ordem de exibição (mais recente primeiro) apenas entre as selecionadas
+            const selecionadas = historicoCompleto.filter(({ id }) => leiturasSelecionadasPDF.has(id));
+            if (selecionadas.length === 0) {
+                return showToast('As leituras selecionadas não foram encontradas. Atualize o histórico e tente novamente.', 'erro');
+            }
+
+            const win = window.open('', '', 'width=900,height=700');
+            if (!win) {
+                return showToast('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'erro');
+            }
+
+            const folhas = selecionadas.map(({ data }, idx) => {
+                const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
+                return `
+                    <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
+                        <h1>ASTRO TAROT — SÍNTESE E REGISTRO INICIÁTICO</h1>
+                        <div class="meta">
+                            <strong>Data:</strong> ${dateStr}<br>
+                            <strong>Questão Principal:</strong> ${escapeTexto(data.questao || 'Sem Pergunta')}
+                        </div>
+                        ${montarBlocoCartasImpressao(data.cartas)}
+                        <div class="content">${escapeTexto(data.interpretação || '')}</div>
+                        ${montarBlocoChatImpressao(data.historicoChat)}
+                    </section>
+                `;
+            }).join('');
+
             win.document.write(`
                 <html>
                 <head>
-                    <title>Astro Tarot - Leitura Iniciática</title>
+                    <title>Astro Tarot - Leituras Exportadas</title>
                     <style>
                         body { font-family: sans-serif; padding: 20px; color: #111; line-height: 1.6; }
                         h1 { color: #6e40c9; font-size: 18pt; border-bottom: 2px solid #6e40c9; padding-bottom: 5px; }
-                        .meta { font-size: 10pt; color: #555; margin-bottom: 20px; }
-                        .content { font-size: 11pt; white-space: pre-wrap; }
+                        h2 { color: #6e40c9; font-size: 13pt; margin-top: 6px; }
+                        .meta { font-size: 10pt; color: #555; margin: 12px 0 16px; }
+                        .content { font-size: 11pt; white-space: pre-wrap; margin-top: 10px; }
+                        .cartas-grid { display: flex; flex-wrap: wrap; gap: 14px; margin: 14px 0; }
+                        .carta-bloco { width: 120px; text-align: center; font-size: 9pt; }
+                        .carta-bloco img { width: 110px; height: auto; border: 1px solid #999; border-radius: 4px; }
+                        .carta-bloco img.invertida { transform: rotate(180deg); }
+                        .carta-legenda { margin-top: 4px; }
+                        .tag-invertida { color: #b02a2a; }
+                        .secao-chat { margin-top: 20px; border-top: 1px dashed #999; padding-top: 10px; }
+                        .pergunta-chat { font-weight: bold; margin-top: 10px; font-size: 10.5pt; }
+                        .resposta-chat { margin-top: 4px; white-space: pre-wrap; font-size: 10.5pt; }
+                        .folha-leitura { page-break-inside: avoid; }
+                        @media print {
+                            .folha-leitura { page-break-inside: auto; }
+                        }
                     </style>
                 </head>
-                <body>
-                    <h1>ASTRO TAROT — SÍNTESE E REGISTRO INICIÁTICO</h1>
-                    <div class="meta">
-                        <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}<br>
-                        <strong>Questão Principal:</strong> ${leituraAtual.questao}<br>
-                        <strong>Cartas:</strong> ${leituraAtual.cartas.map(c => `${c.posicao}: ${c.nomeCarta} ${c.invertida ? '(Invertida)' : ''}`).join(' | ')}
-                    </div>
-                    <div class="content">${texto}</div>
-                </body>
+                <body>${folhas}</body>
                 </html>
             `);
             win.document.close();
-            win.print();
+
+            // Aguarda o carregamento das imagens das cartas antes de acionar a impressão
+            const imgs = win.document.images;
+            let restantes = imgs.length;
+            if (restantes === 0) {
+                setTimeout(() => win.print(), 300);
+            } else {
+                let disparado = false;
+                const tentarImprimir = () => {
+                    if (disparado) return;
+                    disparado = true;
+                    win.print();
+                };
+                Array.from(imgs).forEach(img => {
+                    img.addEventListener('load', () => { restantes--; if (restantes <= 0) tentarImprimir(); });
+                    img.addEventListener('error', () => { restantes--; if (restantes <= 0) tentarImprimir(); });
+                });
+                // fallback de segurança caso algum evento não dispare
+                setTimeout(tentarImprimir, 3000);
+            }
+
+            showToast(`📑 Preparando impressão de ${selecionadas.length} leitura(s).`, 'info');
         }
 
         // ==================== FILTRO E SELEÇÃO DE VOZES (EXCLUSIVO PT-BR / BILÍNGUE) ====================
@@ -1296,19 +2332,20 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
         }
 
         function falarTextoIA(texto) {
-            if (!('speechSynthesis' in window)) return alert('Navegador não suporta síntese de voz.');
+            if (!('speechSynthesis' in window)) return showToast('Navegador não suporta síntese de voz.', 'erro');
             speechSynthesis.cancel();
-            
+
             const textoLimpo = (texto || document.getElementById('iaOutput').innerText).replace(/[#*`_~>-]/g, '').trim();
             if (!textoLimpo) return;
 
             const utt = new SpeechSynthesisUtterance(textoLimpo);
             const idx = document.getElementById('voiceSelect').value;
-            
+
             if (vozesFiltradas[idx]) {
                 utt.voice = vozesFiltradas[idx];
             }
-            utt.rate = 1.0;
+            const rateEl = document.getElementById('voiceRate');
+            utt.rate = rateEl ? parseFloat(rateEl.value) : 1.0;
             speechSynthesis.speak(utt);
         }
 
@@ -1320,11 +2357,34 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
             if ('speechSynthesis' in window) speechSynthesis.cancel();
         }
 
+        // ==================== FAB (botão flutuante mobile) ====================
+        function atualizarFab() {
+            const form = document.getElementById('readingForm');
+            const fab = document.getElementById('fabSubmit');
+            if (window.innerWidth >= 1080) {
+                fab.classList.remove('show');
+                return;
+            }
+            const rectBtn = document.getElementById('btnSintetizar').getBoundingClientRect();
+            const foraDaTela = rectBtn.bottom < 0 || rectBtn.top > window.innerHeight;
+            fab.classList.toggle('show', foraDaTela);
+        }
+
+        // Fecha modal/lightbox com ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('cardPickerModal').hidden) fecharSeletorCartas();
+                if (!document.getElementById('lightboxOverlay').hidden) fecharLightbox();
+            }
+        });
+
         // Inicialização
         window.onload = () => {
             popularDatalist();
             popularSelectQtd();
             renderizarSlots();
+            restaurarRascunho();
+            atualizarStepDots();
 
             setTimeout(() => {
                 carregarHistoricoFirebase();
@@ -1334,6 +2394,10 @@ Lembre-se: Responda obrigatoriamente em texto corrido dissertativo, sem nenhum t
                 carregarVozes();
                 speechSynthesis.onvoiceschanged = carregarVozes;
             }
+
+            window.addEventListener('scroll', atualizarFab, { passive: true });
+            window.addEventListener('resize', atualizarFab);
+            atualizarFab();
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').then((registro) => {
