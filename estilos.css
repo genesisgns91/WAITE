@@ -1577,3 +1577,35 @@ button:disabled, .btn-ia-action:disabled {
         padding: 7px 10px;
     }
 }
+
+/* =========================================================
+   CORREÇÃO — BOTÃO "SINTETIZAR" GIGANTE / SOBREPONDO CARTAS
+   ---------------------------------------------------------
+   Causa raiz: .controls é um CSS Grid com múltiplas colunas
+   automáticas (usado também nos formulários do Mapa Natal /
+   Revolução Solar / Trânsitos, onde faz sentido — data, hora
+   e fuso lado a lado). No formulário do Tarot (#readingForm),
+   porém, itens como o grid de cartas (#slotsContainer) e o
+   botão de enviar não tinham "grid-column" definido. Em telas
+   largas o grid os colocava em colunas separadas da MESMA
+   linha; como o grid de cartas ficava espremido e MUITO alto
+   (cartas empilhadas), o alinhamento padrão "stretch" esticava
+   o botão para acompanhar essa altura inteira — parecendo um
+   botão gigante "de cima a baixo" sobre as cartas.
+   ========================================================= */
+
+/* Rede de segurança para qualquer formulário .controls: nunca
+   esticar itens verticalmente para acompanhar o vizinho mais
+   alto da mesma linha do grid. */
+.controls {
+    align-items: start;
+}
+
+/* No formulário do Tarot especificamente, cada bloco (textarea
+   da questão, chips de profundidade, seletor de quantidade,
+   grade de cartas, botão de enviar) deve ocupar sempre a LARGURA
+   TOTAL do formulário — nunca dividir coluna com o vizinho. */
+#readingForm.controls > div,
+#readingForm.controls > button {
+    grid-column: 1 / -1;
+}
