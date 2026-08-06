@@ -1087,3 +1087,340 @@ body:has(#cardPickerModal) .nav-tab.active {
    templates de impressão. Eles não fazem parte do layout
    principal destas páginas.
    ========================================================= */
+
+
+/* =========================================================
+   FUNDO ESTRELADO (incorporado de estrelas.css)
+   ---------------------------------------------------------
+   Antes este bloco vivia num arquivo separado (estrelas.css)
+   que NENHUM dos HTMLs carregava — ou seja, a classe
+   "fundo-estrelado" usada no <body> de todas as páginas não
+   tinha efeito nenhum. Agora que estilos.css é a ÚNICA folha
+   de estilo carregada por todas as telas (index, revolução
+   solar, trânsitos diários e tarot), o efeito passa a
+   funcionar de verdade em todas elas, sem precisar de uma
+   segunda tag <link>.
+   ========================================================= */
+
+@property --tw1  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw2  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw3  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw4  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw5  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw6  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw7  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw8  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw9  { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw10 { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw11 { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --tw12 { syntax: '<number>'; inherits: true; initial-value: 1; }
+
+.fundo-estrelado {
+    position: relative;
+    background-color: #0d1117;
+    --tw1: 1; --tw2: 1; --tw3: 1; --tw4: 1; --tw5: 1; --tw6: 1;
+    --tw7: 1; --tw8: 1; --tw9: 1; --tw10: 1; --tw11: 1; --tw12: 1;
+    background-image:
+        radial-gradient(1.6px 1.6px at 12% 18%, rgba(255,255,255,var(--tw1))  60%, transparent 100%),
+        radial-gradient(1.2px 1.2px at 78% 8%,  rgba(205,217,255,var(--tw2))  55%, transparent 100%),
+        radial-gradient(2px 2px at 34% 62%,     rgba(255,255,255,var(--tw3))  55%, transparent 100%),
+        radial-gradient(1.2px 1.2px at 92% 34%, rgba(255,233,176,var(--tw4))  55%, transparent 100%),
+        radial-gradient(1.4px 1.4px at 55% 82%, rgba(255,255,255,var(--tw5))  55%, transparent 100%),
+        radial-gradient(1px 1px at 6% 74%,      rgba(205,217,255,var(--tw6))  55%, transparent 100%),
+        radial-gradient(1.6px 1.6px at 68% 46%, rgba(255,255,255,var(--tw7))  55%, transparent 100%),
+        radial-gradient(1px 1px at 24% 92%,     rgba(255,255,255,var(--tw8))  55%, transparent 100%),
+        radial-gradient(1.2px 1.2px at 86% 68%, rgba(255,233,176,var(--tw9))  55%, transparent 100%),
+        radial-gradient(1px 1px at 46% 12%,     rgba(205,217,255,var(--tw10)) 55%, transparent 100%),
+        radial-gradient(1.4px 1.4px at 4% 40%,  rgba(255,255,255,var(--tw11)) 55%, transparent 100%),
+        radial-gradient(1px 1px at 62% 4%,      rgba(255,255,255,var(--tw12)) 55%, transparent 100%),
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(88,166,255,0.10), transparent),
+        radial-gradient(ellipse 70% 45% at 100% 110%, rgba(163,113,247,0.08), transparent);
+    background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat, no-repeat;
+    background-size: 260px 260px, 260px 260px, 260px 260px, 260px 260px, 260px 260px,
+                      260px 260px, 260px 260px, 260px 260px, 260px 260px, 260px 260px,
+                      260px 260px, 260px 260px, 100% 100%, 100% 100%;
+    background-attachment: fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed;
+    animation:
+        astro-piscar-1  6.4s ease-in-out infinite 0.2s,
+        astro-piscar-2  8.1s ease-in-out infinite 1.6s,
+        astro-piscar-3  5.3s ease-in-out infinite 3.1s,
+        astro-piscar-4  9.2s ease-in-out infinite 0.8s,
+        astro-piscar-5  6.9s ease-in-out infinite 4.4s,
+        astro-piscar-6  7.6s ease-in-out infinite 2.3s,
+        astro-piscar-7  5.8s ease-in-out infinite 5.2s,
+        astro-piscar-8  8.7s ease-in-out infinite 1.1s,
+        astro-piscar-9  6.1s ease-in-out infinite 3.7s,
+        astro-piscar-10 9.6s ease-in-out infinite 0.5s,
+        astro-piscar-11 7.2s ease-in-out infinite 4.9s,
+        astro-piscar-12 5.5s ease-in-out infinite 2.8s;
+}
+
+@keyframes astro-piscar-1  { 0%, 100% { --tw1: 0.30; }  48% { --tw1: 1; } }
+@keyframes astro-piscar-2  { 0%, 100% { --tw2: 1; }     40% { --tw2: 0.25; } 70% { --tw2: 0.9; } }
+@keyframes astro-piscar-3  { 0%, 100% { --tw3: 0.5; }   55% { --tw3: 1; } }
+@keyframes astro-piscar-4  { 0%, 100% { --tw4: 1; }     30% { --tw4: 0.35; } 65% { --tw4: 0.85; } }
+@keyframes astro-piscar-5  { 0%, 100% { --tw5: 0.4; }   50% { --tw5: 1; } 80% { --tw5: 0.6; } }
+@keyframes astro-piscar-6  { 0%, 100% { --tw6: 1; }     45% { --tw6: 0.3; } }
+@keyframes astro-piscar-7  { 0%, 100% { --tw7: 0.35; }  35% { --tw7: 0.9; } 68% { --tw7: 0.5; } }
+@keyframes astro-piscar-8  { 0%, 100% { --tw8: 1; }     58% { --tw8: 0.25; } }
+@keyframes astro-piscar-9  { 0%, 100% { --tw9: 0.45; }  42% { --tw9: 1; } 75% { --tw9: 0.7; } }
+@keyframes astro-piscar-10 { 0%, 100% { --tw10: 1; }    38% { --tw10: 0.4; } 72% { --tw10: 0.95; } }
+@keyframes astro-piscar-11 { 0%, 100% { --tw11: 0.3; }  60% { --tw11: 1; } }
+@keyframes astro-piscar-12 { 0%, 100% { --tw12: 1; }    50% { --tw12: 0.35; } }
+
+.fundo-estrelado::before {
+    content: '';
+    position: fixed;
+    top: 8%;
+    left: -10%;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 6px 1px rgba(255,255,255,0.9);
+    opacity: 0;
+    pointer-events: none;
+    animation: astro-cadente 9s linear infinite;
+    animation-delay: 3s;
+}
+
+@keyframes astro-cadente {
+    0%   { transform: translate(0, 0);        opacity: 0; }
+    2%   { opacity: 1; }
+    12%  { transform: translate(60vw, 30vh);  opacity: 0; }
+    100% { transform: translate(60vw, 30vh);  opacity: 0; }
+}
+
+/* =========================================================
+   OTIMIZAÇÕES DE UX/UI — MOBILE + DESKTOP
+   ---------------------------------------------------------
+   Bloco adicionado por cima de tudo que já existia acima.
+   Não remove nem redefine nenhuma classe — apenas refina
+   comportamento (toque, rolagem, hover, respiro visual,
+   acessibilidade) para as quatro telas do app, que agora
+   compartilham 100% deste único arquivo de estilo.
+   ========================================================= */
+
+/* --- Evita "zoom automático" do iOS ao focar em campos com
+   fonte menor que 16px, e garante alvo de toque confortável
+   em todos os inputs/selects/textarea no mobile. --- */
+@media (max-width: 720px) {
+    input, select, textarea {
+        font-size: 16px;
+    }
+}
+
+/* --- Alvo de toque mínimo confortável (padrão de acessibilidade
+   ~44px) para todos os botões e abas interativas, sem alterar
+   o visual em telas maiores. --- */
+button,
+.nav-tab,
+.modo-tab,
+.chip,
+.btn-qty,
+.btn-ia,
+.btn-ia-action,
+.btn-sm,
+.btn-search-geo,
+.expand-header,
+.history-card,
+.card-slot,
+.modal-close {
+    min-height: 40px;
+}
+
+@media (max-width: 720px) {
+    button,
+    .nav-tab,
+    .modo-tab,
+    .btn-ia,
+    .btn-ia-action,
+    .btn-search-geo,
+    .modal-close {
+        min-height: 44px;
+    }
+}
+
+/* --- Cabeçalho: leve efeito de vidro fosco ao rolar a página,
+   deixando a navegação sempre legível sobre o fundo estrelado,
+   tanto no desktop quanto no mobile (PWA em tela cheia). --- */
+header {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: rgba(22, 27, 34, 0.92);
+}
+
+/* --- Respeita o "notch"/barra de status em iPhones quando o
+   app roda instalado como PWA em tela cheia (standalone). --- */
+body {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+}
+
+.fab {
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
+}
+
+.toast-container {
+    bottom: max(16px, calc(env(safe-area-inset-bottom) + 10px));
+}
+
+/* --- Tipografia fluida: títulos e textos de destaque se ajustam
+   suavemente entre o menor celular e telas grandes de desktop,
+   em vez de pular abruptamente entre breakpoints fixos. --- */
+header h1 {
+    font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+}
+
+.chart-card h2, .wheel-panel-header h2, .positions-panel-header h2 {
+    font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+}
+
+/* --- Rolagem mais suave e discreta em listas internas (histórico,
+   saída de IA, matriz de aspectos) nos navegadores baseados em
+   WebKit/Blink, mantendo a paleta escura do app. --- */
+.ia-output::-webkit-scrollbar,
+.history-grid::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.modal-grid::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.col-left::-webkit-scrollbar,
+.matrix-desktop-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.ia-output::-webkit-scrollbar-thumb,
+.history-grid::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb,
+.modal-grid::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb,
+.col-left::-webkit-scrollbar-thumb,
+.matrix-desktop-container::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 8px;
+}
+
+.ia-output::-webkit-scrollbar-thumb:hover,
+.history-grid::-webkit-scrollbar-thumb:hover,
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.modal-grid::-webkit-scrollbar-thumb:hover,
+.modal-body::-webkit-scrollbar-thumb:hover,
+.col-left::-webkit-scrollbar-thumb:hover,
+.matrix-desktop-container::-webkit-scrollbar-thumb:hover {
+    background: #444c56;
+}
+
+/* --- Elevação e destaque ao passar o mouse — só em dispositivos
+   que realmente têm hover (mouse), para não deixar cards "presos"
+   num estado de hover em telas touch. --- */
+@media (hover: hover) and (pointer: fine) {
+    .card-table, .balance-card, .esoteric-card, .chart-card,
+    .history-section, .ia-section, .sintese-box {
+        transition: border-color var(--transicao), box-shadow var(--transicao), transform var(--transicao);
+    }
+    .card-table:hover, .balance-card:hover, .esoteric-card:hover, .chart-card:hover {
+        border-color: #3d4451;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+    }
+    .btn-ia:hover, .btn-primary:hover, .btn-save-reading:hover, .btn-search-geo:hover {
+        transform: translateY(-1px);
+    }
+    .expand-card:hover, .history-card:hover, .card-slot:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* Estados de toque (:active) equivalentes para telas sem hover,
+   dando feedback tátil imediato ao apertar. */
+@media (hover: none) {
+    .btn-ia:active, .btn-primary:active, .btn-save-reading:active,
+    .btn-search-geo:active, .modo-tab:active, .nav-tab:active,
+    .chip:active, .btn-qty:active {
+        opacity: 0.75;
+    }
+}
+
+/* --- Botões principais mais confortáveis e com leve profundidade,
+   deixando a ação primária de cada tela mais evidente. --- */
+.btn-primary {
+    box-shadow: 0 4px 14px rgba(35, 134, 54, 0.35);
+    letter-spacing: 0.3px;
+}
+
+/* --- Painéis de IA (respostas geradas) com leitura mais confortável
+   em telas largas: limita a largura da linha de texto mesmo dentro
+   de um card grande, o que reduz fadiga visual na leitura. --- */
+@media (min-width: 900px) {
+    .ia-output, .modal-body, .painel-resposta-ia, .ai-inline-panel, .sintese-box {
+        max-width: 74ch;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* --- Cabeçalhos de seções expansíveis: área de toque inteira
+   sinaliza claramente que é clicável, inclusive no mobile. --- */
+.expand-header, .topico-estudo-header {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Grade de 2 colunas em telas médias antes de colapsar para 1
+   coluna, evitando o salto brusco de 3-colunas-desktop para
+   1-coluna-mobile em tablets e celulares grandes. --- */
+@media (min-width: 620px) and (max-width: 1079px) {
+    .grid-3-colunas, .balance-container, .sol-lua-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 619px) {
+    .sol-lua-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Modal em tela cheia efetiva no mobile, com fechamento por
+   arraste visualmente sugerido (barra no topo) e área de toque
+   generosa no botão de fechar. --- */
+@media (max-width: 719px) {
+    .modal-box, .modal-card {
+        max-height: 92vh;
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-header, .modal-header h3 {
+        min-height: 44px;
+    }
+}
+
+/* --- Placeholder e textos auxiliares com contraste levemente
+   maior para melhor legibilidade em telas de celular sob luz
+   ambiente forte. --- */
+::placeholder {
+    color: #6e7681;
+    opacity: 1;
+}
+
+/* --- Botão "Limpar Cache" e outros nav-tabs com ação especial
+   ficam visualmente diferenciados dos links de navegação comuns. --- */
+.nav-tab[onclick] {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Skeleton de carregamento com leve arredondamento consistente
+   com o resto do app (cards de histórico). --- */
+.skeleton {
+    border: 1px solid var(--border-suave);
+}
+
+/* --- Botões desabilitados: cursor consistente em todo o app. --- */
+button:disabled, .btn-ia-action:disabled {
+    cursor: not-allowed;
+}
+
+/* --- Compatibilidade: em navegadores sem suporte a "backdrop-filter"
+   (raros hoje em dia), o cabeçalho continua legível pois já tem
+   fundo sólido definido em --bg-card mais acima no arquivo. --- */
