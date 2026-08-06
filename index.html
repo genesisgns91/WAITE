@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0d1117">
+    <title>Astro - Mapa Natal Completo</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Astro">
+    <link rel="stylesheet" href="estilos.css">
+
+    
+</head>
+<body class="fundo-estrelado">
+ 
+    <header>
+        <h1>MAPA ASTRAL NATAL</h1>
+        <p>Análise Astrológica Completa (33 Astros, Ângulos e Estrelas)</p>
+        <nav class="app-nav">
+            <a href="index.html" class="nav-tab active">🌟 Mapa Natal</a>
+            <a href="revolucao_solar.html" class="nav-tab">☀️ Revolução Solar</a>
+            <a href="transitos_diarios.html" class="nav-tab">🔮 Trânsitos Diários</a>
+            <a href="tarot.html" class="nav-tab">🃏 Astro Tarot</a>
+            <button type="button" class="nav-tab" style="cursor:pointer;" onclick="limparCacheDoApp()" title="Força o app a buscar a versão mais nova, sem apagar pessoas salvas">🧹 Limpar Cache</button>
+        </nav>
+    </header>
+ 
+    <div class="app-layout">
+        <form id="astrologyForm" class="controls" onsubmit="event.preventDefault(); executarTudo();">
+            <div class="input-group">
+                <label for="date">Data de Nascimento</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="input-group">
+                <label for="time">Hora de Nascimento</label>
+                <input type="time" id="time" required>
+            </div>
+            <div class="input-group">
+                <label for="fuso">Fuso Horário (UTC)</label>
+                <input type="number" id="fuso" value="-3" step="0.5" required>
+            </div>
+
+            <div class="input-group span-2">
+                <label for="cidadeInput">Cidade de Nascimento</label>
+                <div class="geo-search-container">
+                    <input type="text" id="cidadeInput" placeholder="Ex: Curitiba, PR ou São Paulo, Brasil" value="Curitiba, PR">
+                    <button type="button" class="btn-search-geo" onclick="buscarCoordenadas()">🔍 Buscar</button>
+                </div>
+                <div id="geoStatus" class="geo-status">✓ Local encontrado e coordenadas preenchidas</div>
+            </div>
+
+            <div class="input-group">
+                <label for="lat">Latitude</label>
+                <input type="number" id="lat" value="-25.4284" step="0.0001" required>
+            </div>
+            <div class="input-group">
+                <label for="lon">Longitude</label>
+                <input type="number" id="lon" value="-49.2733" step="0.0001" required>
+            </div>
+            <div class="input-group full">
+                <button type="submit" class="btn-primary">Calcular Mapa Natal</button>
+            </div>
+            <div class="input-group span-2">
+                <label for="nomePessoaInput">Nome da Pessoa (para salvar)</label>
+                <div class="geo-search-container">
+                    <input type="text" id="nomePessoaInput" placeholder="Ex: Maria Silva">
+                    <button type="button" class="btn-search-geo" style="background:#8957e5;" onclick="salvarOuAtivarPessoa()">💾 Salvar / Ativar</button>
+                </div>
+                <div id="pessoaAtivaIndicador" style="display:none; font-size:0.75rem; color:var(--terra); margin-top:4px; cursor:pointer;" onclick="desativarPessoa()" title="Clique para parar de gravar leituras"></div>
+            </div>
+        </form>
+
+        <div class="card-table">
+            <h3>👤 Pessoas Salvas (Clique para Expandir)</h3>
+            <div id="pessoasSalvasList" class="expand-list" style="margin-top: 10px;"></div>
+        </div>
+ 
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h2>Roda do Mapa Natal</h2>
+                    <span style="display:flex; align-items:center; gap:6px;">
+                        <span id="indicadorSintese"></span>
+                        <button class="btn-ia" onclick="dispararAnaliseMapaCompleto()">✦ Análise Síntese IA</button>
+                    </span>
+                </div>
+                <svg id="chartSvg" viewBox="0 0 600 600"></svg>
+                <div class="legenda-precisao">
+                    <span><span class="ponto-legenda" style="background:#58a6ff;"></span> Alta confiabilidade</span>
+                    <span><span class="ponto-legenda" style="background:#e3b341;"></span> Confiabilidade média</span>
+                    <span><span class="ponto-legenda" style="background:#f85149;"></span> Confiabilidade mais baixa</span>
+                    <span><span style="color:#f0883e; font-weight:bold; font-size:0.8rem;">℞</span> Retrógrado</span>
+                </div>
+            </div>
+ 
+            <div class="balance-container">
+                <div class="balance-card">
+                    <div>
+                        <div class="balance-card-header">
+                            <h3>Elementos</h3>
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span id="indicadorBalancoElementos"></span>
+                                <button class="btn-ia" onclick="dispararAnaliseBalanco('elementos')">✦ Análise IA</button>
+                            </span>
+                        </div>
+                        <div id="elementosBars"></div>
+                    </div>
+                </div>
+                <div class="balance-card">
+                    <div>
+                        <div class="balance-card-header">
+                            <h3>Modalidades / Ritmos</h3>
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span id="indicadorBalancoRitmos"></span>
+                                <button class="btn-ia" onclick="dispararAnaliseBalanco('ritmos')">✦ Análise IA</button>
+                            </span>
+                        </div>
+                        <div id="ritmosBars"></div>
+                    </div>
+                </div>
+                <div class="balance-card">
+                    <div>
+                        <div class="balance-card-header">
+                            <h3>Polaridades</h3>
+                            <span style="display:flex; align-items:center; gap:6px;">
+                                <span id="indicadorBalancoPolaridades"></span>
+                                <button class="btn-ia" onclick="dispararAnaliseBalanco('polaridades')">✦ Análise IA</button>
+                            </span>
+                        </div>
+                        <div id="polaridadesBars"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ 
+        <div class="card-table">
+            <h3>Posições Astrológicas (Clique para Expandir)</h3>
+            <div id="astrosExpandList" class="expand-list" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card-table">
+            <h3>Casas Astrológicas (Clique para Expandir)</h3>
+            <div id="casasExpandList" class="expand-list" style="margin-top: 10px;"></div>
+        </div>
+ 
+        <div class="card-table">
+            <div class="card-table-header">
+                <h3>Matriz de Aspectos do Mapa</h3>
+                <span style="display:flex; align-items:center; gap:6px;">
+                    <span id="indicadorAspectosCompleta"></span>
+                    <button class="btn-ia" onclick="dispararAnaliseAspectosCompleta()">✦ Análise IA</button>
+                </span>
+            </div>
+            <div class="matrix-desktop-container">
+                <table id="matrixAspectos" class="aspect-matrix"></table>
+            </div>
+        </div>
+ 
+        <div class="card-table">
+            <h3>Interpretação dos Aspectos (Clique para Expandir)</h3>
+            <div id="aspectosExpandList" class="expand-list" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card-table">
+            <h3>🔮 Áreas Específicas da Vida (Combinações Temáticas)</h3>
+            <div id="temasExpandList" class="expand-list" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+ 
+    <!-- Modal Flutuante para IA -->
+    <div id="aiModal" class="modal-overlay" onclick="fecharModalOuter(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">✦ Análise Astrológica (IA)</h3>
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                    <button id="btnOuvir" class="modal-close" style="font-size:1.1rem;" title="Ouvir análise" onclick="alternarLeituraVoz()">🔊</button>
+                    <button class="modal-close" onclick="fecharModal()">&times;</button>
+                </div>
+            </div>
+            <div style="padding:8px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; background:var(--bg-principal);">
+                <label for="vozSelect" style="font-size:0.72rem; color:#8b949e; white-space:nowrap;">🗣️ Voz:</label>
+                <select id="vozSelect" onchange="salvarVozPreferida()" style="flex:1; font-size:0.75rem; background:var(--bg-card); color:#fff; border:1px solid var(--border); border-radius:6px; padding:4px 6px; min-width:0;"></select>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <!-- Conteúdo gerado pela IA -->
+            </div>
+        </div>
+    </div>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine/astronomy.browser.min.js"></script>
+    <script>
+        const SIGNOS_DADOS = [
+            { nome: "Áries", simbolo: "♈︎", elemento: "Fogo", ritmo: "Cardinal", polaridade: "Yang" },
+            { nome: "Touro", simbolo: "♉︎", elemento: "Terra", ritmo: "Fixo", polaridade: "Yin" },
+            { nome: "Gêmeos", simbolo: "♊︎", elemento: "Ar", ritmo: "Mutável", polaridade: "Yang" },
+            { nome: "Câncer", simbolo: "♋︎", elemento: "Água", ritmo: "Cardinal", polaridade: "Yin" },
+            { nome: "Leão", simbolo: "♌︎", elemento: "Fogo", ritmo: "Fixo", polaridade: "Yang" },
+            { nome: "Virgem", simbolo: "♍︎", elemento: "Terra", ritmo: "Mutável", polaridade: "Yin" },
+            { nome: "Libras", simbolo: "♎︎", elemento: "Ar", ritmo: "Cardinal", polaridade: "Yang" },
+            { nome: "Escorpião", simbolo: "♏︎", elemento: "Água", ritmo: "Fixo", polaridade: "Yin" },
+            { nome: "Sagitário", simbolo: "♐︎", elemento: "Fogo", ritmo: "Mutável", polaridade: "Yang" },
+            { nome: "Capricórnio", simbolo: "♑︎", elemento: "Terra", ritmo: "Cardinal", polaridade: "Yin" },
+            { nome: "Aquário", simbolo: "♒︎", elemento: "Ar", ritmo: "Fixo", polaridade: "Yang" },
+            { nome: "Peixes", simbolo: "♓︎", elemento: "Água", ritmo: "Mutável", polaridade: "Yin" }
+        ];
+
+        const DEFINICAO_CASAS = {
+            1: "Identidade, constituição física, primeira impressão e postura espontânea perante a vida.",
+            2: "Recursos materiais, vida financeira, valores pessoais e capacidade de geração de sustento.",
+            3: "Comunicação, aprendizagem prática, pequenas viagens, relação com irmãos e intelecto diário.",
+            4: "Lar, família, ancestralidade, raízes emocionais e segurança íntima.",
+            5: "Autoexpressão criativa, romances, projetos autoriais, filhos, jogos e prazeres.",
+            6: "Rotina de trabalho, saúde física, hábitos diários, serviço e produtividade.",
+            7: "Relacionamentos duradouros, casamento, parcerias de negócios e contratos sociais.",
+            8: "Transformações profundas, recursos compartilhados, sexualidade, regeneração e finanças ocultas.",
+            9: "Filosofia de vida, ensino superior, viagens longas, expansão espiritual e buscas por significado.",
+            10: "Carreira, imagem pública, vocação, metas profissionais e legado no mundo.",
+            11: "Grupos sociais, amizades, causas coletivas, rede de apoio e planos de futuro.",
+            12: "Subconsciente, espiritualidade, recolhimento, processos ocultos e saúde mental."
+        };
+
+        const SIMBOLOS_ASTROS = {
+            "Sol": "☉", "Lua": "☽", "Mercúrio": "☿", "Vênus": "♀", "Marte": "♂",
+            "Júpiter": "♃", "Saturno": "♄", "Urano": "♅", "Netuno": "♆", "Plutão": "♇",
+            "Ascendente (AC)": "AC", "Meio do Céu (MC)": "MC", 
+            "Descendente (DC)": "DC", "Fundo do Céu (IC)": "IC",
+            "Vertex": "Vx", "Anti-vertex": "Avx",
+            "Quíron": "⚷", "Lilith": "⚸", "Roda da Fortuna": "⊗",
+            "Nodo Norte": "☊", "Nodo Sul": "☋",
+            "Ceres": "⚳", "Pallas": "⚴", "Juno": "⚵", "Vesta": "⚶",
+            "Pholus": "⯛",
+            "Éris": "⯰", "Sedna": "⯲", "Haumea": "🩵", "Makemake": "🩲",
+            "Aldebaran": "✶", "Regulus": "✶", "Antares": "✶"
+        };
+
+        const DEFINICAO_ASTROS = {
+            "Sol": "Sua essência, vitalidade, propósito de vida e identidade central.",
+            "Lua": "Suas emoções, respostas reativas, memórias e necessidades de segurança.",
+            "Mercúrio": "Processo de pensamento, comunicação, intelecto e aprendizado.",
+            "Vênus": "Valores, forma de amar, relacionamentos, estética e finanças.",
+            "Marte": "Força de ação, impulso, desejo, assertividade e como lida com conflitos.",
+            "Júpiter": "Expansão, sorte, filosofia de vida, abundância e sabedoria.",
+            "Saturno": "Estrutura, limites, disciplina, responsabilidade e lições de vida.",
+            "Urano": "Inovação, ruptura, busca por liberdade, originalidade e imprevistos.",
+            "Netuno": "Espiritualidade, intuição, imaginação, ilusões e compaixão.",
+            "Plutão": "Poder pessoal, transformação profunda, regeneração e sombras.",
+            "Ascendente (AC)": "Máscara social, presença física e primeira impressão no mundo.",
+            "Meio do Céu (MC)": "Carreira, reputação pública, ambição e legado profissional.",
+            "Descendente (DC)": "O tipo de parceria que você atrai e o que busca nos outros no espelho relacional.",
+            "Fundo do Céu (IC)": "Suas raízes, ancestralidade, lar, infância e base psíquica interior.",
+            "Quíron": "A ferida sagrada da alma e o local onde você desenvolve o dom da cura.",
+            "Lilith": "Sua força selvagem reprimida, autonomia, tabus e poder instintivo.",
+            "Roda da Fortuna": "Ponto de máxima harmonia, onde o fluxo da prosperidade e alegria se manifestam.",
+            "Vertex": "O 'destino relacional', encontros kármicos e pontos de virada involuntários.",
+            "Anti-vertex": "Ponto polar ao Vertex, associado ao impulso pessoal e gatilhos de transformação.",
+            "Nodo Norte": "Sua missão de alma, direção de crescimento e futuro a ser desenvolvido.",
+            "Nodo Sul": "Sua zona de conforto, hábitos passados e talentos inatos que precisam ser equilibrados.",
+            "Ceres": "Forma de nutrir, autocuidado, apego e relação com a abundância.",
+            "Pallas": "Sabedoria estratégica, inteligência de padrões e resolução de problemas.",
+            "Juno": "Compromisso, casamentos, acordos e o parceiro ideal para longo prazo.",
+            "Vesta": "Foco interior, devoção, disciplina sagrada e onde você canaliza sua energia vital.",
+            "Pholus": "Gatilhos de grande impacto, pequenas causas que geram grandes transformações.",
+            "Éris": "A discórdia construtiva, busca por justiça social e recusa em ser silenciado.",
+            "Sedna": "Transcendência após traições, vulnerabilidade profunda e sabedoria dos abismos.",
+            "Haumea": "Fertilidade criativa, resiliência e renascimento constante.",
+            "Makemake": "Conexão com a natureza, preservação e sabedoria instintiva.",
+            "Aldebaran": "Estrela Real (Touro): Honra, integridade e sucesso através da ética.",
+            "Regulus": "Estrela Real (Leão): Liderança, nobreza e sucesso com risco de queda se houver vingança.",
+            "Antares": "Estrela Real (Escorpião): Intensidade emocional, coragem e transformações passionais."
+        };
+ 
+        const DEFINICAO_ASPECTOS = [
+            { nome: "Conjunção", angulo: 0, orbe: 8, classe: "conj", simbolo: "☌", iconClass: "icon-conj" },
+            { nome: "Sextil", angulo: 60, orbe: 6, classe: "sext", simbolo: "✶", iconClass: "icon-sext" },
+            { nome: "Quadratura", angulo: 90, orbe: 7, classe: "quad", simbolo: "□", iconClass: "icon-quad" },
+            { nome: "Trígono", angulo: 120, orbe: 8, classe: "trig", simbolo: "△", iconClass: "icon-trig" },
+            { nome: "Oposição", angulo: 180, orbe: 8, classe: "opp", simbolo: "☍", iconClass: "icon-opp" }
+        ];
+
+        // Combinações temáticas: agrupam astros específicos por área da vida, para
+        // uma leitura de IA focada apenas naquele recorte (posições + aspectos entre
+        // eles), em vez de uma análise ponto a ponto ou do mapa inteiro.
+        const TEMAS_COMBINACOES = [
+            { titulo: "Amor e Relacionamentos", astros: ["Vênus", "Lua", "Marte", "Sol"], descricao: "Amor, afeto, linguagem da sedução, dinâmica de atração e necessidades emocionais em relacionamentos." },
+            { titulo: "Mente e Aprendizado", astros: ["Mercúrio", "Lua", "Saturno"], descricao: "Raciocínio, capacidade de aprendizado, foco, retenção de memória e estilo de comunicação." },
+            { titulo: "Vitalidade e Autoafirmação", astros: ["Sol", "Ascendente (AC)", "Marte"], descricao: "Vitalidade, força de ação, expressão do ego, presença física e autoafirmação." },
+            { titulo: "Carreira e Vocação", astros: ["Saturno", "Meio do Céu (MC)", "Sol", "Mercúrio"], descricao: "Ambição profissional, vocação, construção de carreira, reputação pública e métodos de trabalho." },
+            { titulo: "Psique Profunda", astros: ["Lua", "Plutão", "Netuno"], descricao: "Psique profunda, padrões inconscientes, mecanismos de defesa, traumas, intuição e imaginação." },
+            { titulo: "Propósito de Vida", astros: ["Nodo Norte", "Nodo Sul", "Saturno", "Quíron"], descricao: "Propósito de vida, bagagem de passado, lições evolutivas, feridas estruturantes e amadurecimento." },
+            { titulo: "Personalidade Básica", astros: ["Sol", "Lua"], descricao: "Equilíbrio básico da personalidade, integração entre a vontade consciente e o mundo emocional interior." },
+            { titulo: "Atração e Polaridade", astros: ["Vênus", "Marte"], descricao: "Dinâmica de atração sexual, polaridade entre desejo (conquista) e receptividade (relação)." },
+            { titulo: "Filosofia de Vida", astros: ["Júpiter", "Saturno"], descricao: "Filosofia de vida, capacidade de expansão equilibrada com limites, ética e estrutura de crescimento no mundo." },
+            { titulo: "Expressão Artística", astros: ["Mercúrio", "Vênus"], descricao: "Expressão artística, diplomacia na fala, estética verbal e inteligência social." },
+            { titulo: "Impulso e Resiliência", astros: ["Marte", "Plutão"], descricao: "Impulso de sobrevivência, capacidade de regeneração, resiliência física e força de vontade sob extrema pressão." },
+            { titulo: "Sensibilidade e Acolhimento", astros: ["Lua", "Vênus"], descricao: "Sensibilidade, busca por conforto, autocuidado e forma de acolher pessoas e ambientes." }
+        ];
+ 
+        let ULTIMO_ASTROS = [];
+        let ULTIMO_CASAS = [];
+        let ULTIMO_ASC = 0;
+        let ULTIMO_ASPECTOS = [];
+        let ULTIMO_BALANCO = { elementos: {}, ritmos: {}, polaridades: {} };
+ 
+        function degToRad(deg) { return deg * Math.PI / 180; }
+        function radToDeg(rad) { return rad * 180 / Math.PI; }
+        function normalizar(graus) { return (graus % 360 + 360) % 360; }
+
+        // Retrogradação: compara a longitude do corpo no instante do mapa com a
+        // longitude dele 1 dia depois. Se o grau "andar pra trás" (considerando a
+        // volta do 360°/0°), o corpo está retrógrado nesse momento — aparente da
+        // Terra, exatamente como softwares profissionais calculam.
+        function ehRetrogrado(grauAtual, grauDepois) {
+            let diff = grauDepois - grauAtual;
+            diff = ((diff + 180) % 360 + 360) % 360 - 180;
+            return diff < 0;
+        }
+ 
+        function formatarDMS(grausDecimal) {
+            const gAbs = grausDecimal % 30;
+            const g = Math.floor(gAbs);
+            const m = Math.floor((gAbs - g) * 60);
+            return `${g}°${m.toString().padStart(2, '0')}'`;
+        }
+
+        // ==========================================
+        // ELEMENTOS ORBITAIS REAIS (cada corpo com sua própria época de referência)
+        // ==========================================
+        // a = semieixo maior (UA), e = excentricidade, i = inclinação (graus),
+        // om = longitude do nodo ascendente (graus), w = argumento do periélio (graus),
+        // M0 = anomalia média na época (graus), epoch = data juliana da época de
+        // referência (fonte: JPL Small-Body Database, elementos osculadores recentes).
+        // ⚠️ Níveis de confiança diferentes (ver também NIVEL_PRECISAO mais abaixo,
+        // usado para colorir os ícones na roda):
+        // - Ceres, Pallas, Juno, Vesta: cinturão principal, órbitas estáveis e pouco
+        //   perturbadas por planetas gigantes — confiança "média" (amarelo).
+        // - Quíron, Pholus: centauros que cruzam as órbitas de Saturno/Urano/Netuno,
+        //   mais sensíveis a perturbações não modeladas neste cálculo de 2 corpos —
+        //   confiança "baixa" (vermelho), mesmo com elementos reais e época recente.
+        // - Éris, Sedna, Haumea, Makemake: TNOs de período muito longo (283 a ~11.400
+        //   anos) — confiança "baixa" (vermelho) pela mesma razão.
+        // - Todos os 10 corpos abaixo usam elementos orbitais REAIS (JPL Small-Body
+        //   Database, via Wikipedia), cada um com sua própria época de referência
+        //   recente (2020-2025) — não mais uma única estimativa arbitrária para o ano
+        //   2000. Cálculo por órbita de 2 corpos (sem perturbações planetárias).
+        const ELEMENTOS_KEPLER = {
+            "Quíron":   { epoch: 2459396.5, a: 13.70,   e: 0.3772,  i: 6.9299,  om: 209.27,  w: 339.71,  M0: 180.70  },
+            "Ceres":    { epoch: 2460200.5, a: 2.767,   e: 0.0789,  i: 10.59,   om: 80.25,   w: 73.42,   M0: 60.08   },
+            "Pallas":   { epoch: 2460200.5, a: 2.77,    e: 0.2302,  i: 34.93,   om: 172.9,   w: 310.9,   M0: 40.6    },
+            "Juno":     { epoch: 2460200.5, a: 2.67,    e: 0.2562,  i: 12.991,  om: 169.84,  w: 247.74,  M0: 37.02   },
+            "Vesta":    { epoch: 2460200.5, a: 2.36,    e: 0.0894,  i: 7.1422,  om: 103.71,  w: 151.66,  M0: 169.4   },
+            "Pholus":   { epoch: 2459396.5, a: 20.348,  e: 0.5698,  i: 24.617,  om: 119.44,  w: 354.77,  M0: 117.26  },
+            "Éris":     { epoch: 2461000.5, a: 67.69,   e: 0.44,    i: 44.18,   om: 36.02,   w: 151.66,  M0: 205.11  },
+            "Sedna":    { epoch: 2458900.5, a: 506.0,   e: 0.8496,  i: 11.9307, om: 144.248, w: 311.352, M0: 358.117 },
+            "Haumea":   { epoch: 2459200.5, a: 43.116,  e: 0.19642, i: 28.2137, om: 122.167, w: 239.041, M0: 218.205 },
+            "Makemake": { epoch: 2461000.5, a: 45.499,  e: 0.1604,  i: 29.002,  om: 79.441,  w: 296.065, M0: 170.497 }
+        };
+
+        // Classificação de confiança de cada ponto, usada para colorir os ícones na
+        // roda (azul = alta, amarelo = média, vermelho = mais baixa).
+        const NIVEL_PRECISAO = {
+            "Sol": "alta", "Lua": "alta", "Mercúrio": "alta", "Vênus": "alta", "Marte": "alta",
+            "Júpiter": "alta", "Saturno": "alta", "Urano": "alta", "Netuno": "alta", "Plutão": "alta",
+            "Ascendente (AC)": "alta", "Descendente (DC)": "alta",
+            "Meio do Céu (MC)": "alta", "Fundo do Céu (IC)": "alta",
+            "Vertex": "alta", "Anti-vertex": "alta",
+            "Nodo Norte": "alta", "Nodo Sul": "alta", "Lilith": "alta", "Roda da Fortuna": "alta",
+            "Aldebaran": "alta", "Regulus": "alta", "Antares": "alta",
+            "Ceres": "media", "Pallas": "media", "Juno": "media", "Vesta": "media",
+            "Quíron": "baixa", "Pholus": "baixa",
+            "Éris": "baixa", "Sedna": "baixa", "Haumea": "baixa", "Makemake": "baixa"
+        };
+        const CORES_PRECISAO = { alta: "#58a6ff", media: "#e3b341", baixa: "#f85149" };
+
+        function dataParaJD(dataUTC) {
+            return (dataUTC.getTime() / 86400000) + 2440587.5;
+        }
+
+        // Resolve a equação de Kepler M = E - e*sin(E) por Newton-Raphson
+        function resolverKepler(Mrad, e) {
+            let E = Mrad;
+            for (let k = 0; k < 60; k++) {
+                const dE = (E - e * Math.sin(E) - Mrad) / (1 - e * Math.cos(E));
+                E -= dE;
+                if (Math.abs(dE) < 1e-9) break;
+            }
+            return E;
+        }
+
+        // Longitude eclíptica GEOCÊNTRICA real de um corpo a partir de elementos
+        // keplerianos heliocêntricos + posição heliocêntrica real da Terra (via
+        // astronomy-engine).
+        function calcularLongitudeKepleriana(el, dataUTC) {
+            const periodoDias = Math.pow(el.a, 1.5) * 365.25;
+            const n = 360 / periodoDias;
+            const dt = dataParaJD(dataUTC) - el.epoch;
+            const M = normalizar(el.M0 + n * dt);
+            const E = resolverKepler(degToRad(M), el.e);
+
+            const xOrb = el.a * (Math.cos(E) - el.e);
+            const yOrb = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+
+            const wRad = degToRad(el.w), iRad = degToRad(el.i), omRad = degToRad(el.om);
+            const cosO = Math.cos(omRad), sinO = Math.sin(omRad);
+            const cosW = Math.cos(wRad), sinW = Math.sin(wRad);
+            const cosI = Math.cos(iRad), sinI = Math.sin(iRad);
+
+            const xHelio = (cosO * cosW - sinO * sinW * cosI) * xOrb + (-cosO * sinW - sinO * cosW * cosI) * yOrb;
+            const yHelio = (sinO * cosW + cosO * sinW * cosI) * xOrb + (-sinO * sinW + cosO * cosW * cosI) * yOrb;
+
+            const terraHelioEq = Astronomy.HelioVector(Astronomy.Body.Earth, dataUTC);
+            const terraHelioEcl = Astronomy.Ecliptic(terraHelioEq).vec;
+
+            const gx = xHelio - terraHelioEcl.x;
+            const gy = yHelio - terraHelioEcl.y;
+
+            return normalizar(radToDeg(Math.atan2(gy, gx)));
+        }
+
+        async function buscarCoordenadas() {
+            const cidadeStr = document.getElementById('cidadeInput').value.trim();
+            const statusDiv = document.getElementById('geoStatus');
+            if (!cidadeStr) return;
+
+            statusDiv.style.display = 'block';
+            statusDiv.style.color = '#8b949e';
+            statusDiv.textContent = 'Buscando coordenadas...';
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cidadeStr)}&limit=1`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat).toFixed(4);
+                    const lon = parseFloat(data[0].lon).toFixed(4);
+                    
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lon').value = lon;
+                    
+                    statusDiv.style.color = 'var(--terra)';
+                    statusDiv.textContent = `✓ Local encontrado: Lat ${lat}, Lon ${lon}`;
+                } else {
+                    statusDiv.style.color = 'var(--fogo)';
+                    statusDiv.textContent = 'Local não encontrado. Insira a Lat/Lon manualmente.';
+                }
+            } catch (err) {
+                console.error(err);
+                statusDiv.style.color = 'var(--fogo)';
+                statusDiv.textContent = 'Erro ao buscar cidade. Insira a Lat/Lon manualmente.';
+            }
+        }
+ 
+        function calcularMapaNatal() {
+            const dateVal = document.getElementById('date').value;
+            const timeVal = document.getElementById('time').value;
+            const fuso = parseFloat(document.getElementById('fuso').value);
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
+ 
+            const [year, month, day] = dateVal.split('-').map(Number);
+            const [hours, minutes] = timeVal.split(':').map(Number);
+            
+            const hourUTC = hours + (minutes / 60) - fuso;
+            let m = month, y = year;
+            if (m <= 2) { y -= 1; m += 12; }
+            let A = Math.floor(y / 100);
+            let B = 2 - A + Math.floor(A / 4);
+            let jdBirth = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + (hourUTC / 24.0) + B - 1524.5;
+            let TRS = (jdBirth - 2451545.0) / 36525.0;
+
+            // GMST correto (Meeus): usa a taxa de rotação da Terra por DIA (360.98564736629°/dia),
+            // não por século — o valor anterior estava ~366x menor que o correto, por isso o
+            // Ascendente praticamente não mudava ao alterar o horário de nascimento.
+            let diasDesdeJ2000 = jdBirth - 2451545.0;
+            let gmst = 280.46061837 + 360.98564736629 * diasDesdeJ2000 + 0.000387933 * TRS * TRS - (TRS * TRS * TRS) / 38710000.0;
+            gmst = normalizar(gmst);
+            let lst = normalizar(gmst + lon);
+            let obliq = degToRad(23.4392911 - 0.0130042 * TRS);
+ 
+            let mc = normalizar(radToDeg(Math.atan2(Math.sin(degToRad(lst)), Math.cos(degToRad(lst)) * Math.cos(obliq))));
+            // atan2 já resolve o quadrante corretamente — não é necessário (nem correto)
+            // forçar o resultado para nenhuma faixa fixa de graus.
+            let asc = normalizar(radToDeg(Math.atan2(Math.cos(degToRad(lst)), -Math.sin(degToRad(lst)) * Math.cos(obliq) - Math.tan(degToRad(lat)) * Math.sin(obliq))));
+
+            // Planetas Principais — posições geocêntricas REAIS via astronomy-engine
+            // (mesma classe de precisão de efeméride usada por softwares profissionais)
+            const dataNascUTC = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) + hourUTC * 3600000);
+
+            function longitudeEclipticaReal(corpo, dataCustom) {
+                const vetor = Astronomy.GeoVector(corpo, dataCustom || dataNascUTC, true);
+                return normalizar(Astronomy.Ecliptic(vetor).elon);
+            }
+
+            const sol = longitudeEclipticaReal(Astronomy.Body.Sun);
+            const lua = normalizar(Astronomy.EclipticGeoMoon(dataNascUTC).lon);
+            const mercurio = longitudeEclipticaReal(Astronomy.Body.Mercury);
+            const venus = longitudeEclipticaReal(Astronomy.Body.Venus);
+            const marte = longitudeEclipticaReal(Astronomy.Body.Mars);
+            const jupiter = longitudeEclipticaReal(Astronomy.Body.Jupiter);
+            const saturno = longitudeEclipticaReal(Astronomy.Body.Saturn);
+            const urano = longitudeEclipticaReal(Astronomy.Body.Uranus);
+            const netuno = longitudeEclipticaReal(Astronomy.Body.Neptune);
+            const plutao = longitudeEclipticaReal(Astronomy.Body.Pluto);
+
+            // Retrogradação dos planetas e corpos menores: compara a posição no
+            // instante do mapa com a posição 1 dia depois. Sol, Lua, ângulos, nodos,
+            // Lilith, Roda da Fortuna e estrelas fixas nunca entram aqui (não
+            // retrogradam de verdade, ou o conceito não se aplica a eles).
+            const dataSeguinte = new Date(dataNascUTC.getTime() + 86400000);
+            const RETROGRADOS = {
+                "Mercúrio": ehRetrogrado(mercurio, longitudeEclipticaReal(Astronomy.Body.Mercury, dataSeguinte)),
+                "Vênus": ehRetrogrado(venus, longitudeEclipticaReal(Astronomy.Body.Venus, dataSeguinte)),
+                "Marte": ehRetrogrado(marte, longitudeEclipticaReal(Astronomy.Body.Mars, dataSeguinte)),
+                "Júpiter": ehRetrogrado(jupiter, longitudeEclipticaReal(Astronomy.Body.Jupiter, dataSeguinte)),
+                "Saturno": ehRetrogrado(saturno, longitudeEclipticaReal(Astronomy.Body.Saturn, dataSeguinte)),
+                "Urano": ehRetrogrado(urano, longitudeEclipticaReal(Astronomy.Body.Uranus, dataSeguinte)),
+                "Netuno": ehRetrogrado(netuno, longitudeEclipticaReal(Astronomy.Body.Neptune, dataSeguinte)),
+                "Plutão": ehRetrogrado(plutao, longitudeEclipticaReal(Astronomy.Body.Pluto, dataSeguinte))
+            };
+
+            // Ângulos Derivados
+            const dc = normalizar(asc + 180);
+            const ic = normalizar(mc + 180);
+            // Vertex/Anti-vertex — fórmula trigonométrica real (método da co-latitude,
+            // usado por softwares e tabelas de casas tradicionais): calcula-se um
+            // "Ascendente" com a MESMA fórmula do Ascendente comum, mas usando a
+            // co-latitude (90° − latitude) no lugar da latitude. O resultado disso é o
+            // Anti-vertex; o Vertex é o ponto oposto (+180°). Substituiu a fórmula
+            // simplificada anterior (asc + 180 − seno(asc)×12), que não era a fórmula
+            // astronômica padrão.
+            const antiVertex = normalizar(radToDeg(Math.atan2(Math.cos(degToRad(lst)), -Math.sin(degToRad(lst)) * Math.cos(obliq) - Math.tan(degToRad(90 - lat)) * Math.sin(obliq))));
+            const vertex = normalizar(antiVertex + 180);
+
+            // Pontos e Nodos
+            // Roda da Fortuna (Parte da Fortuna): a fórmula tradicional muda entre
+            // mapa diurno (Sol acima do horizonte) e noturno (Sol abaixo do horizonte).
+            const mapaDiurno = normalizar(sol - asc) >= 180;
+            const rodaFortuna = mapaDiurno
+                ? normalizar(asc + lua - sol)
+                : normalizar(asc + sol - lua);
+            const nodoNorte = normalizar(125.044558 - 1934.1361849 * TRS);
+            const nodoSul = normalizar(nodoNorte + 180);
+
+            // Centauros, Asteroides e TNOs — mecânica orbital kepleriana REAL (elementos
+            // orbitais osculadores + posição heliocêntrica real da Terra), substituindo
+            // as antigas curvas senoidais/lineares fictícias. Ver ELEMENTOS_KEPLER e
+            // calcularLongitudeKepleriana() no topo do script.
+            const quiron = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Quíron"], dataNascUTC);
+            // Lilith (Lua Negra média) = longitude média do apogeu lunar (fórmula real, Meeus)
+            const meanPerigeuLunar = 83.3532465 + 4069.0137287 * TRS - 0.0103200 * TRS * TRS
+                                    - Math.pow(TRS, 3) / 80053 + Math.pow(TRS, 4) / 18999000;
+            const lilith = normalizar(meanPerigeuLunar + 180);
+            const ceres = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Ceres"], dataNascUTC);
+            const pallas = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Pallas"], dataNascUTC);
+            const juno = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Juno"], dataNascUTC);
+            const vesta = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Vesta"], dataNascUTC);
+            const pholus = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Pholus"], dataNascUTC);
+            // "Cápulo" foi removido: não corresponde a nenhum corpo celeste catalogado
+            // (IAU/JPL) — era um deslocamento simbólico arbitrário sem base real.
+
+            // Transnetunianos (TNOs)
+            const eris = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Éris"], dataNascUTC);
+            const sedna = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Sedna"], dataNascUTC);
+            const haumea = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Haumea"], dataNascUTC);
+            const makemake = calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Makemake"], dataNascUTC);
+
+            // Retrogradação dos corpos menores (mesma técnica: compara com 1 dia depois)
+            RETROGRADOS["Quíron"] = ehRetrogrado(quiron, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Quíron"], dataSeguinte));
+            RETROGRADOS["Ceres"] = ehRetrogrado(ceres, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Ceres"], dataSeguinte));
+            RETROGRADOS["Pallas"] = ehRetrogrado(pallas, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Pallas"], dataSeguinte));
+            RETROGRADOS["Juno"] = ehRetrogrado(juno, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Juno"], dataSeguinte));
+            RETROGRADOS["Vesta"] = ehRetrogrado(vesta, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Vesta"], dataSeguinte));
+            RETROGRADOS["Pholus"] = ehRetrogrado(pholus, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Pholus"], dataSeguinte));
+            RETROGRADOS["Éris"] = ehRetrogrado(eris, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Éris"], dataSeguinte));
+            RETROGRADOS["Sedna"] = ehRetrogrado(sedna, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Sedna"], dataSeguinte));
+            RETROGRADOS["Haumea"] = ehRetrogrado(haumea, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Haumea"], dataSeguinte));
+            RETROGRADOS["Makemake"] = ehRetrogrado(makemake, calcularLongitudeKepleriana(ELEMENTOS_KEPLER["Makemake"], dataSeguinte));
+
+            // Estrelas Fixas — precessão real: ~50,29"/ano = 1,39697°/século (constante IAU)
+            const precessao = TRS * 1.39697;
+            const aldebaran = normalizar(69.78 + precessao);  
+            const regulus = normalizar(149.83 + precessao);   
+            const antares = normalizar(249.76 + precessao);   
+
+            const astros = [
+                { nome: "Sol", grau: sol }, { nome: "Lua", grau: lua },
+                { nome: "Mercúrio", grau: mercurio }, { nome: "Vênus", grau: venus },
+                { nome: "Marte", grau: marte }, { nome: "Júpiter", grau: jupiter },
+                { nome: "Saturno", grau: saturno }, { nome: "Urano", grau: urano },
+                { nome: "Netuno", grau: netuno }, { nome: "Plutão", grau: plutao },
+                
+                { nome: "Ascendente (AC)", grau: asc }, { nome: "Descendente (DC)", grau: dc },
+                { nome: "Meio do Céu (MC)", grau: mc }, { nome: "Fundo do Céu (IC)", grau: ic },
+                { nome: "Vertex", grau: vertex }, { nome: "Anti-vertex", grau: antiVertex },
+
+                { nome: "Roda da Fortuna", grau: rodaFortuna },
+                { nome: "Nodo Norte", grau: nodoNorte }, { nome: "Nodo Sul", grau: nodoSul },
+                { nome: "Quíron", grau: quiron }, { nome: "Lilith", grau: lilith },
+
+                { nome: "Ceres", grau: ceres }, { nome: "Pallas", grau: pallas },
+                { nome: "Juno", grau: juno }, { nome: "Vesta", grau: vesta },
+
+                { nome: "Pholus", grau: pholus },
+
+                { nome: "Éris", grau: eris }, { nome: "Sedna", grau: sedna },
+                { nome: "Haumea", grau: haumea }, { nome: "Makemake", grau: makemake },
+
+                { nome: "Aldebaran", grau: aldebaran }, { nome: "Regulus", grau: regulus },
+                { nome: "Antares", grau: antares }
+            ];
+
+            astros.forEach(a => { a.retrogrado = RETROGRADOS[a.nome] || false; });
+ 
+            const casas = Array.from({ length: 12 }, (_, i) => normalizar(asc + (i * 30)));
+ 
+            // Atribuição de casa considerando a passagem por 0°/360°: a cúspide de uma
+            // casa pode "virar o zero" (ex: Casa 9 em 350° e Casa 10 em 20°). A versão
+            // anterior comparava apenas casas[i] < grau < casas[i+1] assumindo ordem
+            // crescente, então QUALQUER casa em que essa virada ocorresse jogava os
+            // astros incorretamente para a Casa 12 (fallback), em vez da casa correta.
+            astros.forEach(a => {
+                let casaEncontrada = 12;
+                for (let i = 0; i < 12; i++) {
+                    const inicio = casas[i];
+                    const fim = casas[(i + 1) % 12];
+                    if (fim > inicio) {
+                        if (a.grau >= inicio && a.grau < fim) { casaEncontrada = i + 1; break; }
+                    } else {
+                        if (a.grau >= inicio || a.grau < fim) { casaEncontrada = i + 1; break; }
+                    }
+                }
+                a.casa = casaEncontrada;
+            });
+ 
+            return { astros, casas, asc };
+        }
+ 
+        function calcularAspectos(astros) {
+            const aspectos = [];
+            for (let i = 0; i < astros.length; i++) {
+                for (let j = i + 1; j < astros.length; j++) {
+                    const a1 = astros[i], a2 = astros[j];
+                    let diff = Math.abs(a1.grau - a2.grau);
+                    if (diff > 180) diff = 360 - diff;
+ 
+                    DEFINICAO_ASPECTOS.forEach(asp => {
+                        const orbeAtual = Math.abs(diff - asp.angulo);
+                        if (orbeAtual <= asp.orbe) {
+                            aspectos.push({
+                                astro1: a1.nome, astro2: a2.nome, aspecto: asp.nome,
+                                classe: asp.classe, simbolo: asp.simbolo, iconClass: asp.iconClass, orbe: orbeAtual.toFixed(1)
+                            });
+                        }
+                    });
+                }
+            }
+            return aspectos;
+        }
+ 
+        function renderizarBalanço(astros) {
+            const elementos = { Fogo: 0, Terra: 0, Ar: 0, Água: 0 };
+            const ritmos = { Cardinal: 0, Fixo: 0, Mutável: 0 };
+            const polaridades = { Yang: 0, Yin: 0 };
+ 
+            const planetasPrincipais = astros.filter(a => ["Sol", "Lua", "Mercúrio", "Vênus", "Marte", "Júpiter", "Saturno", "Urano", "Netuno", "Plutão"].includes(a.nome));
+            
+            planetasPrincipais.forEach(a => {
+                const sIdx = Math.floor(a.grau / 30) % 12;
+                const signo = SIGNOS_DADOS[sIdx];
+                elementos[signo.elemento]++;
+                ritmos[signo.ritmo]++;
+                polaridades[signo.polaridade]++;
+            });
+ 
+            const total = planetasPrincipais.length;
+            ULTIMO_BALANCO = { elementos, ritmos, polaridades };
+            const coresElementos = { Fogo: "var(--fogo)", Terra: "var(--terra)", Ar: "var(--ar)", Água: "var(--agua)" };
+ 
+            document.getElementById('elementosBars').innerHTML = Object.keys(elementos).map(k => {
+                const pct = Math.round((elementos[k] / total) * 100);
+                return `
+                    <div class="progress-item">
+                        <div class="progress-info"><span>${k} (${elementos[k]})</span><span>${pct}%</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:${coresElementos[k]}"></div></div>
+                    </div>
+                `;
+            }).join('');
+ 
+            document.getElementById('ritmosBars').innerHTML = Object.keys(ritmos).map(k => {
+                const pct = Math.round((ritmos[k] / total) * 100);
+                return `
+                    <div class="progress-item">
+                        <div class="progress-info"><span>${k} (${ritmos[k]})</span><span>${pct}%</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:var(--destaque)"></div></div>
+                    </div>
+                `;
+            }).join('');
+ 
+            document.getElementById('polaridadesBars').innerHTML = Object.keys(polaridades).map(k => {
+                const pct = Math.round((polaridades[k] / total) * 100);
+                const label = k === "Yang" ? "Yang (Ativo/Extrovertido)" : "Yin (Receptivo/Introspectivo)";
+                return `
+                    <div class="progress-item">
+                        <div class="progress-info"><span>${label}</span><span>${pct}%</span></div>
+                        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:var(--sol)"></div></div>
+                    </div>
+                `;
+            }).join('');
+        }
+ 
+        function renderizarAstrosExpansivel(astros) {
+            const container = document.getElementById('astrosExpandList');
+            const ordensSalvas = obterOrdensSalvas();
+            container.innerHTML = astros.map(a => {
+                const sIdx = Math.floor(a.grau / 30) % 12;
+                const signo = SIGNOS_DADOS[sIdx];
+                const simAstro = SIMBOLOS_ASTROS[a.nome] || '';
+                const explicacaoAstro = DEFINICAO_ASTROS[a.nome] || "";
+                const nivel = NIVEL_PRECISAO[a.nome] || "alta";
+                const corNivel = CORES_PRECISAO[nivel];
+                const rotuloNivel = nivel === 'alta' ? 'Confiabilidade alta' : (nivel === 'media' ? 'Confiabilidade média' : 'Confiabilidade mais baixa');
+                const jaFeito = ordensSalvas.has(2000 + ORDEM_ASTROS_BASE.indexOf(a.nome));
+                const marcaR = a.retrogrado ? '<span class="marca-retrogrado" title="Retrógrado">℞</span>' : '';
+
+                return `
+                    <div class="expand-card">
+                        <div class="expand-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="expand-title">
+                                <span title="${rotuloNivel}" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${corNivel}; flex-shrink:0;"></span>
+                                <span style="color:var(--sol); font-size:1.1rem;">${simAstro}</span>
+                                <span>${a.nome}${marcaR} em ${signo.nome} ${signo.simbolo}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${indicadorFeitoHtml(jaFeito)}
+                                <span class="expand-badge">Casa ${a.casa}</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="expand-content">
+                            <p style="margin-bottom: 8px;"><strong>Simbolismo:</strong> ${explicacaoAstro}</p>
+                            <p style="margin-bottom: 8px;"><strong>Significado Natal:</strong> Expressa a energia de <strong>${signo.nome}</strong> ativando a área de vida representada pela <strong>Casa ${a.casa}</strong>.${a.retrogrado ? ' Está <strong>retrógrado</strong> neste mapa, o que muda a forma como essa energia se expressa.' : ''}</p>
+                            <p style="margin-bottom: 6px;"><strong>Posição Exata:</strong> ${formatarDMS(a.grau)}${a.retrogrado ? ' ℞' : ''}</p>
+                            <p style="margin-bottom: 6px;"><strong>${rotuloNivel}</strong></p>
+                            
+                            <button class="btn-ia btn-ia-inline" onclick="event.stopPropagation(); dispararAnaliseIA('${a.nome}', '${signo.nome}', ${a.casa}, ${a.retrogrado ? 'true' : 'false'})">
+                                ✦ Interpretação Profunda com IA
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarCasasExpansivel(casas, astros) {
+            const container = document.getElementById('casasExpandList');
+            const ordensSalvas = obterOrdensSalvas();
+            container.innerHTML = casas.map((grauCasa, index) => {
+                const numCasa = index + 1;
+                const sIdx = Math.floor(grauCasa / 30) % 12;
+                const signoCuspide = SIGNOS_DADOS[sIdx];
+                
+                const astrosNaCasa = astros.filter(a => a.casa === numCasa);
+                const nomesAstros = astrosNaCasa.length > 0 
+                    ? astrosNaCasa.map(a => `${SIMBOLOS_ASTROS[a.nome] || ''} ${a.nome}${a.retrogrado ? ' ℞' : ''}`).join(', ')
+                    : 'Nenhum planeta presente (Casa Vazia)';
+
+                const ocupantesNomes = astrosNaCasa.map(a => `${a.nome}${a.retrogrado ? ' (retrógrado)' : ''}`).join(', ') || 'nenhum astro relevante';
+                const jaFeito = ordensSalvas.has(3000 + numCasa);
+
+                return `
+                    <div class="expand-card">
+                        <div class="expand-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="expand-title">
+                                <span style="color:var(--destaque); font-weight:bold;">Casa ${numCasa}</span>
+                                <span>em ${signoCuspide.nome} ${signoCuspide.simbolo}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${indicadorFeitoHtml(jaFeito)}
+                                <span class="expand-badge">${astrosNaCasa.length} astro(s)</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="expand-content">
+                            <p style="margin-bottom: 8px;"><strong>Tema da Casa:</strong> ${DEFINICAO_CASAS[numCasa]}</p>
+                            <p style="margin-bottom: 8px;"><strong>Cúspide:</strong> ${signoCuspide.nome} (${formatarDMS(grauCasa)})</p>
+                            <p style="margin-bottom: 6px;"><strong>Ocupantes Natas:</strong> ${nomesAstros}</p>
+                            
+                            <button class="btn-ia btn-ia-inline" onclick="event.stopPropagation(); dispararAnaliseCasaIA(${numCasa}, '${signoCuspide.nome}', '${ocupantesNomes}')">
+                                ✦ Análise da Casa com IA
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+ 
+        function renderizarAspectosExpansivel(aspectos) {
+            const container = document.getElementById('aspectosExpandList');
+            const ordensSalvas = obterOrdensSalvas();
+            container.innerHTML = aspectos.map((asp, indice) => {
+                const sim1 = SIMBOLOS_ASTROS[asp.astro1] || '';
+                const sim2 = SIMBOLOS_ASTROS[asp.astro2] || '';
+                const jaFeito = ordensSalvas.has(5000 + indice);
+
+                return `
+                    <div class="expand-card">
+                        <div class="expand-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="expand-title">
+                                <span>${sim1} ${asp.astro1} ${asp.simbolo} ${asp.astro2} ${sim2}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${indicadorFeitoHtml(jaFeito)}
+                                <span class="badge-aspecto ${asp.classe}">${asp.aspecto}</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="expand-content">
+                            <p style="margin-bottom: 8px;"><strong>Dinâmica Psicológica:</strong> Integração interpessoal entre as energias de ${asp.astro1} e ${asp.astro2}.</p>
+                            <p style="margin-bottom: 6px;"><strong>Orbe de Precisão:</strong> ${asp.orbe}°</p>
+                            
+                            <button class="btn-ia btn-ia-inline" onclick="event.stopPropagation(); dispararAnaliseAspectoIA('${asp.astro1}', '${asp.aspecto}', '${asp.astro2}')">
+                                ✦ Interpretar Aspecto com IA
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+ 
+        function renderizarTemas(astros) {
+            const container = document.getElementById('temasExpandList');
+            if (!container) return;
+            const ordensSalvas = obterOrdensSalvas();
+
+            container.innerHTML = TEMAS_COMBINACOES.map((tema, indice) => {
+                const astrosEncontrados = tema.astros
+                    .map(nome => astros.find(a => a.nome === nome))
+                    .filter(Boolean);
+
+                const resumoPosicoes = astrosEncontrados.map(a => {
+                    const sIdx = Math.floor(a.grau / 30) % 12;
+                    const signo = SIGNOS_DADOS[sIdx];
+                    const sim = SIMBOLOS_ASTROS[a.nome] || '';
+                    return `${sim} ${a.nome}${a.retrogrado ? ' ℞' : ''} em ${signo.nome} (Casa ${a.casa})`;
+                }).join(' · ');
+
+                const jaFeito = ordensSalvas.has(6000 + indice);
+
+                return `
+                    <div class="expand-card">
+                        <div class="expand-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="expand-title">
+                                <span>${tema.titulo}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                ${indicadorFeitoHtml(jaFeito)}
+                                <span class="expand-badge">${tema.astros.length} astros</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="expand-content">
+                            <p style="margin-bottom: 8px;"><strong>Sobre este tema:</strong> ${tema.descricao}</p>
+                            <p style="margin-bottom: 8px; font-size:0.8rem;">${resumoPosicoes || 'Calcule o mapa para ver as posições.'}</p>
+
+                            <button class="btn-ia btn-ia-inline" onclick="event.stopPropagation(); dispararAnaliseTemaIA(${indice})">
+                                ✦ Analisar este Tema com IA
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function gerarMatrizHtml(astros, aspectos) {
+            let html = "";
+            const total = astros.length;
+ 
+            for (let i = 0; i < total; i++) {
+                html += "<tr>";
+                for (let j = 0; j < total; j++) {
+                    if (i === j) {
+                        html += `<th class="header-astro" title="${astros[i].nome}">${SIMBOLOS_ASTROS[astros[i].nome]}</th>`;
+                    } else if (i > j) {
+                        const asp = aspectos.find(a => (a.astro1 === astros[i].nome && a.astro2 === astros[j].nome) || (a.astro2 === astros[i].nome && a.astro1 === astros[j].nome));
+                        if (asp) {
+                            html += `<td class="cell-aspect ${asp.iconClass}" title="${asp.aspecto}">${asp.simbolo}</td>`;
+                        } else {
+                            html += `<td class="cell-aspect"></td>`;
+                        }
+                    } else {
+                        html += `<td class="empty-cell"></td>`;
+                    }
+                }
+                html += "</tr>";
+            }
+ 
+            document.getElementById('matrixAspectos').innerHTML = html;
+        }
+ 
+        function desenharRodaSVG(astros, casas, asc) {
+            const svg = document.getElementById('chartSvg');
+            svg.innerHTML = '';
+            const cx = 300, cy = 300, rOuter = 285, rInner = 230, rCasas = 160, rCore = 80;
+ 
+            const grauParaAngulo = (g) => (180 + (g - asc)) % 360;
+            const polarToCart = (r, a) => {
+                const rad = (a - 180) * Math.PI / 180;
+                return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+            };
+ 
+            for (let i = 0; i < 12; i++) {
+                const aIn = grauParaAngulo(i * 30), aFim = grauParaAngulo((i + 1) * 30);
+                const p1 = polarToCart(rOuter, aIn), p2 = polarToCart(rOuter, aFim);
+                const p3 = polarToCart(rInner, aFim), p4 = polarToCart(rInner, aIn);
+ 
+                const d = `M ${p1.x} ${p1.y} A ${rOuter} ${rOuter} 0 0 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${rInner} ${rInner} 0 0 0 ${p4.x} ${p4.y} Z`;
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', d);
+                path.setAttribute('fill', i % 2 === 0 ? '#161b22' : '#0d1117');
+                path.setAttribute('stroke', '#30363d');
+                svg.appendChild(path);
+ 
+                const pTxt = polarToCart((rOuter + rInner) / 2, grauParaAngulo(i * 30 + 15));
+                const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                txt.setAttribute('x', pTxt.x); txt.setAttribute('y', pTxt.y);
+                txt.setAttribute('class', 'signo-symbol');
+                txt.textContent = SIGNOS_DADOS[i].simbolo;
+                svg.appendChild(txt);
+            }
+ 
+            casas.forEach((c, i) => {
+                const p1 = polarToCart(rInner, grauParaAngulo(c)), p2 = polarToCart(rCore, grauParaAngulo(c));
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+                line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+                line.setAttribute('stroke', (i % 3 === 0) ? '#58a6ff' : '#30363d');
+                svg.appendChild(line);
+            });
+ 
+            const coreCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            coreCircle.setAttribute('cx', cx); coreCircle.setAttribute('cy', cy); coreCircle.setAttribute('r', rCore);
+            coreCircle.setAttribute('fill', '#0b0e14'); coreCircle.setAttribute('stroke', '#30363d');
+            svg.appendChild(coreCircle);
+ 
+            astros.forEach(a => {
+                const p = polarToCart(rCasas, grauParaAngulo(a.grau));
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'planet-node');
+                g.setAttribute('transform', `translate(${p.x}, ${p.y})`);
+
+                const nivel = NIVEL_PRECISAO[a.nome] || "alta";
+                const corNivel = CORES_PRECISAO[nivel];
+ 
+                const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                c.setAttribute('r', 14);
+                c.setAttribute('stroke', corNivel);
+                c.setAttribute('stroke-width', 2);
+ 
+                const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                t.setAttribute('y', 1); 
+                t.setAttribute('fill', a.nome === "Sol" ? 'var(--sol)' : 'var(--destaque)');
+                t.setAttribute('font-size', '15px');
+                t.textContent = SIMBOLOS_ASTROS[a.nome] || a.nome[0];
+ 
+                g.appendChild(c); 
+                g.appendChild(t);
+
+                if (a.retrogrado) {
+                    const rTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    rTxt.setAttribute('x', 10);
+                    rTxt.setAttribute('y', -8);
+                    rTxt.setAttribute('font-size', '8px');
+                    rTxt.setAttribute('font-weight', 'bold');
+                    rTxt.setAttribute('fill', '#f0883e');
+                    rTxt.textContent = 'R';
+                    g.appendChild(rTxt);
+                }
+                
+                const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.textContent = `${a.nome}: ${formatarDMS(a.grau)} — confiabilidade ${nivel === 'alta' ? 'alta' : (nivel === 'media' ? 'média' : 'mais baixa')}${a.retrogrado ? ' — Retrógrado' : ''}`;
+                g.appendChild(title);
+ 
+                svg.appendChild(g);
+            });
+        }
+ 
+        // ==========================================
+        // INTEGRAÇÃO COM A IA
+        // ==========================================
+ 
+        // Ordem canônica dos astros, igual à ordem em que aparecem na lista
+        // "Posições Astrológicas" — usada para ordenar as leituras salvas na mesma
+        // sequência dos blocos do app.
+        const ORDEM_ASTROS_BASE = [
+            "Sol", "Lua", "Mercúrio", "Vênus", "Marte", "Júpiter", "Saturno", "Urano", "Netuno", "Plutão",
+            "Ascendente (AC)", "Descendente (DC)", "Meio do Céu (MC)", "Fundo do Céu (IC)", "Vertex", "Anti-vertex",
+            "Roda da Fortuna", "Nodo Norte", "Nodo Sul", "Quíron", "Lilith",
+            "Ceres", "Pallas", "Juno", "Vesta",
+            "Pholus",
+            "Éris", "Sedna", "Haumea", "Makemake",
+            "Aldebaran", "Regulus", "Antares"
+        ];
+
+        function iniciarAnaliseIA(titulo, promptText, ordem) {
+            ULTIMO_TITULO_ANALISE = titulo;
+            ULTIMO_ORDEM_ANALISE = (ordem !== undefined && ordem !== null) ? ordem : 9999;
+            document.getElementById('modalTitle').textContent = `✦ ${titulo}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Consultando IA astrológica...</p>
+                </div>`;
+            document.getElementById('aiModal').classList.add('active');
+            gerarAnaliseIA(promptText);
+        }
+ 
+        // Diretriz de tom compartilhada por todas as análises de IA: sem introdução,
+        // com profundidade filosófica/psicológica/simbólica, mas sem citar escolas de
+        // pensamento, tradições ou termos técnicos de sistemas específicos — o texto
+        // deve soar como uma leitura pessoal, nunca uma aula teórica.
+        const DIRETRIZ_TOM_IA = `Escreva com profundidade filosófica e psicológica, atento às camadas simbólicas, aos padrões ocultos por trás do comportamento e ao significado mais profundo por trás dos eventos de vida — como uma leitura séria, intuitiva e madura. NÃO cite nomes de escolas de pensamento, tradições, sistemas ou termos técnicos de nenhuma linha teórica específica; o foco deve estar inteiramente na pessoa e na energia analisada, com linguagem natural e envolvente.
+            NÃO escreva introduções, saudações, contextualizações iniciais ou frases como "vamos analisar" — a primeira frase já deve estar dentro do assunto central do tema, sem nenhum preâmbulo antes disso.
+            NÃO use títulos, cabeçalhos ou listas numeradas visíveis no texto final — apenas parágrafos corridos.
+            Escreva em tom de conversa direta com quem está lendo, como se estivesse falando pessoalmente com essa pessoa sobre ela mesma — dirija-se a ela usando "você", nunca em terceira pessoa distante ("esta pessoa", "o consulente") nem como um texto acadêmico impessoal.
+            Use formatação HTML básica com parágrafos <p> e destaques em <strong>.`;
+
+        function dispararAnaliseIA(nomeAstro, nomeSigno, numCasa, retrogrado) {
+            const notaRetrogrado = retrogrado
+                ? `\n\nImportante: ${nomeAstro} está RETRÓGRADO neste mapa. Isso muda o tom da leitura — considere isso ao longo de toda a análise (energia mais internalizada, revisitada, reprocessada, em vez de expressa diretamente para fora), sem citar o termo técnico "retrógrado" como se fosse um jargão à parte, apenas incorporando esse matiz na interpretação.`
+                : '';
+
+            const promptText = `Faça uma leitura astrológica sobre a posição de ${nomeAstro} em ${nomeSigno}, na Casa ${numCasa}, no Mapa Natal desta pessoa.${notaRetrogrado}
+
+            Siga rigorosamente esta estrutura, sem indicar os números ou nomes das etapas no texto final:
+            1. Um parágrafo breve sobre o que ${nomeAstro} representa como força interna nesta pessoa.
+            2. Um parágrafo sobre como ${nomeSigno} colore, direciona ou qualifica essa energia.
+            3. Um parágrafo sobre o que a Casa ${numCasa} revela sobre onde e como essa energia se manifesta na vida prática.
+            4. Uma análise geral, mais longa e rica, que une os três elementos acima como um retrato único e coerente, trazendo uma reflexão de autoconhecimento.
+
+            ${DIRETRIZ_TOM_IA}`;
+ 
+            iniciarAnaliseIA(`${nomeAstro}${retrogrado ? ' ℞' : ''} em ${nomeSigno} — Casa ${numCasa}`, promptText, 2000 + ORDEM_ASTROS_BASE.indexOf(nomeAstro));
+        }
+
+        function dispararAnaliseAspectoIA(astro1, aspecto, astro2) {
+            const a1 = ULTIMO_ASTROS.find(a => a.nome === astro1);
+            const a2 = ULTIMO_ASTROS.find(a => a.nome === astro2);
+            const notasRetrogrado = [
+                a1 && a1.retrogrado ? `${astro1} está retrógrado neste mapa.` : '',
+                a2 && a2.retrogrado ? `${astro2} está retrógrado neste mapa.` : ''
+            ].filter(Boolean).join(' ');
+
+            const promptText = `Faça uma leitura astrológica sobre o aspecto de ${aspecto} entre ${astro1} e ${astro2} no Mapa Natal desta pessoa.${notasRetrogrado ? '\n\nImportante: ' + notasRetrogrado + ' Considere esse matiz (energia mais internalizada/reprocessada) na leitura, sem tratar o termo como jargão à parte.' : ''}
+
+            Siga rigorosamente esta estrutura, sem indicar os números ou nomes das etapas no texto final:
+            1. Um parágrafo breve sobre o que ${astro1} representa como força interna nesta pessoa.
+            2. Um parágrafo breve sobre o que ${astro2} representa como força interna nesta pessoa.
+            3. Um parágrafo sobre a natureza do aspecto de ${aspecto} e como ele aproxima, tensiona ou funde essas duas energias.
+            4. Uma análise geral, mais longa e rica, sobre o que esse encontro de forças revela sobre os padrões, desafios e talentos da pessoa.
+
+            ${DIRETRIZ_TOM_IA}`;
+ 
+            const indiceAspecto = ULTIMO_ASPECTOS.findIndex(asp =>
+                (asp.astro1 === astro1 && asp.astro2 === astro2 && asp.aspecto === aspecto) ||
+                (asp.astro1 === astro2 && asp.astro2 === astro1 && asp.aspecto === aspecto)
+            );
+            iniciarAnaliseIA(`${astro1} ${aspecto} ${astro2}`, promptText, 5000 + (indiceAspecto >= 0 ? indiceAspecto : 0));
+        }
+
+        function dispararAnaliseCasaIA(numCasa, nomeSigno, ocupantes) {
+            const promptText = `Faça uma leitura astrológica sobre a Casa ${numCasa} do Mapa Natal desta pessoa, com cúspide em ${nomeSigno}, contendo: ${ocupantes}.
+
+            Siga rigorosamente esta estrutura, sem indicar os números ou nomes das etapas no texto final:
+            1. Um parágrafo breve sobre o que a Casa ${numCasa} representa como área de vida.
+            2. Um parágrafo sobre como ${nomeSigno}, na cúspide, qualifica a forma como essa área se expressa.
+            3. Um parágrafo sobre o papel dos astros presentes nessa casa (${ocupantes}) e como eles atuam nessa área específica.
+            4. Uma análise geral, mais longa e rica, unindo os três elementos acima em um retrato coerente do potencial dessa área na vida da pessoa.
+
+            ${DIRETRIZ_TOM_IA}`;
+
+            iniciarAnaliseIA(`Casa ${numCasa} em ${nomeSigno}`, promptText, 3000 + numCasa);
+        }
+ 
+        function dispararAnaliseBalanco(tipo) {
+            if (!ULTIMO_ASTROS.length) return;
+ 
+            let titulo, rotulo, dados, ordemBalanco;
+            if (tipo === 'elementos') {
+                titulo = `Balanço de Elementos`;
+                rotulo = 'elementos';
+                dados = ULTIMO_BALANCO.elementos;
+                ordemBalanco = 1000;
+            } else if (tipo === 'ritmos') {
+                titulo = `Balanço de Modalidades`;
+                rotulo = 'modalidades';
+                dados = ULTIMO_BALANCO.ritmos;
+                ordemBalanco = 1001;
+            } else {
+                titulo = `Balanço de Polaridades`;
+                rotulo = 'polaridades';
+                dados = ULTIMO_BALANCO.polaridades;
+                ordemBalanco = 1002;
+            }
+ 
+            const dadosTexto = Object.entries(dados).map(([k, v]) => `${k}: ${v}`).join(', ');
+ 
+            const promptText = `Faça uma leitura sobre o temperamento e a estrutura psíquica desta pessoa com base nesta distribuição de ${rotulo} no Mapa Natal: ${dadosTexto}.
+            Escreva de 3 a 4 parágrafos, explicando como essa proporção molda a forma da pessoa sentir, reagir e tomar decisões no dia a dia.
+            ${DIRETRIZ_TOM_IA}`;
+ 
+            iniciarAnaliseIA(titulo, promptText, ordemBalanco);
+        }
+ 
+        function dispararAnaliseMapaCompleto() {
+            if (!ULTIMO_ASTROS.length) return;
+ 
+            const listaPosicoes = ULTIMO_ASTROS.map(a => {
+                const sIdx = Math.floor(a.grau / 30) % 12;
+                const signo = SIGNOS_DADOS[sIdx];
+                return `${a.nome} em ${signo.nome} na Casa ${a.casa}`;
+            }).join('; ');
+ 
+            const promptText = `Elabore um relatório-síntese completo da personalidade para o Mapa Natal desta pessoa, baseado nas seguintes posições:
+ 
+            Posições Natas: ${listaPosicoes}.
+ 
+            Escreva de 5 a 7 parágrafos, destacando a tríade principal (Sol, Lua e Ascendente), os eixos angulares (MC/IC, DC) e os pontos de cura (Quíron/Nodos), trazendo reflexões valiosas sobre vocação, relacionamentos e evolução interior.
+            ${DIRETRIZ_TOM_IA}`;
+ 
+            iniciarAnaliseIA(`Relatório de Síntese Natal`, promptText, 0);
+        }
+ 
+        function dispararAnaliseAspectosCompleta() {
+            if (!ULTIMO_ASPECTOS.length) return;
+ 
+            const lista = ULTIMO_ASPECTOS
+                .map(asp => `${asp.astro1} em ${asp.aspecto} com ${asp.astro2}`)
+                .join('; ');
+ 
+            const promptText = `Faça uma leitura da dinâmica de aspectos natas desta pessoa:
+ 
+            ${lista}
+ 
+            Escreva de 4 a 5 parágrafos, conectando as dinâmicas de tensão e harmonia entre os diferentes talentos e padrões inatos.
+            ${DIRETRIZ_TOM_IA}`;
+ 
+            iniciarAnaliseIA(`Análise Psicológica de Aspectos Natas`, promptText, 4000);
+        }
+
+        function dispararAnaliseTemaIA(indice) {
+            if (!ULTIMO_ASTROS.length) return;
+            const tema = TEMAS_COMBINACOES[indice];
+            if (!tema) return;
+
+            const astrosEncontrados = tema.astros
+                .map(nome => ULTIMO_ASTROS.find(a => a.nome === nome))
+                .filter(Boolean);
+            if (!astrosEncontrados.length) return;
+
+            const descricaoPosicoes = astrosEncontrados.map(a => {
+                const sIdx = Math.floor(a.grau / 30) % 12;
+                const signo = SIGNOS_DADOS[sIdx];
+                return `${a.nome}${a.retrogrado ? ' (retrógrado)' : ''} em ${signo.nome} (Casa ${a.casa})`;
+            }).join('; ');
+
+            const nomesEnvolvidos = astrosEncontrados.map(a => a.nome);
+            const aspectosRelevantes = ULTIMO_ASPECTOS.filter(asp =>
+                nomesEnvolvidos.includes(asp.astro1) && nomesEnvolvidos.includes(asp.astro2)
+            );
+            const descricaoAspectos = aspectosRelevantes.length
+                ? aspectosRelevantes.map(asp => `${asp.astro1} em ${asp.aspecto} com ${asp.astro2}`).join('; ')
+                : 'nenhum aspecto direto relevante entre esses pontos específicos';
+
+            const promptText = `Faça uma leitura astrológica sobre o tema "${tema.titulo}" (${tema.descricao}) no Mapa Natal desta pessoa, considerando os seguintes astros e suas posições: ${descricaoPosicoes}.
+
+            Aspectos relevantes entre esses astros: ${descricaoAspectos}.
+
+            Siga rigorosamente esta estrutura, sem indicar os números ou nomes das etapas no texto final:
+            1. Um parágrafo comentando brevemente a posição de cada astro envolvido (signo e casa) e o que cada um contribui especificamente para esse tema.
+            2. Um parágrafo sobre a dinâmica formada pelos aspectos entre esses astros e como essa tensão ou fluidez atua especificamente nessa área da vida.
+            3. Uma análise geral, rica e integrada, sobre como esse conjunto se expressa nessa área da vida da pessoa.
+
+            ${DIRETRIZ_TOM_IA}`;
+
+            iniciarAnaliseIA(tema.titulo, promptText, 6000 + indice);
+        }
+ 
+        async function gerarAnaliseIA(promptText) {
+            const modalBody = document.getElementById('modalBody');
+            try {
+                const response = await fetch('https://astro-gns-proxy.genesisgns.workers.dev/', {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: promptText })
+                });
+ 
+                const data = await response.json();
+ 
+                if (response.ok && data.resposta) {
+                    exibirResultadoIA(data.resposta);
+                } else {
+                    modalBody.innerHTML = `<p style="color:var(--fogo);"><strong>Erro:</strong> ${data.error || "Não foi possível obter a resposta da IA."}</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                modalBody.innerHTML = `<p style="color:var(--fogo);"><strong>Erro de Conexão:</strong> ${err.message}</p>`;
+            }
+        }
+ 
+        function exibirResultadoIA(texto) {
+            let htmlFormatado = texto.replace(/```html/g, '').replace(/```/g, '');
+            document.getElementById('modalBody').innerHTML = htmlFormatado;
+            if (PESSOA_ATIVA_ID && ULTIMO_TITULO_ANALISE) {
+                salvarLeituraNaPessoaAtiva(ULTIMO_TITULO_ANALISE, htmlFormatado, ULTIMO_ORDEM_ANALISE);
+            }
+        }
+ 
+        function fecharModal() {
+            document.getElementById('aiModal').classList.remove('active');
+            pararLeituraVoz();
+        }
+ 
+        function fecharModalOuter(e) {
+            if (e.target.id === 'aiModal') fecharModal();
+        }
+
+        // ==========================================
+        // LEITURA EM VOZ ALTA (Web Speech API — nativa do navegador, sem custo)
+        // ==========================================
+        // A qualidade da voz depende só do que o aparelho/navegador oferece — não
+        // dá pra trocar por uma "biblioteca melhor" sem sair do modelo 100%
+        // gratuito e client-side. Em compensação, aqui a gente: (1) tenta escolher
+        // automaticamente a MELHOR voz em português disponível (vozes "de rede",
+        // tipo Google/Microsoft neurais, soam bem mais humanas que as vozes locais
+        // básicas do sistema); (2) deixa a pessoa escolher manualmente entre todas
+        // as vozes em português do aparelho, e lembra a escolha pra próxima vez.
+        let vozAtiva = false;
+        let VOZES_DISPONIVEIS = [];
+        const CHAVE_VOZ_PREFERIDA = 'astro_voz_preferida_v1';
+
+        // Nomes de vozes de rede (neurais/WaveNet) conhecidas por soarem mais
+        // naturais, usadas para ordenar a lista com as melhores primeiro.
+        const PISTAS_VOZ_BOA = ['google', 'wavenet', 'neural', 'natural', 'online', 'luciana', 'microsoft'];
+
+        function pontuarVoz(v) {
+            const nome = (v.name || '').toLowerCase();
+            let pontos = 0;
+            if (v.lang && v.lang.toLowerCase() === 'pt-br') pontos += 10;
+            else if (v.lang && v.lang.toLowerCase().startsWith('pt')) pontos += 5;
+            PISTAS_VOZ_BOA.forEach(pista => { if (nome.includes(pista)) pontos += 3; });
+            if (!v.localService) pontos += 2; // vozes de rede tendem a soar melhor que as locais
+            return pontos;
+        }
+
+        function carregarVozes() {
+            if (!('speechSynthesis' in window)) return;
+            const todas = speechSynthesis.getVoices();
+            let candidatas = todas.filter(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
+            if (!candidatas.length) candidatas = todas; // aparelho sem voz em pt: mostra todas como fallback
+
+            VOZES_DISPONIVEIS = candidatas.slice().sort((a, b) => pontuarVoz(b) - pontuarVoz(a));
+            popularSeletorVozes();
+        }
+
+        function popularSeletorVozes() {
+            const select = document.getElementById('vozSelect');
+            if (!select || !VOZES_DISPONIVEIS.length) return;
+
+            const preferida = localStorage.getItem(CHAVE_VOZ_PREFERIDA);
+
+            select.innerHTML = VOZES_DISPONIVEIS.map(v =>
+                `<option value="${v.name}">${v.name}${v.lang ? ' (' + v.lang + ')' : ''}</option>`
+            ).join('');
+
+            if (preferida && VOZES_DISPONIVEIS.some(v => v.name === preferida)) {
+                select.value = preferida;
+            } else {
+                select.value = VOZES_DISPONIVEIS[0].name; // já vem ordenada com a melhor primeiro
+            }
+        }
+
+        function salvarVozPreferida() {
+            const select = document.getElementById('vozSelect');
+            if (!select) return;
+            localStorage.setItem(CHAVE_VOZ_PREFERIDA, select.value);
+        }
+
+        function extrairTextoParaVoz() {
+            const clone = document.getElementById('modalBody').cloneNode(true);
+            return clone.textContent.replace(/\s+/g, ' ').trim();
+        }
+
+        function alternarLeituraVoz() {
+            if (!('speechSynthesis' in window)) {
+                alert('Seu navegador não suporta leitura em voz alta.');
+                return;
+            }
+            const btn = document.getElementById('btnOuvir');
+            if (vozAtiva) {
+                pararLeituraVoz();
+                return;
+            }
+            const texto = extrairTextoParaVoz();
+            if (!texto) return;
+
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'pt-BR';
+            // Um pouco mais lenta que o padrão (1.0) costuma soar mais natural e
+            // menos "robótica" na leitura de textos longos.
+            utterance.rate = 0.93;
+            utterance.pitch = 1;
+
+            const select = document.getElementById('vozSelect');
+            const nomeEscolhido = select ? select.value : '';
+            const vozEscolhida = VOZES_DISPONIVEIS.find(v => v.name === nomeEscolhido) || VOZES_DISPONIVEIS[0];
+            if (vozEscolhida) utterance.voice = vozEscolhida;
+
+            utterance.onend = () => { vozAtiva = false; btn.textContent = '🔊'; };
+            utterance.onerror = () => { vozAtiva = false; btn.textContent = '🔊'; };
+
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+            vozAtiva = true;
+            btn.textContent = '⏹️';
+        }
+
+        function pararLeituraVoz() {
+            if ('speechSynthesis' in window) speechSynthesis.cancel();
+            vozAtiva = false;
+            const btn = document.getElementById('btnOuvir');
+            if (btn) btn.textContent = '🔊';
+        }
+ 
+        // ==========================================
+        // MECANISMO DE TRANSIÇÃO ENTRE MAPA NATAL E REVOLUÇÃO SOLAR
+        // ==========================================
+        // Os dados de nascimento (data, hora, fuso, cidade e coordenadas) são salvos
+        // no localStorage do navegador. Assim, ao clicar na aba "Revolução Solar",
+        // aquela página já abre com os mesmos dados natais preenchidos, sem precisar
+        // digitar tudo de novo. Não envolve nenhum servidor, apenas o navegador local.
+        const CHAVE_DADOS_NATAIS = 'astro_dados_natais_v1';
+
+        function salvarDadosNatais() {
+            try {
+                const dados = {
+                    date: document.getElementById('date').value,
+                    time: document.getElementById('time').value,
+                    fuso: document.getElementById('fuso').value,
+                    lat: document.getElementById('lat').value,
+                    lon: document.getElementById('lon').value,
+                    cidade: document.getElementById('cidadeInput').value
+                };
+                localStorage.setItem(CHAVE_DADOS_NATAIS, JSON.stringify(dados));
+            } catch (err) {
+                console.warn('Não foi possível salvar os dados natais localmente:', err);
+            }
+        }
+
+        function carregarDadosNatais() {
+            try {
+                const raw = localStorage.getItem(CHAVE_DADOS_NATAIS);
+                if (!raw) return false;
+                const dados = JSON.parse(raw);
+                if (dados.date) document.getElementById('date').value = dados.date;
+                if (dados.time) document.getElementById('time').value = dados.time;
+                if (dados.fuso !== undefined && dados.fuso !== '') document.getElementById('fuso').value = dados.fuso;
+                if (dados.lat !== undefined && dados.lat !== '') document.getElementById('lat').value = dados.lat;
+                if (dados.lon !== undefined && dados.lon !== '') document.getElementById('lon').value = dados.lon;
+                if (dados.cidade) document.getElementById('cidadeInput').value = dados.cidade;
+                return true;
+            } catch (err) {
+                console.warn('Não foi possível carregar os dados natais salvos:', err);
+                return false;
+            }
+        }
+
+        // ==========================================
+        // PESSOAS SALVAS + HISTÓRICO DE LEITURAS DE IA (localStorage do navegador)
+        // ==========================================
+        // Cada pessoa salva guarda seus dados de nascimento e um histórico de
+        // leituras de IA já geradas. Enquanto uma pessoa estiver "ativa", toda nova
+        // análise de IA gerada nesta página é automaticamente anexada ao histórico
+        // dela. Tudo fica salvo apenas neste navegador (sem servidor).
+        const CHAVE_PESSOAS_SALVAS = 'astro_pessoas_salvas_v1';
+        const ORIGEM_PAGINA = 'Mapa Natal';
+        // Identificador fixo desta página, salvo em cada leitura de IA gerada aqui.
+        // É o que permite os selos "✓ já feito" do Mapa Natal e da Revolução Solar
+        // serem contados de forma totalmente independente, mesmo a pessoa sendo
+        // compartilhada entre as duas páginas.
+        const CONTEXTO_PAGINA = 'natal';
+        let PESSOA_ATIVA_ID = null;
+        let ULTIMO_TITULO_ANALISE = '';
+        let ULTIMO_ORDEM_ANALISE = 9999;
+
+        function carregarPessoasSalvas() {
+            try {
+                const raw = localStorage.getItem(CHAVE_PESSOAS_SALVAS);
+                return raw ? JSON.parse(raw) : [];
+            } catch (err) { return []; }
+        }
+
+        function salvarPessoasSalvas(lista) {
+            try { localStorage.setItem(CHAVE_PESSOAS_SALVAS, JSON.stringify(lista)); }
+            catch (err) { console.warn('Não foi possível salvar pessoas:', err); }
+        }
+
+        function salvarOuAtivarPessoa() {
+            const nome = (document.getElementById('nomePessoaInput').value || '').trim();
+            if (!nome) { alert('Digite um nome para salvar.'); return; }
+
+            const dados = {
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                fuso: document.getElementById('fuso').value,
+                lat: document.getElementById('lat').value,
+                lon: document.getElementById('lon').value,
+                cidade: document.getElementById('cidadeInput').value
+            };
+
+            const lista = carregarPessoasSalvas();
+            let pessoa = lista.find(p => p.nome.toLowerCase() === nome.toLowerCase() && p.dados.date === dados.date && p.dados.time === dados.time);
+
+            if (!pessoa) {
+                pessoa = { id: 'p_' + Date.now(), nome, dados, criadoEm: new Date().toISOString(), leituras: [] };
+                lista.push(pessoa);
+            } else {
+                pessoa.dados = dados;
+            }
+
+            salvarPessoasSalvas(lista);
+            PESSOA_ATIVA_ID = pessoa.id;
+            atualizarIndicadorPessoaAtiva();
+            renderizarPessoasSalvas();
+            atualizarTodosIndicadores();
+        }
+
+        function atualizarIndicadorPessoaAtiva() {
+            const el = document.getElementById('pessoaAtivaIndicador');
+            if (!el) return;
+            if (!PESSOA_ATIVA_ID) { el.style.display = 'none'; return; }
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === PESSOA_ATIVA_ID);
+            if (pessoa) {
+                el.style.display = 'block';
+                el.textContent = `💾 Gravando leituras para: ${pessoa.nome} (clique para parar)`;
+            }
+        }
+
+        function desativarPessoa() {
+            PESSOA_ATIVA_ID = null;
+            atualizarIndicadorPessoaAtiva();
+            atualizarTodosIndicadores();
+        }
+
+        // Identifica de qual página uma leitura salva veio ('natal' ou 'solar').
+        // Leituras novas já trazem o campo 'contexto' gravado diretamente. Leituras
+        // antigas (salvas antes dessa separação existir) não têm esse campo — nesse
+        // caso, inferimos pelo texto de 'origem' salvo junto com a leitura.
+        function obterContextoDaLeitura(l) {
+            if (l.contexto) return l.contexto;
+            return (l.origem || '').startsWith('Revolução Solar') ? 'solar' : 'natal';
+        }
+
+        // Retorna o conjunto de "ordem" já salvas para a pessoa ativa, filtrando
+        // apenas leituras do CONTEXTO desta página (Mapa Natal). Isso garante que um
+        // selo "✓ já feito" aqui não apareça por causa de uma leitura equivalente
+        // feita na Revolução Solar, e vice-versa — cada página passa a ter seu
+        // próprio controle de "já feito", independente da outra.
+        function obterOrdensSalvas() {
+            if (!PESSOA_ATIVA_ID) return new Set();
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === PESSOA_ATIVA_ID);
+            if (!pessoa) return new Set();
+            return new Set(
+                pessoa.leituras
+                    .filter(l => obterContextoDaLeitura(l) === CONTEXTO_PAGINA)
+                    .map(l => l.ordem)
+            );
+        }
+
+        function indicadorFeitoHtml(jaFeito) {
+            return jaFeito ? '<span class="indicador-feito" title="Já existe uma leitura de IA salva para este item">✓</span>' : '';
+        }
+
+        // Atualiza os selos "✓" fixos (fora das listas expansíveis): Síntese
+        // completa, Matriz de Aspectos completa e os 3 balanços.
+        function atualizarIndicadoresEstaticos() {
+            const ordensSalvas = obterOrdensSalvas();
+            const mapa = {
+                indicadorSintese: 0,
+                indicadorAspectosCompleta: 4000,
+                indicadorBalancoElementos: 1000,
+                indicadorBalancoRitmos: 1001,
+                indicadorBalancoPolaridades: 1002
+            };
+            Object.entries(mapa).forEach(([idEl, ordem]) => {
+                const el = document.getElementById(idEl);
+                if (el) el.innerHTML = indicadorFeitoHtml(ordensSalvas.has(ordem));
+            });
+        }
+
+        // Atualiza TODOS os selos "já feito": as listas expansíveis (astros, casas,
+        // aspectos, temas) e os indicadores fixos — sem precisar recalcular o mapa
+        // inteiro, usando os dados já calculados (ULTIMO_ASTROS, etc).
+        function atualizarTodosIndicadores() {
+            if (!ULTIMO_ASTROS.length) return;
+            renderizarAstrosExpansivel(ULTIMO_ASTROS);
+            renderizarCasasExpansivel(ULTIMO_CASAS, ULTIMO_ASTROS);
+            renderizarAspectosExpansivel(ULTIMO_ASPECTOS);
+            renderizarTemas(ULTIMO_ASTROS);
+            atualizarIndicadoresEstaticos();
+        }
+
+        function salvarLeituraNaPessoaAtiva(titulo, html, ordem) {
+            if (!PESSOA_ATIVA_ID) return;
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === PESSOA_ATIVA_ID);
+            if (!pessoa) return;
+            pessoa.leituras.unshift({
+                id: 'l_' + Date.now(),
+                titulo,
+                origem: ORIGEM_PAGINA,
+                contexto: CONTEXTO_PAGINA,
+                html,
+                ordem: (ordem !== undefined && ordem !== null) ? ordem : 9999,
+                criadoEm: new Date().toISOString()
+            });
+            salvarPessoasSalvas(lista);
+            renderizarPessoasSalvas();
+            atualizarTodosIndicadores();
+        }
+
+        // Ordena as leituras salvas seguindo a MESMA ordem em que os blocos
+        // aparecem no app (Síntese → Balanços → Posições → Casas → Aspectos →
+        // Temas), em vez da ordem cronológica de quando foram geradas. Leituras
+        // salvas antes desse recurso existir (sem "ordem") ficam ao final,
+        // ordenadas por data.
+        function ordenarLeituras(leituras) {
+            return leituras.slice().sort((a, b) => {
+                const oa = (a.ordem !== undefined && a.ordem !== null) ? a.ordem : Infinity;
+                const ob = (b.ordem !== undefined && b.ordem !== null) ? b.ordem : Infinity;
+                if (oa !== ob) return oa - ob;
+                return new Date(b.criadoEm) - new Date(a.criadoEm);
+            });
+        }
+
+        function excluirPessoa(id) {
+            if (!confirm('Excluir esta pessoa e todas as leituras salvas dela?')) return;
+            let lista = carregarPessoasSalvas();
+            lista = lista.filter(p => p.id !== id);
+            salvarPessoasSalvas(lista);
+            if (PESSOA_ATIVA_ID === id) desativarPessoa();
+            renderizarPessoasSalvas();
+            atualizarTodosIndicadores();
+        }
+
+        function excluirLeitura(idPessoa, idLeitura) {
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === idPessoa);
+            if (!pessoa) return;
+            pessoa.leituras = pessoa.leituras.filter(l => l.id !== idLeitura);
+            salvarPessoasSalvas(lista);
+            renderizarPessoasSalvas();
+            atualizarTodosIndicadores();
+        }
+
+        function carregarMapaDaPessoa(id) {
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === id);
+            if (!pessoa) return;
+            document.getElementById('date').value = pessoa.dados.date;
+            document.getElementById('time').value = pessoa.dados.time;
+            document.getElementById('fuso').value = pessoa.dados.fuso;
+            document.getElementById('lat').value = pessoa.dados.lat;
+            document.getElementById('lon').value = pessoa.dados.lon;
+            document.getElementById('cidadeInput').value = pessoa.dados.cidade;
+            document.getElementById('nomePessoaInput').value = pessoa.nome;
+            PESSOA_ATIVA_ID = pessoa.id;
+            atualizarIndicadorPessoaAtiva();
+            executarTudo();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function reabrirLeituraSalva(idPessoa, idLeitura) {
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === idPessoa);
+            if (!pessoa) return;
+            const leitura = pessoa.leituras.find(l => l.id === idLeitura);
+            if (!leitura) return;
+            document.getElementById('modalTitle').textContent = `✦ ${leitura.titulo}`;
+            document.getElementById('modalBody').innerHTML = leitura.html;
+            document.getElementById('aiModal').classList.add('active');
+        }
+
+        function extrairTextoDeHtml(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent.replace(/\n{3,}/g, '\n\n').trim();
+        }
+
+        function exportarTxtPessoa(id) {
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === id);
+            if (!pessoa) return;
+
+            let conteudo = `LEITURAS ASTROLÓGICAS — ${pessoa.nome}\n`;
+            conteudo += `Nascimento: ${pessoa.dados.date} às ${pessoa.dados.time} (UTC${pessoa.dados.fuso >= 0 ? '+' : ''}${pessoa.dados.fuso}) — ${pessoa.dados.cidade}\n`;
+            conteudo += `${'='.repeat(60)}\n\n`;
+
+            if (!pessoa.leituras.length) {
+                conteudo += 'Nenhuma leitura salva ainda.\n';
+            } else {
+                ordenarLeituras(pessoa.leituras).forEach(l => {
+                    conteudo += `${l.titulo}\n`;
+                    conteudo += `${l.origem} — ${new Date(l.criadoEm).toLocaleString('pt-BR')}\n`;
+                    conteudo += `${'-'.repeat(40)}\n`;
+                    conteudo += `${extrairTextoDeHtml(l.html)}\n\n`;
+                });
+            }
+
+            const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${pessoa.nome.replace(/\s+/g, '_')}_leituras.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Extrai o período (ex: "2026-2027") do texto salvo em "origem" de uma
+        // leitura da Revolução Solar. Leituras sem período identificável caem em
+        // "Outros períodos" (ex: leituras muito antigas, salvas antes desse texto
+        // existir no campo "origem").
+        function extrairPeriodoDeOrigem(origem) {
+            const match = (origem || '').match(/(\d{4}-\d{4})/);
+            return match ? match[1] : 'Outros períodos';
+        }
+
+        // Agrupa as leituras de uma pessoa para o PDF: um capítulo único para o
+        // Mapa Natal, e um capítulo "Revolução Solar" subdividido por período
+        // (já que a mesma pessoa pode ter mais de um período salvo). Cada grupo
+        // sai na mesma sequência dos blocos do app (ordenarLeituras).
+        function agruparLeiturasParaPdf(leituras) {
+            const ordenadas = ordenarLeituras(leituras);
+            const natal = ordenadas.filter(l => obterContextoDaLeitura(l) === 'natal');
+            const solar = ordenadas.filter(l => obterContextoDaLeitura(l) === 'solar');
+
+            const solarPorPeriodo = {};
+            solar.forEach(l => {
+                const periodo = extrairPeriodoDeOrigem(l.origem);
+                if (!solarPorPeriodo[periodo]) solarPorPeriodo[periodo] = [];
+                solarPorPeriodo[periodo].push(l);
+            });
+
+            // Períodos ordenados pelo ano inicial (mais antigo primeiro). Períodos
+            // sem ano identificável ("Outros períodos") ficam sempre por último.
+            const periodosOrdenados = Object.keys(solarPorPeriodo).sort((a, b) => {
+                const anoA = parseInt(a, 10);
+                const anoB = parseInt(b, 10);
+                if (isNaN(anoA) && isNaN(anoB)) return 0;
+                if (isNaN(anoA)) return 1;
+                if (isNaN(anoB)) return -1;
+                return anoA - anoB;
+            });
+
+            return { natal, solarPorPeriodo, periodosOrdenados };
+        }
+
+        function exportarPdfPessoa(id) {
+            const lista = carregarPessoasSalvas();
+            const pessoa = lista.find(p => p.id === id);
+            if (!pessoa) return;
+
+            // Caminho absoluto do ícone do app, usado como logo na capa do PDF
+            // (resolvido a partir da própria página, já que a janela do PDF abre
+            // em branco e não tem uma URL base própria para caminhos relativos).
+            const logoUrl = new URL('icon-192.png', window.location.href).href;
+
+            const renderizarLeitura = (l) => `
+                <div class="pdf-leitura">
+                    <h2>${l.titulo}</h2>
+                    <p class="pdf-meta">${l.origem} — ${new Date(l.criadoEm).toLocaleString('pt-BR')}</p>
+                    <div class="pdf-texto">${l.html}</div>
+                </div>
+                <hr class="pdf-divisor">
+            `;
+
+            let corpoHtml = '';
+
+            if (!pessoa.leituras.length) {
+                corpoHtml = '<p>Nenhuma leitura salva ainda.</p>';
+            } else {
+                const { natal, solarPorPeriodo, periodosOrdenados } = agruparLeiturasParaPdf(pessoa.leituras);
+                let primeiroCapitulo = true;
+
+                // Capítulo Mapa Natal — todas as leituras natais juntas, na mesma
+                // ordem dos blocos do app.
+                if (natal.length) {
+                    corpoHtml += `<div class="pdf-chapter">
+                        <h1 class="pdf-chapter-title">🌟 Mapa Natal</h1>
+                        ${natal.map(renderizarLeitura).join('')}
+                    </div>`;
+                    primeiroCapitulo = false;
+                }
+
+                // Capítulo Revolução Solar — começa em folha nova (se não for o
+                // primeiro capítulo do documento) e cada período salvo abre sua
+                // própria folha nova, identificado no título.
+                if (periodosOrdenados.length) {
+                    corpoHtml += `<div class="pdf-chapter"${primeiroCapitulo ? '' : ' style="page-break-before:always;"'}>
+                        <h1 class="pdf-chapter-title">☀️ Revolução Solar</h1>
+                        ${periodosOrdenados.map((periodo, idx) => `
+                            <h2 class="pdf-period-title"${idx === 0 ? '' : ' style="page-break-before:always;"'}>Período ${periodo}</h2>
+                            ${solarPorPeriodo[periodo].map(renderizarLeitura).join('')}
+                        `).join('')}
+                    </div>`;
+                }
+            }
+
+            const documentoHtml = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+                <title>${pessoa.nome} — Leituras Astrológicas</title>
+                <style>
+                    body { font-family: Georgia, 'Times New Roman', serif; padding: 30px; color:#222; }
+                    .pdf-cover { text-align:center; padding-top:120px; page-break-after:always; }
+                    .pdf-cover img { width:140px; height:140px; object-fit:contain; margin-bottom:24px; }
+                    .pdf-cover h1 { font-size:2.6rem; font-weight:bold; letter-spacing:6px; color:#5b3a00; margin-bottom:6px; }
+                    .pdf-cover .pdf-subtitulo { font-size:1rem; color:#888; letter-spacing:2px; text-transform:uppercase; margin-bottom:70px; }
+                    .pdf-cover .pdf-nome-pessoa { font-size:1.4rem; color:#222; margin-bottom:6px; }
+                    .pdf-cover .pdf-nascimento { font-size:0.9rem; color:#666; }
+                    .pdf-chapter-title { font-size:1.7rem; font-weight:bold; color:#5b3a00; border-bottom:3px solid #e3b341; padding-bottom:10px; margin-bottom:20px; }
+                    .pdf-period-title { font-size:1.2rem; font-weight:bold; color:#8957e5; margin:26px 0 12px 0; border-bottom:1px solid #ccc; padding-bottom:4px; }
+                    .pdf-leitura { margin-bottom:24px; page-break-inside:avoid; }
+                    .pdf-leitura h2 { color:#5b3a00; font-size:1.1rem; font-weight:bold; margin-bottom:2px; }
+                    .pdf-meta { font-size:0.8rem; color:#666; margin-bottom:10px; }
+                    .pdf-texto { font-size:0.95rem; line-height:1.6; color:#222; }
+                    .pdf-divisor { border:none; border-top:1px solid #ccc; margin:20px 0; }
+                    strong { color:#5b3a00; }
+                    @media print { body { padding: 10mm; } }
+                </style>
+                </head><body>
+                <div class="pdf-cover">
+                    <img src="${logoUrl}" alt="Logo Astro">
+                    <h1>ASTRO</h1>
+                    <p class="pdf-subtitulo">Leituras Astrológicas</p>
+                    <p class="pdf-nome-pessoa"><strong>${pessoa.nome}</strong></p>
+                    <p class="pdf-nascimento">Nascimento: ${pessoa.dados.date} às ${pessoa.dados.time} (UTC${pessoa.dados.fuso >= 0 ? '+' : ''}${pessoa.dados.fuso}) — ${pessoa.dados.cidade}</p>
+                </div>
+                ${corpoHtml}
+                </body></html>`;
+
+            const janela = window.open('', '_blank');
+            if (!janela) { alert('Permita pop-ups neste site para exportar em PDF.'); return; }
+            janela.document.open();
+            janela.document.write(documentoHtml);
+            janela.document.close();
+            const dispararImpressao = () => { janela.focus(); janela.print(); };
+            janela.onload = dispararImpressao;
+            setTimeout(dispararImpressao, 400);
+        }
+
+        function renderizarPessoasSalvas() {
+            const container = document.getElementById('pessoasSalvasList');
+            if (!container) return;
+            const lista = carregarPessoasSalvas();
+
+            if (!lista.length) {
+                container.innerHTML = '<p style="color:#8b949e; font-size:0.85rem; padding: 8px 0;">Nenhuma pessoa salva ainda. Preencha os dados acima, digite um nome no campo "Nome da Pessoa" e clique em "Salvar / Ativar".</p>';
+                return;
+            }
+
+            container.innerHTML = lista.slice().reverse().map(p => {
+                const leiturasHtml = p.leituras.length
+                    ? ordenarLeituras(p.leituras).map(l => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); gap:8px;">
+                            <div style="cursor:pointer; flex:1;" onclick="reabrirLeituraSalva('${p.id}', '${l.id}')">
+                                <div style="font-size:0.82rem; font-weight:600;">${l.titulo}</div>
+                                <div style="font-size:0.7rem; color:#8b949e;">${l.origem} · ${new Date(l.criadoEm).toLocaleString('pt-BR')}</div>
+                            </div>
+                            <button class="modal-close" style="font-size:1rem;" title="Excluir leitura" onclick="event.stopPropagation(); excluirLeitura('${p.id}', '${l.id}')">🗑️</button>
+                        </div>`).join('')
+                    : '<p style="font-size:0.8rem; color:#8b949e; padding: 6px 0;">Nenhuma leitura salva ainda para esta pessoa.</p>';
+
+                return `
+                    <div class="expand-card">
+                        <div class="expand-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="expand-title">
+                                <span>👤 ${p.nome}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="expand-badge">${p.leituras.length} leitura(s)</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="expand-content">
+                            <p style="margin-bottom:8px;"><strong>Nascimento:</strong> ${p.dados.date} às ${p.dados.time} (UTC${p.dados.fuso >= 0 ? '+' : ''}${p.dados.fuso}) — ${p.dados.cidade}</p>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                                <button class="btn-ia" onclick="carregarMapaDaPessoa('${p.id}')">📂 Carregar este Mapa</button>
+                                <button class="btn-ia" onclick="exportarTxtPessoa('${p.id}')">📄 Exportar TXT</button>
+                                <button class="btn-ia" onclick="exportarPdfPessoa('${p.id}')">🧾 Exportar PDF</button>
+                                <button class="btn-ia" style="background: linear-gradient(135deg, #da3633, #8b2020);" onclick="excluirPessoa('${p.id}')">🗑️ Excluir Pessoa</button>
+                            </div>
+                            <p style="margin-bottom:6px; font-size:0.8rem; color:#8b949e;"><strong>Leituras salvas:</strong></p>
+                            ${leiturasHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function executarTudo() {
+            const { astros, casas, asc } = calcularMapaNatal();
+            const aspectos = calcularAspectos(astros);
+ 
+            ULTIMO_ASTROS = astros;
+            ULTIMO_CASAS = casas;
+            ULTIMO_ASC = asc;
+            ULTIMO_ASPECTOS = aspectos;
+ 
+            renderizarBalanço(astros);
+            renderizarAstrosExpansivel(astros);
+            renderizarCasasExpansivel(casas, astros);
+            renderizarAspectosExpansivel(aspectos);
+            renderizarTemas(astros);
+            gerarMatrizHtml(astros, aspectos);
+            desenharRodaSVG(astros, casas, asc);
+            atualizarIndicadoresEstaticos();
+
+            salvarDadosNatais();
+        }
+ 
+        // ==========================================
+        // LIMPAR CACHE TÉCNICO (sem apagar pessoas salvas)
+        // ==========================================
+        // Importante: as "Pessoas Salvas" e suas leituras ficam no localStorage —
+        // uma gaveta de armazenamento totalmente separada do cache do Service
+        // Worker (que guarda cópias de HTML/ícones para o app abrir rápido/offline).
+        // Esta função remove APENAS a segunda gaveta: desregistra o Service Worker
+        // e apaga o Cache Storage, depois recarrega a página forçando uma busca
+        // nova ao servidor. O localStorage (pessoas salvas) não é tocado.
+        async function limparCacheDoApp() {
+            const confirmou = confirm(
+                'Isso vai limpar o cache técnico do app e recarregar a página, para ' +
+                'garantir que você veja a versão mais recente.\n\n' +
+                'Suas Pessoas Salvas e leituras de IA NÃO serão apagadas — ficam ' +
+                'guardadas em outro lugar, separado desse cache.\n\nContinuar?'
+            );
+            if (!confirmou) return;
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registros = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registros.map((registro) => registro.unregister()));
+                }
+                if ('caches' in window) {
+                    const chaves = await caches.keys();
+                    await Promise.all(chaves.map((chave) => caches.delete(chave)));
+                }
+            } catch (err) {
+                console.warn('Erro ao limpar cache técnico:', err);
+            }
+
+            // Query string nova garante que essa recarga não seja servida por
+            // nenhum cache antigo que ainda esteja de alguma forma ativo.
+            window.location.href = window.location.pathname + '?atualizado=' + Date.now();
+        }
+
+        window.onload = () => {
+            const agora = new Date();
+            const dadosCarregados = carregarDadosNatais();
+            if (!dadosCarregados) {
+                document.getElementById('date').value = agora.toISOString().split('T')[0];
+                document.getElementById('time').value = agora.toTimeString().split(' ')[0].substring(0, 5);
+            }
+
+            document.getElementById('cidadeInput').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarCoordenadas();
+                }
+            });
+ 
+            renderizarPessoasSalvas();
+            executarTudo();
+
+            if ('speechSynthesis' in window) {
+                carregarVozes();
+                // Em vários navegadores (Chrome principalmente) a lista de vozes só
+                // fica disponível de fato depois desse evento.
+                speechSynthesis.onvoiceschanged = carregarVozes;
+            }
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').then((registro) => {
+                    // Verifica se há uma versão mais nova assim que a página abre.
+                    registro.update();
+                }).catch(err => console.warn('Falha ao registrar Service Worker:', err));
+
+                // Quando um novo Service Worker assume o controle (nova versão
+                // publicada), recarrega a página uma única vez para garantir que
+                // o conteúdo mais recente seja exibido, sem precisar de intervenção manual.
+                let jaRecarregou = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (jaRecarregou) return;
+                    jaRecarregou = true;
+                    window.location.reload();
+                });
+            }
+        };
+    </script>
+</body>
+</html>
