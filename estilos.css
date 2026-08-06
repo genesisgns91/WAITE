@@ -1211,33 +1211,40 @@ body:has(#cardPickerModal) .nav-tab.active {
 }
 
 /* --- Alvo de toque mínimo confortável (padrão de acessibilidade
-   ~44px) para todos os botões e abas interativas, sem alterar
-   o visual em telas maiores. --- */
-button,
-.nav-tab,
-.modo-tab,
-.chip,
-.btn-qty,
+   ~44px) SOMENTE para botões de ação primária/secundária — nunca
+   para chips, pílulas de quantidade ou abas compactas, que devem
+   permanecer pequenos e proporcionais ao próprio texto. Aplicar
+   min-height genérico em "button" pegava também .chip/.btn-qty e
+   deixava esses elementos desproporcionalmente grandes. --- */
+.btn-primary,
+.btn-save-reading,
 .btn-ia,
 .btn-ia-action,
-.btn-sm,
 .btn-search-geo,
-.expand-header,
-.history-card,
-.card-slot,
-.modal-close {
+.modal-close,
+.nav-tab {
     min-height: 40px;
 }
 
 @media (max-width: 720px) {
-    button,
-    .nav-tab,
-    .modo-tab,
+    .btn-primary,
+    .btn-save-reading,
     .btn-ia,
     .btn-ia-action,
     .btn-search-geo,
-    .modal-close {
+    .modal-close,
+    .nav-tab {
         min-height: 44px;
+    }
+}
+
+/* Chips, pílulas de quantidade e abas de modo: mantêm-se compactos,
+   apenas com padding levemente maior no mobile para toque confiável
+   sem inflar visualmente o botão. */
+@media (max-width: 720px) {
+    .chip, .btn-qty, .modo-tab {
+        padding-top: 9px;
+        padding-bottom: 9px;
     }
 }
 
@@ -1424,3 +1431,149 @@ button:disabled, .btn-ia-action:disabled {
 /* --- Compatibilidade: em navegadores sem suporte a "backdrop-filter"
    (raros hoje em dia), o cabeçalho continua legível pois já tem
    fundo sólido definido em --bg-card mais acima no arquivo. --- */
+
+/* =========================================================
+   AJUSTES ESPECÍFICOS — ASTRO TAROT (tarot.html)
+   ---------------------------------------------------------
+   As classes abaixo (ia-header, ia-actions, voice-controls,
+   history-toolbar, qty-controls, card-slot, modo-tabs etc.)
+   são usadas somente na tela do Tarot. Corrige blocos que
+   ficavam desalinhados, botões que pareciam "gigantes" ao
+   quebrar linha, e elementos se sobrepondo em telas estreitas.
+   ========================================================= */
+
+/* Cabeçalho da caixa de interpretação: título e ações lado a
+   lado no desktop; empilhados e organizados no mobile, em vez
+   de espremer 3 botões ao lado de um título longo. */
+.ia-header {
+    align-items: center;
+}
+.ia-header h3 {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+@media (max-width: 640px) {
+    .ia-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ia-actions {
+        width: 100%;
+    }
+    .ia-actions .btn-ia-action {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+/* Controles de voz: no mobile, o seletor de voz fica em sua
+   própria linha (evita corte de texto) e os botões de
+   reprodução se distribuem igualmente numa segunda linha. */
+@media (max-width: 640px) {
+    .voice-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .voice-controls label {
+        margin-left: 0 !important;
+    }
+    .voice-controls select {
+        max-width: none;
+        width: 100%;
+    }
+    .voice-controls input[type="range"] {
+        width: 100%;
+    }
+    .voice-controls > button {
+        flex: 1 1 auto;
+    }
+}
+
+/* Barra de ferramentas do histórico: busca em linha própria e
+   os dois botões de ação divididos em partes iguais abaixo,
+   em vez de tentar caber busca + 2 botões numa única linha
+   estreita (o que causava quebra feia e botões "gigantes"). */
+@media (max-width: 640px) {
+    .history-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .history-toolbar input[type="search"] {
+        width: 100%;
+    }
+    .history-toolbar #btnSelecionarTodosHist,
+    .history-toolbar #btnSelecionarTodosHistEstudo,
+    .history-toolbar #btnExportarSelecionadasPDF,
+    .history-toolbar #btnExportarSelecionadasPDFEstudo {
+        width: 100%;
+    }
+}
+
+/* Quantidade de cartas: quando os botões de atalho (1, 3, 5, 7,
+   10 Cruz Celta, 12 Astrológica) quebram linha, mantém o mesmo
+   tamanho entre si em vez de esticar de forma desigual. */
+.qty-selector {
+    align-items: stretch;
+}
+.qty-selector .btn-qty {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+/* Cartão de cada posição da tiragem: espaçamento interno mais
+   respirável e alinhamento consistente do rótulo ao topo. */
+.card-slot {
+    justify-content: flex-start;
+}
+.card-slot input[type="text"] {
+    text-align: center;
+}
+
+/* As abas "Tiragem de Cartas" / "Estudo Individual" dividem o
+   espaço igualmente no mobile, em vez de quebrar em tamanhos
+   diferentes conforme o texto de cada uma. */
+@media (max-width: 640px) {
+    .modo-tabs {
+        flex-wrap: nowrap;
+    }
+    .modo-tab {
+        flex: 1 1 0;
+        white-space: normal;
+        text-align: center;
+        font-size: 0.76rem;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}
+
+/* Área de chat: campo de texto e botão "Enviar" alinhados com
+   a mesma altura, sem o botão ficar desproporcional. */
+.chat-input-area {
+    align-items: stretch;
+}
+.chat-input-area #chatInput {
+    flex: 1 1 auto;
+}
+.chat-input-area .btn-ia-action {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* Espaço extra ao final da tela para o botão flutuante (FAB) de
+   sintetizar não cobrir o último elemento interativo ao rolar
+   até o fim da página no mobile. */
+@media (max-width: 1079px) {
+    #secaoTiragem, #secaoEstudo {
+        padding-bottom: 76px;
+    }
+}
+
+/* Navegação do topo: em telas muito estreitas, reduz um pouco o
+   texto/padding das abas para não empurrar "Limpar Cache" para
+   uma terceira linha isolada, evitando um bloco de nav muito alto. */
+@media (max-width: 480px) {
+    .nav-tab {
+        font-size: 0.76rem;
+        padding: 7px 10px;
+    }
+}
