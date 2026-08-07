@@ -55,9 +55,12 @@
     --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
     --transicao: 0.2s ease;
 
-    /* Largura máxima do "app": mantém o layout sempre com cara de aplicativo
-       de celular, mesmo em telas grandes de desktop, em vez de esticar os
-       grids em várias colunas pequenas e desalinhadas. */
+    /* Largura máxima do "app". No celular fica com cara de aplicativo (coluna
+       única). A partir daqui os breakpoints abaixo vão AUMENTANDO esse valor
+       conforme a tela cresce, para aproveitar o espaço do monitor — os blocos
+       internos (grids com auto-fit, colunas do Tarot, Sol/Lua, etc.) só voltam
+       a se distribuir em mais colunas nesses mesmos pontos de quebra, então o
+       layout nunca fica "esticado e desalinhado" como antes. */
     --app-max-width: 480px;
 
     --fonte-display: 'Cinzel', Georgia, serif;
@@ -1263,8 +1266,8 @@ body {
 }
 
 /* --- Em telas largas (desktop), dá um respiro vertical em volta do "app"
-   estreito e centralizado, reforçando a aparência de aplicativo de celular
-   em vez de site esticado de ponta a ponta. --- */
+   e reforça a separação visual do fundo, reforçando a aparência de
+   aplicativo em vez de site esticado de ponta a ponta. --- */
 @media (min-width: 640px) {
     body {
         padding-top: 28px;
@@ -1272,6 +1275,175 @@ body {
     }
     header {
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+}
+
+/* =========================================================
+   LARGURA PROGRESSIVA DO APP (DESKTOP) + BLOCOS EM VÁRIAS COLUNAS
+   ---------------------------------------------------------
+   Cada faixa abaixo faz DUAS coisas juntas, no mesmo ponto de quebra:
+   aumenta a largura útil do app (--app-max-width) e libera os blocos
+   internos correspondentes para usar essa largura extra em mais de uma
+   coluna. As duas coisas andam sempre juntas de propósito — é o que evita
+   voltar a ter blocos pequenos e desalinhados: nenhum grid interno assume
+   mais espaço do que o container realmente tem disponível naquele momento.
+   ========================================================= */
+
+/* Tablet / notebook pequeno: roda + posições, Sol/Lua e o dashboard
+   (gráfico + balanços) passam a ficar lado a lado. */
+@media (min-width: 860px) {
+    :root { --app-max-width: 840px; }
+
+    .dashboard-grid {
+        grid-template-columns: minmax(360px, 440px) 1fr;
+        align-items: start;
+    }
+    .transitos-dashboard {
+        grid-template-columns: minmax(320px, 1fr) minmax(300px, 1fr);
+    }
+    .sol-lua-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Listas de acordeão (posições, casas, aspectos, temas, tópicos de
+       estudo) passam a se distribuir em 2 colunas, em vez de uma pilha
+       única gigante — usa o espaço extra sem quebrar a leitura de cada
+       cartão, já que cada um é independente dos vizinhos. */
+    .expand-list,
+    .topicos-estudo-grid {
+        display: block;
+        column-count: 2;
+        column-gap: 14px;
+    }
+    .expand-list .expand-card,
+    .topicos-estudo-grid .topico-estudo-card {
+        break-inside: avoid;
+        margin-bottom: 10px;
+    }
+}
+
+/* Desktop: mais espaço ainda, e no Tarot o formulário fica fixo numa
+   coluna lateral enquanto a interpretação e o histórico rolam ao lado
+   (como um app de verdade, não uma página que só cresce pro lado). */
+@media (min-width: 1180px) {
+    :root { --app-max-width: 1180px; }
+
+    .expand-list,
+    .topicos-estudo-grid {
+        column-count: 3;
+    }
+
+    .app-layout-tarot {
+        display: grid;
+        grid-template-columns: minmax(380px, 460px) 1fr;
+        align-items: start;
+    }
+    .app-layout-tarot .col-left {
+        position: sticky;
+        top: 16px;
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+    .app-layout-tarot .col-left::-webkit-scrollbar { width: 6px; }
+    .app-layout-tarot .col-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+}
+
+/* Monitores bem largos: dá mais respiro sem esticar demais a leitura de
+   texto (os painéis de IA já têm max-width:74ch próprio, então o container
+   maior só beneficia os grids/cards, não deixa parágrafo comprido demais). */
+@media (min-width: 1560px) {
+    :root { --app-max-width: 1360px; }
+}
+
+/* =========================================================
+   BARRA DE NAVEGAÇÃO INFERIOR (MOBILE) — SÓ ÍCONES
+   ---------------------------------------------------------
+   No celular a navegação por texto do topo (.app-nav) some e dá lugar a
+   uma barra fixa no rodapé, só com ícones (SVG em traço, sem emoji),
+   igual ao padrão de tab bar de aplicativos nativos. No desktop essa
+   barra fica oculta e a navegação do cabeçalho continua normalmente.
+   ========================================================= */
+.bottom-tabbar {
+    display: none;
+}
+
+@media (max-width: 759px) {
+    .app-nav {
+        display: none;
+    }
+
+    .bottom-tabbar {
+        display: flex;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2100;
+        background: rgba(13, 17, 23, 0.94);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--border);
+        justify-content: space-around;
+        align-items: stretch;
+        padding: 4px 2px calc(4px + env(safe-area-inset-bottom));
+        padding-left: max(2px, env(safe-area-inset-left));
+        padding-right: max(2px, env(safe-area-inset-right));
+    }
+
+    .bottom-tabbar a,
+    .bottom-tabbar button {
+        appearance: none;
+        -webkit-appearance: none;
+        background: none;
+        border: none;
+        color: var(--texto-fraco);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 48px;
+        padding: 6px 4px;
+        margin: 2px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: color var(--transicao), background var(--transicao);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .bottom-tabbar a svg,
+    .bottom-tabbar button svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        flex-shrink: 0;
+    }
+
+    .bottom-tabbar a:active,
+    .bottom-tabbar button:active {
+        background: var(--destaque-fraco);
+    }
+
+    .bottom-tabbar a.active,
+    .bottom-tabbar button.active {
+        color: var(--destaque);
+        background: var(--destaque-fraco);
+    }
+
+    /* Espaço extra no rodapé da página para o conteúdo nunca ficar
+       escondido atrás da barra fixa de navegação. */
+    body {
+        padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    }
+
+    /* O botão flutuante de "Sintetizar" (Tarot) e os toasts sobem para não
+       ficar atrás da barra de navegação inferior. */
+    .fab {
+        bottom: calc(72px + env(safe-area-inset-bottom) + 10px);
+    }
+    .toast-container {
+        bottom: calc(64px + env(safe-area-inset-bottom) + 10px);
     }
 }
 
