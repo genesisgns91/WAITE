@@ -1042,7 +1042,7 @@ select {
             border-radius: 8px;
             border: 1px solid var(--border);
             margin-bottom: 6px;
-        }.pessoa-item span { font-size: 0.85rem; font-weight: 600; }.btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }.btn-use { background: var(--destaque); color: #0d1117; font-weight: bold; }.btn-del { background: linear-gradient(135deg, #da3633, #8b2020); color: #fff; margin-left: 6px; }.btn-primary:active {background-color: #2ea043;}.dashboard-grid {display: grid;grid-template-columns: 1fr;gap: 16px;width: 100%;}.chart-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;display: flex;flex-direction: column;align-items: center;width: 100%;}.chart-card-header {width: 100%;display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.chart-card h2 {color: var(--destaque);font-size: 1rem;text-align: left;}.legenda-precisao {display: flex;flex-wrap: wrap;justify-content: center;gap: 10px 16px;margin-top: 10px;font-size: 0.72rem;color: #8b949e;}.legenda-precisao span {display: flex;align-items: center;gap: 5px;}.ponto-legenda {display: inline-block;width: 10px;height: 10px;border-radius: 50%;}.signo-symbol {font-family: "Segoe UI Symbol", sans-serif;font-size: 22px;fill: var(--destaque);text-anchor: middle;dominant-baseline: central;}.planet-node {cursor: pointer;}.planet-node circle {fill: var(--bg-card);stroke-width: 2px;}.planet-node text {font-family: "Segoe UI Symbol", sans-serif;font-size: 15px;font-weight: bold;text-anchor: middle;dominant-baseline: central;}.balance-container {display: grid;grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));gap: 12px;width: 100%; height: 100%}.balance-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 14px;display: flex;flex-direction: column;justify-content: space-between;}.balance-card-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;border-bottom: 1px solid var(--border);padding-bottom: 6px;}.balance-card h3 {color: var(--destaque);font-size: 0.95rem;}.progress-item {margin-bottom: 10px;}.progress-info {display: flex;justify-content: space-between;font-size: 0.8rem;margin-bottom: 4px;}.indicador-feito {display: inline-flex;align-items: center;justify-content: center;width: 16px;height: 16px;border-radius: 50%;background: rgba(63, 185, 80, 0.15);color: #3fb950;font-size: 0.65rem;font-weight: bold;flex-shrink: 0;}.marca-retrogrado {font-size: 0.68rem;font-weight: bold;color: #f0883e;margin-left: 1px;vertical-align: super;opacity: 0.9;}.btn-ia-inline {margin-top: 12px;font-size: 0.8rem;padding: 8px 14px;}.card-table-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.matrix-desktop-container {display: block;width: 100%;overflow-x: auto;-webkit-overflow-scrolling: touch;}.aspect-matrix {border-collapse: collapse;margin: 0 auto;width: 100%;max-width: 900px;}.aspect-matrix th, .aspect-matrix td {width: 8.33%;height: 32px;min-width: 28px;padding: 0;text-align: center;vertical-align: middle;border: 1px solid var(--border);font-size: 0.75rem;}.aspect-matrix th.header-astro {background: var(--bg-principal);color: var(--sol);font-weight: bold;}.aspect-matrix td.empty-cell {background: transparent;border: none;}.aspect-matrix td.cell-aspect {background: var(--bg-principal);font-weight: bold;}.badge-aspecto {padding: 3px 6px;border-radius: 4px;font-weight: bold;font-size: 0.75rem;color: #fff;}.conj {background: #238636;}.opp {background: #da3633;}.trig {background: #1f6beb;}.quad {background: #d29922;color: #000;}.sext {background: #8957e5;}.icon-conj {color: #2ea043;}.icon-opp  {color: #f85149;}.icon-trig {color: #3fb950;}.icon-quad {color: #d29922;}.icon-sext {color: #a371f7;}.modal-overlay.active {display: flex;}.modal-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 14px;width: 100%;max-width: 650px;max-height: 85vh;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.5);overflow: hidden;animation: fadeIn 0.2s ease-out;}@keyframes fadeIn {
+        }.pessoa-item span { font-size: 0.85rem; font-weight: 600; }.btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }.btn-use { background: var(--destaque); color: #0d1117; font-weight: bold; }.btn-del { background: linear-gradient(135deg, #da3633, #8b2020); color: #fff; margin-left: 6px; }.btn-primary:active {background-color: #2ea043;}.dashboard-grid {display: grid;grid-template-columns: 1fr;gap: 16px;width: 100%;}.chart-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;display: flex;flex-direction: column;align-items: center;width: 100%;}.chart-card-header {width: 100%;display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.chart-card h2 {color: var(--destaque);font-size: 1rem;text-align: left;}.legenda-precisao {display: flex;flex-wrap: wrap;justify-content: center;gap: 10px 16px;margin-top: 10px;font-size: 0.72rem;color: #8b949e;}.legenda-precisao span {display: flex;align-items: center;gap: 5px;}.ponto-legenda {display: inline-block;width: 10px;height: 10px;border-radius: 50%;}.signo-symbol {font-family: "Segoe UI Symbol", sans-serif;font-size: 22px;fill: var(--destaque);text-anchor: middle;dominant-baseline: central;}.planet-node {cursor: pointer;}.planet-node circle {fill: var(--bg-card);stroke-width: 2px;}.planet-node text {font-family: "Segoe UI Symbol", sans-serif;font-size: 15px;font-weight: bold;text-anchor: middle;dominant-baseline: central;}.balance-container {display: grid;grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));gap: 12px;width: 100%;}.balance-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 14px;display: flex;flex-direction: column;justify-content: space-between;}.balance-card-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;border-bottom: 1px solid var(--border);padding-bottom: 6px;}.balance-card h3 {color: var(--destaque);font-size: 0.95rem;}.progress-item {margin-bottom: 10px;}.progress-info {display: flex;justify-content: space-between;font-size: 0.8rem;margin-bottom: 4px;}.indicador-feito {display: inline-flex;align-items: center;justify-content: center;width: 16px;height: 16px;border-radius: 50%;background: rgba(63, 185, 80, 0.15);color: #3fb950;font-size: 0.65rem;font-weight: bold;flex-shrink: 0;}.marca-retrogrado {font-size: 0.68rem;font-weight: bold;color: #f0883e;margin-left: 1px;vertical-align: super;opacity: 0.9;}.btn-ia-inline {margin-top: 12px;font-size: 0.8rem;padding: 8px 14px;}.card-table-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.matrix-desktop-container {display: block;width: 100%;overflow-x: auto;-webkit-overflow-scrolling: touch;}.aspect-matrix {border-collapse: collapse;margin: 0 auto;width: 100%;max-width: 900px;}.aspect-matrix th, .aspect-matrix td {width: 8.33%;height: 32px;min-width: 28px;padding: 0;text-align: center;vertical-align: middle;border: 1px solid var(--border);font-size: 0.75rem;}.aspect-matrix th.header-astro {background: var(--bg-principal);color: var(--sol);font-weight: bold;}.aspect-matrix td.empty-cell {background: transparent;border: none;}.aspect-matrix td.cell-aspect {background: var(--bg-principal);font-weight: bold;}.badge-aspecto {padding: 3px 6px;border-radius: 4px;font-weight: bold;font-size: 0.75rem;color: #fff;}.conj {background: #238636;}.opp {background: #da3633;}.trig {background: #1f6beb;}.quad {background: #d29922;color: #000;}.sext {background: #8957e5;}.icon-conj {color: #2ea043;}.icon-opp  {color: #f85149;}.icon-trig {color: #3fb950;}.icon-quad {color: #d29922;}.icon-sext {color: #a371f7;}.modal-overlay.active {display: flex;}.modal-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 14px;width: 100%;max-width: 650px;max-height: 85vh;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.5);overflow: hidden;animation: fadeIn 0.2s ease-out;}@keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         
@@ -1296,13 +1296,29 @@ body {
 
     .dashboard-grid {
         grid-template-columns: minmax(360px, 440px) 1fr;
-        align-items: start;
+        /* "stretch" (em vez de "start") faz a coluna dos balanços esticar até
+           a mesma altura da Roda do Mapa Natal ao lado — antes, quando a roda
+           era mais alta, sobrava um vão vazio ao lado dela. */
+        align-items: stretch;
     }
     .transitos-dashboard {
         grid-template-columns: minmax(320px, 1fr) minmax(300px, 1fr);
     }
     .sol-lua-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Elementos, Modalidades/Ritmos e Polaridades ficam sempre lado a lado em
+       3 colunas no desktop (em vez de depender do auto-fit, que podia
+       colapsar para menos colunas conforme a largura) e esticam para
+       acompanhar a altura da Roda do Mapa Natal, eliminando a lacuna vazia
+       que sobrava quando a roda era mais alta que os cartões de balanço. */
+    .balance-container {
+        grid-template-columns: repeat(3, 1fr);
+        align-items: stretch;
+    }
+    .balance-card {
+        height: 100%;
     }
 
     /* Listas de acordeão (posições, casas, aspectos, temas, tópicos de
@@ -1773,4 +1789,36 @@ button:disabled, .btn-ia-action:disabled {
 #readingForm.controls > div,
 #readingForm.controls > button {
     grid-column: 1 / -1;
+}
+
+/* =========================================================
+   AJUSTES ESPECÍFICOS — MAPA NATAL / REVOLUÇÃO SOLAR (DESKTOP)
+   ---------------------------------------------------------
+   As listas expansíveis abaixo (Posições Astrológicas, Casas
+   Astrológicas, Interpretação dos Aspectos e Áreas Específicas
+   da Vida) usam a classe compartilhada ".expand-list", que no
+   desktop se organiza em 2 ou 3 colunas (ver ".expand-list" nos
+   breakpoints de 860px/1180px acima). Para essas 4 listas em
+   específico, isso deixava a leitura de cada cartão aberto mais
+   difícil de acompanhar — aqui elas voltam a ficar em uma única
+   coluna, empilhadas, mesmo em telas grandes. Os seletores usam
+   ID (maior especificidade que a classe ".expand-list"), então
+   sobrepõem a regra de colunas sem precisar de "!important" e
+   sem afetar "Pessoas Salvas" nem as listas de outras telas
+   (Trânsitos Diários, Tarot) que continuam usando várias colunas.
+   ========================================================= */
+#astrosExpandList,
+#casasExpandList,
+#aspectosExpandList,
+#temasExpandList {
+    display: flex;
+    flex-direction: column;
+    column-count: 1;
+}
+
+#astrosExpandList .expand-card,
+#casasExpandList .expand-card,
+#aspectosExpandList .expand-card,
+#temasExpandList .expand-card {
+    margin-bottom: 0;
 }
