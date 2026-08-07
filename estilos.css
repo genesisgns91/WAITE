@@ -1338,9 +1338,7 @@ body {
     }
 }
 
-/* Desktop: mais espaço ainda, e no Tarot o formulário fica fixo numa
-   coluna lateral enquanto a interpretação e o histórico rolam ao lado
-   (como um app de verdade, não uma página que só cresce pro lado). */
+/* Desktop: mais espaço ainda para os grids/cards em geral. */
 @media (min-width: 1180px) {
     :root { --app-max-width: 1180px; }
 
@@ -1349,20 +1347,11 @@ body {
         column-count: 3;
     }
 
-    .app-layout-tarot {
-        display: grid;
-        grid-template-columns: minmax(380px, 460px) 1fr;
-        align-items: start;
-    }
-    .app-layout-tarot .col-left {
-        position: sticky;
-        top: 16px;
-        max-height: calc(100vh - 32px);
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-    .app-layout-tarot .col-left::-webkit-scrollbar { width: 6px; }
-    .app-layout-tarot .col-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    /* O Astro Tarot (Tiragem de Cartas e Estudo Individual da Carta) NÃO usa
+       mais o layout de 2 colunas lado a lado aqui — ".app-layout-tarot"
+       herda o comportamento padrão de ".app-layout" (flex em coluna única),
+       então .col-left e .col-right ficam empilhados, um bloco em cima do
+       outro, também no desktop. */
 }
 
 /* Monitores bem largos: dá mais respiro sem esticar demais a leitura de
@@ -1820,5 +1809,27 @@ button:disabled, .btn-ia-action:disabled {
 #casasExpandList .expand-card,
 #aspectosExpandList .expand-card,
 #temasExpandList .expand-card {
+    margin-bottom: 0;
+}
+
+/* =========================================================
+   AJUSTES ESPECÍFICOS — ASTRO TAROT / ESTUDO INICIÁTICO DA CARTA
+   ---------------------------------------------------------
+   O bloco "Estudo Iniciático da Carta" (#topicosEstudoContainer)
+   compartilha a classe ".topicos-estudo-grid" com a regra geral
+   de múltiplas colunas do desktop (2 colunas a partir de 860px,
+   3 a partir de 1180px). Aqui ele passa a ficar sempre em uma
+   única coluna, com os tópicos empilhados na ordem I a VIII —
+   mais fácil de acompanhar a leitura de cada tópico expandido.
+   Seletor por ID para sobrepor a classe sem precisar de
+   "!important" (mesma técnica usada acima para o Mapa Natal).
+   ========================================================= */
+#topicosEstudoContainer {
+    display: flex;
+    flex-direction: column;
+    column-count: 1;
+}
+
+#topicosEstudoContainer .topico-estudo-card {
     margin-bottom: 0;
 }
