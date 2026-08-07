@@ -55,6 +55,11 @@
     --sombra: 0 8px 24px rgba(0, 0, 0, 0.35);
     --transicao: 0.2s ease;
 
+    /* Largura máxima do "app": mantém o layout sempre com cara de aplicativo
+       de celular, mesmo em telas grandes de desktop, em vez de esticar os
+       grids em várias colunas pequenas e desalinhadas. */
+    --app-max-width: 480px;
+
     --fonte-display: 'Cinzel', Georgia, serif;
     --fonte-corpo: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -99,7 +104,7 @@ body {
 
 header {
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--app-max-width);
     padding: 14px;
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -156,7 +161,7 @@ header p {
 
 .app-layout {
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--app-max-width);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -252,7 +257,7 @@ select {
             gap: 8px;
             justify-content: center;
             margin: 0 auto 4px;
-            max-width: 1400px;
+            max-width: var(--app-max-width);
             width: 100%;
             flex-wrap: wrap;
         }.modo-tab {
@@ -317,21 +322,6 @@ select {
             display: none;
         }.topico-estudo-corpo.show {
             display: block;
-        }@media (min-width: 1080px) {
-            .app-layout {
-                display: grid;
-                grid-template-columns: minmax(360px, 420px) 1fr;
-                align-items: start;
-            }
-            .col-left {
-                position: sticky;
-                top: 10px;
-                max-height: calc(100vh - 20px);
-                overflow-y: auto;
-                padding-right: 4px;
-            }
-            .col-left::-webkit-scrollbar { width: 6px; }
-            .col-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         }.col-left, .col-right {
             display: flex;
             flex-direction: column;
@@ -874,7 +864,15 @@ select {
             .modal-overlay { align-items: center; }
         
             .modal-box { border-radius: var(--raio); max-height: 80vh; }
-        }.modal-overlay[hidden] { display: none; }.modal-box {
+        }.modal-overlay[hidden] { display: none; }
+/* O seletor visual de cartas do Tarot (#cardPickerModal) é controlado pelo
+   JS apenas via atributo "hidden" (diferente do modal de IA, que usa a
+   classe .active). Como a regra base de .modal-overlay é display:none,
+   remover o atributo "hidden" sozinho não bastava para exibi-lo — por isso
+   o clique nas cartas parecia não fazer nada. Esta regra é restrita por ID
+   para não afetar o modal de IA (#aiModal), que não deve aparecer sozinho. */
+#cardPickerModal:not([hidden]) { display: flex; }
+.modal-box {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px 16px 0 0;
@@ -955,7 +953,7 @@ select {
             .input-group.span-2 { grid-column: 1 / -1; }
         }input, select {background: var(--bg-principal);border: 1px solid var(--border);color: #fff;padding: 10px;border-radius: 8px;outline: none;font-size: 0.9rem;width: 100%;}input:focus, select:focus {border-color: var(--destaque);}.geo-search-container {display: flex;gap: 6px;}.btn-search-geo {background: var(--border);color: #fff;border: none;padding: 0 12px;border-radius: 8px;cursor: pointer;font-size: 0.85rem;font-weight: 600;white-space: nowrap;transition: background 0.2s;}.btn-search-geo:hover {background: #444c56;}.geo-status {font-size: 0.7rem;color: var(--terra);margin-top: 2px;display: none;}.transitos-dashboard {
             display: grid;
-            grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+            grid-template-columns: 1fr;
             gap: 16px;
             width: 100%;
             align-items: stretch;
@@ -1014,7 +1012,7 @@ select {
             justify-content: space-between;
             border-bottom: 1px solid var(--border);
             padding-bottom: 8px;
-        }.esoteric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }.esoteric-item { background: var(--bg-principal); border: 1px solid var(--border); padding: 10px; border-radius: 8px; }.esoteric-item.item-natal { border-color: rgba(56, 139, 253, 0.4); background: var(--natal-bg); }.esoteric-item label { color: #8b949e; font-size: 0.72rem; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }.esoteric-item p { font-size: 0.9rem; font-weight: bold; color: #fff; margin-top: 4px; }.element-bar-container { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }.element-bar-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; }.bar-bg {background: var(--bg-principal);height: 8px;border-radius: 4px;overflow: hidden;}.bar-fill {height: 100%;border-radius: 4px;transition: width 0.4s ease;}.day-details-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-top: 12px; }.day-detail-card { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }.day-detail-card .detail-label { color: #8b949e; font-size: 0.68rem; text-transform: uppercase; font-weight: 700; }.day-detail-card .detail-value { color: #fff; font-size: 0.88rem; font-weight: 700; margin-top: 4px; }.day-detail-card .detail-help { color: #8b949e; font-size: 0.7rem; line-height: 1.4; margin-top: 5px; }@media (max-width: 900px) { .day-details-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }.sol-lua-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; width: 100%; }.sol-lua-grid > .esoteric-card { min-width: 0; }.expand-list {display: flex;flex-direction: column;gap: 8px;width: 100%;}.expand-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 10px;overflow: hidden;transition: border-color 0.2s;}.expand-card.card-natal-border { border: 1px solid rgba(56, 139, 253, 0.4); }.expand-card:hover {border-color: var(--destaque);}.expand-header {padding: 12px;display: flex;align-items: center;justify-content: space-between;cursor: pointer;user-select: none;background: rgba(255,255,255,0.01);}.expand-title {display: flex;align-items: center;gap: 8px;font-size: 0.88rem;font-weight: 600;}.expand-badge {font-size: 0.75rem;color: #8b949e;background: var(--bg-principal);padding: 3px 8px;border-radius: 6px;border: 1px solid var(--border);}.expand-badge.badge-tempo { color: var(--sol); border-color: rgba(227, 179, 65, 0.4); }.expand-content {display: none;padding: 12px;background: var(--bg-principal);border-top: 1px solid var(--border);font-size: 0.83rem;line-height: 1.5;color: #8b949e;}.expand-card.open .expand-content {display: block;}.expand-card.open .arrow-icon {transform: rotate(180deg);}.arrow-icon {transition: transform 0.2s;font-size: 0.8rem;color: #8b949e;}.detail-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px; }.detail-cell { font-size: 0.78rem; color: #c9d1d9; }.detail-cell span { color: #8b949e; display: block; font-size: 0.7rem; }.btn-ia {background: linear-gradient(135deg, #8957e5, #3fb950);color: white;border: none;padding: 6px 10px;border-radius: 6px;font-size: 0.75rem;font-weight: bold;cursor: pointer;display: inline-flex;align-items: center;gap: 4px;transition: opacity 0.2s;white-space: nowrap;}.btn-ia:hover {opacity: 0.9;}.painel-resposta-ia, .ai-inline-panel {
+        }.esoteric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }.esoteric-item { background: var(--bg-principal); border: 1px solid var(--border); padding: 10px; border-radius: 8px; }.esoteric-item.item-natal { border-color: rgba(56, 139, 253, 0.4); background: var(--natal-bg); }.esoteric-item label { color: #8b949e; font-size: 0.72rem; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }.esoteric-item p { font-size: 0.9rem; font-weight: bold; color: #fff; margin-top: 4px; }.element-bar-container { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }.element-bar-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; }.bar-bg {background: var(--bg-principal);height: 8px;border-radius: 4px;overflow: hidden;}.bar-fill {height: 100%;border-radius: 4px;transition: width 0.4s ease;}.day-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 12px; }.day-detail-card { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }.day-detail-card .detail-label { color: #8b949e; font-size: 0.68rem; text-transform: uppercase; font-weight: 700; }.day-detail-card .detail-value { color: #fff; font-size: 0.88rem; font-weight: 700; margin-top: 4px; }.day-detail-card .detail-help { color: #8b949e; font-size: 0.7rem; line-height: 1.4; margin-top: 5px; }.sol-lua-grid { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }.sol-lua-grid > .esoteric-card { min-width: 0; }.expand-list {display: flex;flex-direction: column;gap: 8px;width: 100%;}.expand-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 10px;overflow: hidden;transition: border-color 0.2s;}.expand-card.card-natal-border { border: 1px solid rgba(56, 139, 253, 0.4); }.expand-card:hover {border-color: var(--destaque);}.expand-header {padding: 12px;display: flex;align-items: center;justify-content: space-between;cursor: pointer;user-select: none;background: rgba(255,255,255,0.01);}.expand-title {display: flex;align-items: center;gap: 8px;font-size: 0.88rem;font-weight: 600;}.expand-badge {font-size: 0.75rem;color: #8b949e;background: var(--bg-principal);padding: 3px 8px;border-radius: 6px;border: 1px solid var(--border);}.expand-badge.badge-tempo { color: var(--sol); border-color: rgba(227, 179, 65, 0.4); }.expand-content {display: none;padding: 12px;background: var(--bg-principal);border-top: 1px solid var(--border);font-size: 0.83rem;line-height: 1.5;color: #8b949e;}.expand-card.open .expand-content {display: block;}.expand-card.open .arrow-icon {transform: rotate(180deg);}.arrow-icon {transition: transform 0.2s;font-size: 0.8rem;color: #8b949e;}.detail-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px; }.detail-cell { font-size: 0.78rem; color: #c9d1d9; }.detail-cell span { color: #8b949e; display: block; font-size: 0.7rem; }.btn-ia {background: linear-gradient(135deg, #8957e5, #3fb950);color: white;border: none;padding: 6px 10px;border-radius: 6px;font-size: 0.75rem;font-weight: bold;cursor: pointer;display: inline-flex;align-items: center;gap: 4px;transition: opacity 0.2s;white-space: nowrap;}.btn-ia:hover {opacity: 0.9;}.painel-resposta-ia, .ai-inline-panel {
             margin-top: 10px;
             display: none;
             background: rgba(163, 113, 247, 0.08);
@@ -1032,7 +1030,7 @@ select {
             font-size: 0.88rem;
             line-height: 1.6;
             position: relative;
-        }.sintese-box h4 { color: var(--ia-color); margin-bottom: 8px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }.sintese-section { margin-bottom: 12px; }.sintese-section strong { color: var(--sol); }.sintese-metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin: 12px 0; }.sintese-metric { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 9px; }.sintese-metric span { display: block; color: #8b949e; font-size: 0.67rem; text-transform: uppercase; font-weight: 700; }.sintese-metric strong { display: block; color: #fff; margin-top: 3px; font-size: 0.82rem; }.card-table {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;width: 100%;}.card-table h3 {color: var(--destaque);font-size: 0.95rem;margin-bottom: 10px;}.pessoa-item {
+        }.sintese-box h4 { color: var(--ia-color); margin-bottom: 8px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }.sintese-section { margin-bottom: 12px; }.sintese-section strong { color: var(--sol); }.sintese-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 8px; margin: 12px 0; }.sintese-metric { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 9px; }.sintese-metric span { display: block; color: #8b949e; font-size: 0.67rem; text-transform: uppercase; font-weight: 700; }.sintese-metric strong { display: block; color: #fff; margin-top: 3px; font-size: 0.82rem; }.card-table {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;width: 100%;}.card-table h3 {color: var(--destaque);font-size: 0.95rem;margin-bottom: 10px;}.pessoa-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1041,13 +1039,7 @@ select {
             border-radius: 8px;
             border: 1px solid var(--border);
             margin-bottom: 6px;
-        }.pessoa-item span { font-size: 0.85rem; font-weight: 600; }.btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }.btn-use { background: var(--destaque); color: #0d1117; font-weight: bold; }.btn-del { background: linear-gradient(135deg, #da3633, #8b2020); color: #fff; margin-left: 6px; }.btn-primary:active {background-color: #2ea043;}.dashboard-grid {display: grid;grid-template-columns: 1fr;gap: 16px;width: 100%;}@media (min-width: 900px) {
-            .dashboard-grid {
-                grid-template-columns: 480px 1fr;
-            }
-        
-            .dashboard-grid { grid-template-columns: 480px 1fr; }
-        }.chart-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;display: flex;flex-direction: column;align-items: center;width: 100%;}.chart-card-header {width: 100%;display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.chart-card h2 {color: var(--destaque);font-size: 1rem;text-align: left;}.legenda-precisao {display: flex;flex-wrap: wrap;justify-content: center;gap: 10px 16px;margin-top: 10px;font-size: 0.72rem;color: #8b949e;}.legenda-precisao span {display: flex;align-items: center;gap: 5px;}.ponto-legenda {display: inline-block;width: 10px;height: 10px;border-radius: 50%;}.signo-symbol {font-family: "Segoe UI Symbol", sans-serif;font-size: 22px;fill: var(--destaque);text-anchor: middle;dominant-baseline: central;}.planet-node {cursor: pointer;}.planet-node circle {fill: var(--bg-card);stroke-width: 2px;}.planet-node text {font-family: "Segoe UI Symbol", sans-serif;font-size: 15px;font-weight: bold;text-anchor: middle;dominant-baseline: central;}.balance-container {display: grid;grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));gap: 12px;width: 100%;}.balance-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 14px;display: flex;flex-direction: column;justify-content: space-between;}.balance-card-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;border-bottom: 1px solid var(--border);padding-bottom: 6px;}.balance-card h3 {color: var(--destaque);font-size: 0.95rem;}.progress-item {margin-bottom: 10px;}.progress-info {display: flex;justify-content: space-between;font-size: 0.8rem;margin-bottom: 4px;}.indicador-feito {display: inline-flex;align-items: center;justify-content: center;width: 16px;height: 16px;border-radius: 50%;background: rgba(63, 185, 80, 0.15);color: #3fb950;font-size: 0.65rem;font-weight: bold;flex-shrink: 0;}.marca-retrogrado {font-size: 0.68rem;font-weight: bold;color: #f0883e;margin-left: 1px;vertical-align: super;opacity: 0.9;}.btn-ia-inline {margin-top: 12px;font-size: 0.8rem;padding: 8px 14px;}.card-table-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.matrix-desktop-container {display: block;width: 100%;overflow-x: auto;-webkit-overflow-scrolling: touch;}.aspect-matrix {border-collapse: collapse;margin: 0 auto;width: 100%;max-width: 900px;}.aspect-matrix th, .aspect-matrix td {width: 8.33%;height: 32px;min-width: 28px;padding: 0;text-align: center;vertical-align: middle;border: 1px solid var(--border);font-size: 0.75rem;}.aspect-matrix th.header-astro {background: var(--bg-principal);color: var(--sol);font-weight: bold;}.aspect-matrix td.empty-cell {background: transparent;border: none;}.aspect-matrix td.cell-aspect {background: var(--bg-principal);font-weight: bold;}.badge-aspecto {padding: 3px 6px;border-radius: 4px;font-weight: bold;font-size: 0.75rem;color: #fff;}.conj {background: #238636;}.opp {background: #da3633;}.trig {background: #1f6beb;}.quad {background: #d29922;color: #000;}.sext {background: #8957e5;}.icon-conj {color: #2ea043;}.icon-opp  {color: #f85149;}.icon-trig {color: #3fb950;}.icon-quad {color: #d29922;}.icon-sext {color: #a371f7;}.modal-overlay.active {display: flex;}.modal-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 14px;width: 100%;max-width: 650px;max-height: 85vh;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.5);overflow: hidden;animation: fadeIn 0.2s ease-out;}@keyframes fadeIn {
+        }.pessoa-item span { font-size: 0.85rem; font-weight: 600; }.btn-sm { padding: 5px 10px; font-size: 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }.btn-use { background: var(--destaque); color: #0d1117; font-weight: bold; }.btn-del { background: linear-gradient(135deg, #da3633, #8b2020); color: #fff; margin-left: 6px; }.btn-primary:active {background-color: #2ea043;}.dashboard-grid {display: grid;grid-template-columns: 1fr;gap: 16px;width: 100%;}.chart-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;display: flex;flex-direction: column;align-items: center;width: 100%;}.chart-card-header {width: 100%;display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.chart-card h2 {color: var(--destaque);font-size: 1rem;text-align: left;}.legenda-precisao {display: flex;flex-wrap: wrap;justify-content: center;gap: 10px 16px;margin-top: 10px;font-size: 0.72rem;color: #8b949e;}.legenda-precisao span {display: flex;align-items: center;gap: 5px;}.ponto-legenda {display: inline-block;width: 10px;height: 10px;border-radius: 50%;}.signo-symbol {font-family: "Segoe UI Symbol", sans-serif;font-size: 22px;fill: var(--destaque);text-anchor: middle;dominant-baseline: central;}.planet-node {cursor: pointer;}.planet-node circle {fill: var(--bg-card);stroke-width: 2px;}.planet-node text {font-family: "Segoe UI Symbol", sans-serif;font-size: 15px;font-weight: bold;text-anchor: middle;dominant-baseline: central;}.balance-container {display: grid;grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));gap: 12px;width: 100%;}.balance-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 14px;display: flex;flex-direction: column;justify-content: space-between;}.balance-card-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;border-bottom: 1px solid var(--border);padding-bottom: 6px;}.balance-card h3 {color: var(--destaque);font-size: 0.95rem;}.progress-item {margin-bottom: 10px;}.progress-info {display: flex;justify-content: space-between;font-size: 0.8rem;margin-bottom: 4px;}.indicador-feito {display: inline-flex;align-items: center;justify-content: center;width: 16px;height: 16px;border-radius: 50%;background: rgba(63, 185, 80, 0.15);color: #3fb950;font-size: 0.65rem;font-weight: bold;flex-shrink: 0;}.marca-retrogrado {font-size: 0.68rem;font-weight: bold;color: #f0883e;margin-left: 1px;vertical-align: super;opacity: 0.9;}.btn-ia-inline {margin-top: 12px;font-size: 0.8rem;padding: 8px 14px;}.card-table-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 10px;}.matrix-desktop-container {display: block;width: 100%;overflow-x: auto;-webkit-overflow-scrolling: touch;}.aspect-matrix {border-collapse: collapse;margin: 0 auto;width: 100%;max-width: 900px;}.aspect-matrix th, .aspect-matrix td {width: 8.33%;height: 32px;min-width: 28px;padding: 0;text-align: center;vertical-align: middle;border: 1px solid var(--border);font-size: 0.75rem;}.aspect-matrix th.header-astro {background: var(--bg-principal);color: var(--sol);font-weight: bold;}.aspect-matrix td.empty-cell {background: transparent;border: none;}.aspect-matrix td.cell-aspect {background: var(--bg-principal);font-weight: bold;}.badge-aspecto {padding: 3px 6px;border-radius: 4px;font-weight: bold;font-size: 0.75rem;color: #fff;}.conj {background: #238636;}.opp {background: #da3633;}.trig {background: #1f6beb;}.quad {background: #d29922;color: #000;}.sext {background: #8957e5;}.icon-conj {color: #2ea043;}.icon-opp  {color: #f85149;}.icon-trig {color: #3fb950;}.icon-quad {color: #d29922;}.icon-sext {color: #a371f7;}.modal-overlay.active {display: flex;}.modal-card {background: var(--bg-card);border: 1px solid var(--border);border-radius: 14px;width: 100%;max-width: 650px;max-height: 85vh;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.5);overflow: hidden;animation: fadeIn 0.2s ease-out;}@keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         
@@ -1066,11 +1058,11 @@ body:has(#cardPickerModal) {
     --ia-color: #a371f7;
 }
 
-body:has(#cardPickerModal) {
-    background-image:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(163, 113, 247, 0.12), transparent),
-        radial-gradient(ellipse 60% 40% at 100% 10%, rgba(227, 179, 65, 0.06), transparent);
-}
+/* (bloco antigo que redefinia background-image do body para o Tarot foi
+   removido: a seletora "body:has(#cardPickerModal)" tem especificidade
+   maior que ".fundo-estrelado" e apagava por completo o céu estrelado
+   animado nessa página. A tela roxa do Tarot já é dada pelas variáveis de
+   cor --destaque acima; o fundo de estrelas volta a funcionar normalmente. */
 
 body:has(#cardPickerModal) header h1 {
     letter-spacing: 2px;
@@ -1270,6 +1262,19 @@ body {
     bottom: max(18px, calc(env(safe-area-inset-bottom) + 12px));
 }
 
+/* --- Em telas largas (desktop), dá um respiro vertical em volta do "app"
+   estreito e centralizado, reforçando a aparência de aplicativo de celular
+   em vez de site esticado de ponta a ponta. --- */
+@media (min-width: 640px) {
+    body {
+        padding-top: 28px;
+        padding-bottom: 28px;
+    }
+    header {
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+}
+
 .toast-container {
     bottom: max(16px, calc(env(safe-area-inset-bottom) + 10px));
 }
@@ -1378,18 +1383,6 @@ header h1 {
 /* --- Grade de 2 colunas em telas médias antes de colapsar para 1
    coluna, evitando o salto brusco de 3-colunas-desktop para
    1-coluna-mobile em tablets e celulares grandes. --- */
-@media (min-width: 620px) and (max-width: 1079px) {
-    .grid-3-colunas, .balance-container, .sol-lua-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 619px) {
-    .sol-lua-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* --- Modal em tela cheia efetiva no mobile, com fechamento por
    arraste visualmente sugerido (barra no topo) e área de toque
    generosa no botão de fechar. --- */
