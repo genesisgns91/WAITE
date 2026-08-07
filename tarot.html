@@ -1040,6 +1040,96 @@ Se o consulente tiver registrado uma impressão pessoal sobre alguma carta, inco
 Encerre sempre com uma resposta prática, direta e clara à questão original do consulente, coerente com tudo o que foi desenvolvido no texto.`;
         }
 
+        // ==================== MODO APROFUNDADO: ORQUESTRAÇÃO CARTA A CARTA ====================
+        // Em vez de pedir para a IA gerar, em uma única chamada, um texto gigante
+        // com todas as cartas + síntese seguindo um formato rígido de cabeçalhos
+        // ("CARTA n:", "SÍNTESE..."), o app agora chama a IA uma vez PARA CADA
+        // CARTA (na ordem exata da tiragem) e, por último, uma vez para a
+        // SÍNTESE — e monta o texto final aqui mesmo no código, com os
+        // cabeçalhos gerados de forma 100% determinística (não dependem da IA
+        // acertar o formato nem caber tudo em uma resposta só). Isso resolve
+        // truncamentos e respostas mal formatadas que aconteciam ao pedir uma
+        // leitura muito longa em uma única chamada. Para quem usa o app, o
+        // resultado continua sendo uma única leitura completa, exibida de uma
+        // vez só ao final — a orquestração em várias chamadas é interna.
+        function construirSystemPromptCartaIndividual() {
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano especialista em arquétipos, versado em Hermetismo, Cabala, Alquimia e Psicologia Analítica.
+
+REGRA CRÍTICA DE FORMATO — PROIBIDO QUALQUER INTRODUÇÃO:
+Não escreva introduções. Não escreva saudações. Não escreva nenhuma frase de abertura, contextualização ou anúncio do que vai ser dito. A primeiríssima frase do seu texto já deve ser uma afirmação concreta indicando qual aspecto específico da questão do consulente esta carta, nesta posição da tiragem, está respondendo — como se o texto fosse o meio de uma análise já em andamento, e não a abertura dela.
+Escreva em segunda pessoa, com tom de conversa direta com quem está lendo, como se estivesse falando pessoalmente com essa pessoa sobre a própria vida dela — use "você" ao longo de todo o texto, nunca em terceira pessoa distante ("o consulente", "esta pessoa").
+Escreva de três a cinco parágrafos bem desenvolvidos, em TEXTO DISSERTATIVO LISO E CORRIDO. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN (sem cardinal #, asteriscos *, travessões duplos, hífens como marcador de lista, sublinhados _, barras verticais |, emojis) nem listas, tópicos ou tabelas. O texto será lido por um sintetizador de voz (TTS).
+Analise ESTRITAMENTE a carta e a posição indicadas nesta chamada — não mencione, compare ou analise nenhuma outra carta da tiragem, e não faça nenhuma síntese geral: isso será feito depois, em outra etapa.
+Desenvolva a análise trazendo, quando pertinente: o que a carta representa como arquétipo, sua leitura psicológica e junguiana (sombra, inconsciente, individuação), o simbolismo esotérico e hermético, as correspondências alquímicas (nigredo, albedo, citrinitas, rubedo), as correspondências cabalísticas — explicando SEMPRE, em linguagem simples, o significado de qualquer termo hebraico ou cabalístico citado (como sefirá ou caminho) na primeira vez em que aparecer — e a dimensão espiritual da carta. Se a carta estiver invertida, explique a energia bloqueada, represada ou a sombra do arcano nessa posição. Finalize sempre amarrando tudo a uma leitura prática e concreta para a vida real do consulente.`;
+        }
+
+        function construirSystemPromptSinteseAprofundada() {
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano especialista em arquétipos, versado em Hermetismo, Cabala, Alquimia e Psicologia Analítica.
+
+REGRA CRÍTICA DE FORMATO:
+A primeira linha da sua resposta deve ser EXATAMENTE neste formato, sem nada antes dela: TÍTULO: seguido de uma reformulação curta, direta e específica da questão do consulente, funcionando como o título geral desta leitura. Não repita literalmente a pergunta, reformule-a como um título de capítulo.
+A partir da segunda linha, não escreva introduções, saudações nem frases de abertura — vá direto ao conteúdo da síntese. Escreva em segunda pessoa, dirigindo-se ao consulente como "você".
+Escreva de quatro a sete parágrafos ricos em TEXTO DISSERTATIVO LISO E CORRIDO, sem nenhum símbolo de formatação markdown (sem cardinal #, asteriscos *, travessões duplos, hífens como marcador de lista, sublinhados _, barras verticais |, emojis), listas ou tabelas — o texto será lido por um sintetizador de voz (TTS).
+Cada carta da tiragem já foi analisada individualmente em outra etapa; agora sua tarefa é INTEGRAR todas elas como um único movimento simbólico — não repita a análise isolada de cada carta, mostre como elas dialogam, se reforçam, se tensionam ou se completam. Pode articular Cabala (explicando sempre os termos hebraicos citados), Psicologia Junguiana, Hermetismo e Alquimia quando isso enriquecer a leitura. Encerre respondendo de forma direta, clara e prática: o que essa tiragem, como um todo, quer dizer ao consulente diante da questão original.`;
+        }
+
+        async function gerarAnaliseCartaIndividual(questao, cartaObj, indice, totalCartas) {
+            const notaTxt = cartaObj.nota ? `\nImpressão pessoal do consulente sobre esta carta: "${cartaObj.nota}"` : '';
+            const userPrompt = `QUESTÃO PRINCIPAL DO CONSULENTE: "${questao}"
+
+Esta é a carta ${indice + 1} de ${totalCartas} da tiragem, na posição "${cartaObj.posicao}".
+CARTA NESTA POSIÇÃO: ${cartaObj.nomeCarta} ${cartaObj.invertida ? 'INVERTIDA' : 'NORMAL'}.${notaTxt}
+
+Escreva a análise APENAS desta carta, especificamente nesta posição da tiragem.
+
+Lembrete final: comece direto no conteúdo, sem nenhuma introdução, saudação ou frase de abertura, e sem nenhum símbolo de formatação especial.`;
+            return await fazerRequisicaoIAComFallback(construirSystemPromptCartaIndividual(), userPrompt);
+        }
+
+        async function gerarSinteseAprofundada(questao, cartasTiradas) {
+            const resumoCartas = cartasTiradas.map((c, i) =>
+                `Posição ${i + 1} (${c.posicao}): ${c.nomeCarta} ${c.invertida ? 'INVERTIDA' : 'NORMAL'}`
+            ).join('\n');
+
+            const userPrompt = `QUESTÃO PRINCIPAL DO CONSULENTE: "${questao}"
+
+CARTAS DA TIRAGEM, NA ORDEM DAS POSIÇÕES:
+${resumoCartas}
+
+Lembrete final: a primeira linha deve ser exatamente "TÍTULO: " seguida do título; a partir daí, texto corrido, sem introdução, saudação ou símbolo de formatação especial.`;
+            return await fazerRequisicaoIAComFallback(construirSystemPromptSinteseAprofundada(), userPrompt);
+        }
+
+        // Monta o texto final da leitura aprofundada chamando a IA uma vez por
+        // carta, sempre na ordem da tiragem, e por fim uma vez para a síntese —
+        // depois junta tudo em um único texto com os cabeçalhos "CARTA n:" e
+        // "SÍNTESE DA PERGUNTA PRINCIPAL:" montados aqui mesmo (determinísticos).
+        async function processarLeituraAprofundadaPorEtapas(questao, cartasTiradas, atualizarProgresso) {
+            const partesCartas = [];
+            for (let i = 0; i < cartasTiradas.length; i++) {
+                atualizarProgresso(`Analisando carta ${i + 1} de ${cartasTiradas.length} — ${cartasTiradas[i].nomeCarta}...`);
+                const corpo = await gerarAnaliseCartaIndividual(questao, cartasTiradas[i], i, cartasTiradas.length);
+                partesCartas.push(corpo.trim());
+            }
+
+            atualizarProgresso('Integrando todas as cartas em uma síntese final...');
+            const respostaSintese = await gerarSinteseAprofundada(questao, cartasTiradas);
+
+            const matchTitulo = respostaSintese.match(/^T[ÍI]TULO\s*:\s*(.+)$/im);
+            const titulo = matchTitulo ? matchTitulo[1].trim() : questao;
+            const corpoSintese = matchTitulo
+                ? respostaSintese.slice(matchTitulo.index + matchTitulo[0].length).trim()
+                : respostaSintese.trim();
+
+            let textoFinal = `TÍTULO: ${titulo}\n\n`;
+            cartasTiradas.forEach((c, i) => {
+                textoFinal += `CARTA ${i + 1}: ${c.nomeCarta}${c.invertida ? ' (Invertida)' : ''} — ${c.posicao}.\n${partesCartas[i]}\n\n`;
+            });
+            textoFinal += `SÍNTESE DA PERGUNTA PRINCIPAL:\n${corpoSintese}`;
+
+            return textoFinal;
+        }
+
         async function processarLeituraIniciatica() {
             const questao = document.getElementById('questaoInput').value;
             if (!questao) return showToast('Por favor, digite a Questão Principal.', 'erro');
@@ -1087,7 +1177,20 @@ ${linhasCartas}
 Lembre-se: responda em texto dissertativo corrido, sem introdução ou saudação, e sem nenhum asterisco, cardinal ou formatação especial.`;
 
             try {
-                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
+                let respostaTexto;
+
+                if (profundidadeSelecionada === 'profunda') {
+                    // Modo aprofundado: uma chamada de IA por carta, sempre na ordem
+                    // da tiragem, e só depois uma chamada final de síntese — ver
+                    // processarLeituraAprofundadaPorEtapas(). O resultado final ainda
+                    // é uma única leitura completa, exibida de uma vez só.
+                    respostaTexto = await processarLeituraAprofundadaPorEtapas(questao, cartasTiradas, (msg) => {
+                        out.innerText = msg;
+                    });
+                } else {
+                    respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
+                }
+
                 renderizarSaidaIA(respostaTexto);
 
                 leituraAtual = {
