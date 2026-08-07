@@ -26,6 +26,12 @@
     --bg-principal: #0d1117;
     --bg-card: #161b22;
     --bg-elevado: #1c2129;
+    /* Fundo translúcido dos cards, no mesmo espírito do card de Síntese dos
+       Trânsitos Diários (que já nascia semi-transparente): deixa o céu
+       estrelado do fundo perceptível por trás dos cartões principais, sem
+       comprometer a legibilidade do texto, já que o fundo da página já é
+       bem escuro. */
+    --bg-card-vidro: rgba(22, 27, 34, 0.62);
 
     --border: #30363d;
     --border-suave: #21262d;
@@ -257,29 +263,35 @@ select {
 
 .modo-tabs {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             justify-content: center;
-            margin: 0 auto 4px;
+            margin: 4px auto 22px;
             max-width: var(--app-max-width);
             width: 100%;
             flex-wrap: wrap;
-        }.modo-tab {
             background: var(--bg-card);
             border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px;
+        }.modo-tab {
+            background: transparent;
+            border: none;
             color: var(--texto-fraco);
-            padding: 10px 16px;
-            border-radius: var(--raio-sm);
+            padding: 11px 18px;
+            border-radius: 999px;
             font-size: 0.85rem;
             font-weight: 700;
             cursor: pointer;
             transition: all var(--transicao);
+            flex: 1 1 0;
+            white-space: nowrap;
         }.modo-tab:hover:not(.active) {
-            border-color: var(--destaque);
-            color: #fff;
+            color: var(--texto-branco);
+            background: rgba(255, 255, 255, 0.05);
         }.modo-tab.active {
             background: var(--destaque);
             color: #0d1117;
-            border-color: var(--destaque);
+            box-shadow: 0 4px 14px rgba(88, 166, 255, 0.35);
         }.topicos-estudo-grid {
             display: flex;
             flex-direction: column;
@@ -1543,7 +1555,7 @@ header h1 {
    em telas largas: limita a largura da linha de texto mesmo dentro
    de um card grande, o que reduz fadiga visual na leitura. --- */
 @media (min-width: 900px) {
-    .ia-output, .modal-body, .painel-resposta-ia, .ai-inline-panel, .sintese-box {
+    .ia-output, .modal-body, .painel-resposta-ia, .ai-inline-panel {
         max-width: 74ch;
         margin-left: auto;
         margin-right: auto;
@@ -1832,4 +1844,99 @@ button:disabled, .btn-ia-action:disabled {
 
 #topicosEstudoContainer .topico-estudo-card {
     margin-bottom: 0;
+}
+
+/* =========================================================
+   AJUSTES ESPECÍFICOS — ASTRO TAROT / NAVEGAÇÃO E ESPAÇAMENTO
+   NO DESKTOP
+   ---------------------------------------------------------
+   Com os blocos de Tiragem de Cartas e Estudo Individual da
+   Carta agora empilhados também no desktop (etapa anterior),
+   esta seção dá um respiro maior entre os grandes blocos
+   empilhados e refina a barra de navegação "Tiragem de
+   Cartas" / "Estudo Individual", que no mobile ocupa a
+   largura toda (bom para toque), mas no desktop passa a se
+   comportar como uma pílula compacta e centralizada — mais
+   alinhada ao resto do app, que já usa esse mesmo padrão de
+   largura "de conteúdo" em vez de esticar a tela toda.
+   ========================================================= */
+@media (min-width: 860px) {
+    /* Pílula de navegação: encolhe para o tamanho do próprio
+       conteúdo (em vez de esticar por toda a largura do app) e
+       fica centralizada, com um respiro maior antes do conteúdo
+       abaixo dela. */
+    .modo-tabs {
+        width: auto;
+        margin: 6px auto 28px;
+    }
+    .modo-tab {
+        flex: 0 1 auto;
+        padding: 11px 32px;
+    }
+
+    /* Respiro maior entre os grandes blocos empilhados (formulário,
+       mesa virtual, interpretação de IA, histórico) e entre os
+       blocos internos de cada coluna, aproveitando a largura maior
+       da tela sem parecer apertado. */
+    .app-layout-tarot {
+        gap: 28px;
+    }
+    .app-layout-tarot .col-left,
+    .app-layout-tarot .col-right {
+        gap: 24px;
+    }
+    .app-layout-tarot .controls,
+    .app-layout-tarot .ia-section,
+    .app-layout-tarot .history-section {
+        padding: 22px;
+    }
+
+    /* Grades internas do Tarot (cartas da tiragem, seletor visual de
+       cartas e histórico) com um pouco mais de espaço entre os itens. */
+    .cards-selection-grid {
+        gap: 18px;
+    }
+    .modal-grid {
+        gap: 14px;
+    }
+    .history-grid {
+        gap: 14px;
+    }
+}
+
+/* =========================================================
+   VIDRO TRANSLÚCIDO — PADRONIZAÇÃO EM TODOS OS CARDS PRINCIPAIS
+   ---------------------------------------------------------
+   O card de "Síntese do Mapa Natal Ativado" (Trânsitos Diários)
+   já nascia com um fundo semi-transparente (".sintese-box"), em
+   vez do fundo sólido "--bg-card" usado pelos demais cartões —
+   deixando o céu estrelado do fundo perceptível através dele.
+   Esse mesmo efeito passa a ser o padrão visual de todos os
+   cartões PRINCIPAIS do app (formulários, roda do mapa, balanços,
+   cartões de conteúdo, painéis de trânsito, mesa virtual do
+   Tarot, seções de IA/histórico e modais), nas quatro telas.
+   Aplicado com a mesma especificidade das regras originais que
+   usavam "background: var(--bg-card)" — como este bloco vem
+   depois delas no arquivo, a cascata garante a sobreposição sem
+   precisar de "!important".
+   Itens ANINHADOS dentro desses cartões (cartas de acordeão como
+   ".expand-card", itens de histórico, opções de modal, badges e
+   campos de formulário) permanecem com fundo sólido de propósito:
+   evita duas camadas de transparência empilhadas (o que ficaria
+   visualmente poluído) e mantém contraste de leitura mais seguro
+   onde há mais texto ou onde a pessoa está digitando.
+   ========================================================= */
+.controls,
+.card-table,
+.chart-card,
+.balance-card,
+.esoteric-card,
+.wheel-panel,
+.positions-panel,
+.history-section,
+.ia-section,
+.spread-display,
+.modal-card,
+.modal-box {
+    background: var(--bg-card-vidro);
 }
