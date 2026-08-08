@@ -953,15 +953,24 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
         async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
             let ultimoErro = null;
 
+            // IMPORTANTE: os workers de IA usados neste app (o mesmo padrão das
+            // telas de Mapa Natal / Revolução Solar / Trânsitos Diários) só leem o
+            // campo "prompt" do corpo da requisição — os campos "system", "messages"
+            // e "contents" separados são ignorados por eles. Por isso o texto
+            // completo (instruções do systemPrompt + dados do userPrompt) precisa
+            // estar OBRIGATORIAMENTE dentro do campo "prompt", ou as instruções de
+            // formato/estrutura (breve, padrão, aprofundada) nunca chegam à IA.
+            const promptCompleto = `${systemPrompt}\n\n${userPrompt}`;
+
             const payload = {
                 system: systemPrompt,
-                prompt: userPrompt,
+                prompt: promptCompleto,
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
                 contents: [
-                    { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
+                    { role: 'user', parts: [{ text: promptCompleto }] }
                 ]
             };
 
