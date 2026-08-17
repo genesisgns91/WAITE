@@ -1057,7 +1057,15 @@ select {
             font-size: 0.88rem;
             line-height: 1.6;
             position: relative;
-        }.sintese-box h4 { color: var(--ia-color); margin-bottom: 8px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }.sintese-section { margin-bottom: 12px; }.sintese-section strong { color: var(--sol); }.sintese-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 8px; margin: 12px 0; }.sintese-metric { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 9px; }.sintese-metric span { display: block; color: #8b949e; font-size: 0.67rem; text-transform: uppercase; font-weight: 700; }.sintese-metric strong { display: block; color: #fff; margin-top: 3px; font-size: 0.82rem; }.card-table {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;width: 100%;}.card-table h3 {color: var(--destaque);font-size: 0.95rem;margin-bottom: 10px;}.pessoa-item {
+        }.sintese-box h4 { color: var(--ia-color); margin-bottom: 8px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }.periodo-analise-box {
+    background: rgba(227, 179, 97, 0.08);
+    border: 1px dashed var(--sol);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}.periodo-analise-box ul { list-style: disc; }.sintese-section { margin-bottom: 12px; }.sintese-section strong { color: var(--sol); }.sintese-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 8px; margin: 12px 0; }.sintese-metric { background: var(--bg-principal); border: 1px solid var(--border); border-radius: 8px; padding: 9px; }.sintese-metric span { display: block; color: #8b949e; font-size: 0.67rem; text-transform: uppercase; font-weight: 700; }.sintese-metric strong { display: block; color: #fff; margin-top: 3px; font-size: 0.82rem; }.card-table {background: var(--bg-card);border: 1px solid var(--border);border-radius: 12px;padding: 12px;width: 100%;}.card-table h3 {color: var(--destaque);font-size: 0.95rem;margin-bottom: 10px;}.pessoa-item {
             display: flex;
             justify-content: space-between;
             align-items: center;

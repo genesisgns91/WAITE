@@ -190,7 +190,7 @@
 
         <div class="esoteric-card card-natal-highlight">
             <h3><span>⚖️ 4. Ativações Individuais Expansíveis</span><span class="block-ai-head"><button type="button" class="btn-ia" onclick="alternarAnaliseIABloco('ativacoes', this)">✦ Panorama IA</button></span></h3>
-            <p style="font-size:.82rem;color:#8b949e;line-height:1.5;margin-bottom:10px;">Aqui estão os contatos mais relevantes entre o céu atual e os pontos estruturais do mapa natal. A força de um trânsito não depende apenas do aspecto: duração, orbe, planeta envolvido e área natal ativada alteram seu peso.</p>
+            <p style="font-size:.82rem;color:#8b949e;line-height:1.5;margin-bottom:10px;">Aqui estão os contatos mais relevantes entre o céu atual e os pontos estruturais do mapa natal. A força de um trânsito não depende apenas do aspecto: duração, orbe, planeta envolvido e área natal ativada alteram seu peso. Cada card abaixo mostra também uma <strong>vigência estimada</strong> (🗓️ de que dia a que dia aquele tema tende a permanecer ativo).</p>
             <div id="transitosRelevantesList" class="expand-list"></div>
             <div class="ai-inline-panel" id="iaAtivacoes"></div>
         </div>
@@ -204,6 +204,9 @@
 
         <div class="sintese-box">
             <h4><span>📜 6. Síntese do Mapa Natal Ativado</span><span class="block-ai-head"><button type="button" class="btn-ia" onclick="alternarAnaliseIABloco('sintese', this)">✦ Síntese IA</button></span></h4>
+            <div class="periodo-analise-box" id="periodoAnaliseBox">
+                <p style="color:#8b949e;">Calculando o período coberto por esta análise...</p>
+            </div>
             <p style="font-size:.82rem;color:#8b949e;line-height:1.5;margin-bottom:8px;">A síntese final reúne céu coletivo, mapa natal, casas, aspectos, elementos, ritmos, polaridades e convergências. O objetivo é responder onde o dia toca mais fundo, o que tensiona, o que favorece, como a pessoa pode se sentir e qual atitude consciente integra melhor o momento.</p>
             <div id="sinteseFinalConteudo">Aguardando processamento integral...</div>
             <div class="ai-inline-panel" id="iaSintese"></div>
@@ -435,6 +438,73 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
             return "GATILHO DO DIA";
         }
 
+        // ==========================================
+        // VIGÊNCIA ESTIMADA DE CADA TRÂNSITO (de quando até quando)
+        // ==========================================
+        // O app calculava o céu apenas para o INSTANTE escolhido, sem nunca
+        // informar até quando cada tema permanece ativo. Esta seção estima, por
+        // velocidade média diária do planeta em trânsito, a janela aproximada
+        // (data de entrada e saída da órbe de 2.5° usada em calcularAspecto) em
+        // que aquele aspecto específico permanece "aceso".
+        // ⚠️ É uma aproximação por MOVIMENTO LINEAR MÉDIO: não modela estações
+        // retrógradas dentro da janela. Por isso é bastante confiável para Lua,
+        // Sol, Mercúrio, Vênus e Marte, e serve como ORDEM DE GRANDEZA para
+        // Júpiter a Plutão — esses planetas lentos podem inclusive "sair e
+        // voltar" a ativar o mesmo grau mais de uma vez ao longo de semanas ou
+        // meses por causa da retrogradação, o que o texto já avisa ao usuário.
+        const VELOCIDADE_MEDIA_DIARIA = {
+            Sol: 0.9856, Lua: 13.176, Mercúrio: 1.383, Vênus: 1.2, Marte: 0.524,
+            Júpiter: 0.083, Saturno: 0.034, Urano: 0.012, Netuno: 0.006, Plutão: 0.004
+        };
+        const ORBE_MAXIMA_TRANSITO = 2.5; // mesmo valor usado como limite em calcularAspecto()
+
+        function estimarPeriodoTransito(planetaTransitante, orbeAtual, estadoAspecto, dataBaseUtc) {
+            const v = VELOCIDADE_MEDIA_DIARIA[planetaTransitante];
+            if (!v) return null;
+
+            let diasAteEntrar, diasAteSair;
+            if (estadoAspecto === 'Aplicativo') {
+                diasAteEntrar = -((ORBE_MAXIMA_TRANSITO - orbeAtual) / v);
+                diasAteSair = (orbeAtual + ORBE_MAXIMA_TRANSITO) / v;
+            } else if (estadoAspecto === 'Separativo') {
+                diasAteEntrar = -((orbeAtual + ORBE_MAXIMA_TRANSITO) / v);
+                diasAteSair = (ORBE_MAXIMA_TRANSITO - orbeAtual) / v;
+            } else {
+                diasAteEntrar = -(ORBE_MAXIMA_TRANSITO / v);
+                diasAteSair = ORBE_MAXIMA_TRANSITO / v;
+            }
+
+            const dataEntrada = new Date(dataBaseUtc.getTime() + diasAteEntrar * 86400000);
+            const dataSaida = new Date(dataBaseUtc.getTime() + diasAteSair * 86400000);
+            const duracaoTotalDias = Math.abs(diasAteSair - diasAteEntrar);
+
+            return { dataEntrada, dataSaida, diasRestantes: diasAteSair, duracaoTotalDias };
+        }
+
+        function formatarDataCurta(data, fusoHoras) {
+            const ajustada = new Date(data.getTime() + (fusoHoras || 0) * 3600000);
+            return ajustada.toLocaleDateString('pt-BR');
+        }
+
+        // Texto pronto para exibir em cada card de trânsito, informando de que
+        // dia a que dia (ou, no caso da Lua, quantas horas) aquele aspecto
+        // específico tende a ficar ativo.
+        function textoVigenciaTransito(planetaTransitante, orbeAtual, estadoAspecto, dataBaseUtc, fusoHoras) {
+            const periodo = estimarPeriodoTransito(planetaTransitante, orbeAtual, estadoAspecto, dataBaseUtc);
+            if (!periodo) return 'Vigência não estimada para este ponto.';
+
+            if (planetaTransitante === 'Lua') {
+                const horasTotais = Math.max(0.5, periodo.duracaoTotalDias * 24);
+                return `Contato rápido e passageiro: a Lua permanece nessa faixa de aspecto por cerca de ${horasTotais.toFixed(1)} horas ao todo — válido essencialmente para hoje, não para os próximos dias.`;
+            }
+
+            const inicio = formatarDataCurta(periodo.dataEntrada, fusoHoras);
+            const fim = formatarDataCurta(periodo.dataSaida, fusoHoras);
+            const lento = ["Júpiter", "Saturno", "Urano", "Netuno", "Plutão"].includes(planetaTransitante);
+            const avisoRetro = lento ? ' Como é um planeta lento, ele pode retrogradar e reativar esse mesmo tema mais de uma vez dentro dessa janela.' : '';
+            return `Vigência estimada: de ${inicio} até ${fim} (~${Math.max(1, Math.round(periodo.duracaoTotalDias))} dias no total, por velocidade média).${avisoRetro}`;
+        }
+
         function alternarCard(headerElement) {
             const card = headerElement.closest('.expand-card');
             card.classList.toggle('open');
@@ -502,6 +572,25 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
                 }
             }
             return { regente, horaPlaneta, numero, periodo, nascer, por };
+        }
+
+        // Monta o resumo visual, no topo da Síntese, deixando explícito qual
+        // momento exato foi calculado (não é uma média de semana/mês/ano) e
+        // até quando os temas mais fortes do dia tendem a permanecer ativos.
+        function montarPeriodoAnaliseHtml(dAtual, hAtual, fusoAtual, trânsitosEncontrados) {
+            const dataFormatada = new Date(`${dAtual}T${hAtual}:00`).toLocaleDateString('pt-BR');
+            const local = (document.getElementById('cidadeAtualInput').value || '').trim() || 'local informado';
+            const top = trânsitosEncontrados.slice(0, 5);
+            const listaTemas = top.length
+                ? top.map(t => `<li><strong>${t.pHoje} ${t.asp.simbolo} ${t.pNatal}</strong> — ${t.vigenciaTexto}</li>`).join('')
+                : '<li>Nenhuma ativação relevante encontrada hoje para detalhar período.</li>';
+
+            return `
+                <p style="margin-bottom:6px;"><strong>📅 Momento exato calculado:</strong> ${dataFormatada} às ${hAtual} (UTC${fusoAtual >= 0 ? '+' : ''}${fusoAtual}), em ${local}.</p>
+                <p style="margin-bottom:8px; font-size:.78rem; color:#8b949e;">Este é um <strong>retrato pontual desse instante</strong> — não é, por si só, uma previsão automática para a semana, o mês ou o ano. Sol, Lua, regente do dia e hora planetária valem apenas para este dia/hora específico. Já os aspectos entre planetas em trânsito e o mapa natal têm vigência própria, estimada abaixo para os temas mais fortes de hoje (e detalhada em cada card de "Ativações Individuais" mais acima):</p>
+                <ul style="margin:0 0 8px 18px; font-size:.78rem; color:#c9d1d9; line-height:1.65;">${listaTemas}</ul>
+                <p style="font-size:.72rem; color:#8b949e;">Para consultar outro período, altere a data/hora do trânsito no formulário no topo da página e clique em "Processar Análise Integrada de Trânsitos" novamente.</p>
+            `;
         }
 
         function executarAnalise() {
@@ -651,6 +740,7 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
                                     <div class="detail-cell"><span>PRECISÃO</span>${asp.orbeFormat} (${asp.estado})</div>
                                 </div>
                                 <p><strong>Área Mobilizada:</strong> ${SIGNIFICADO_CASAS[casaLuaNatal]}</p>
+                                <p style="margin-top:6px; font-size:0.76rem; color:var(--ouro);">🗓️ ${textoVigenciaTransito('Lua', asp.orbeVal, asp.estado, utcAtual, fusoAtual)}</p>
                                 <div style="margin-top: 10px; display: flex; gap: 8px;">
                                     <button type="button" class="btn-ia" onclick="gerarLeituraIA('Lua em Trânsito', '${pNatal} Natal', 'Casa ${casaLuaNatal}', '${idIa}')">✨ Leitura IA</button>
                                     <button type="button" class="btn-ia" style="background:var(--bg-card); border:1px solid var(--border);" onclick="ouvirTexto('${idIa}')">🔊 Ouvir</button>
@@ -675,9 +765,10 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
                         let casaTrans = acharCasa(planetasHoje[pHoje], angulosNatais.casas);
                         let casaNatalAtiv = (["Asc","MC","Dsc","Ic"].includes(pNatal)) ? "Ângulo Estrutural" : `Casa ${acharCasa(planetasNatais[pNatal], angulosNatais.casas)}`;
                         let temp = determinarTemporalidade(pHoje);
+                        let vigenciaTexto = textoVigenciaTransito(pHoje, asp.orbeVal, asp.estado, utcAtual, fusoAtual);
 
                         trânsitosEncontrados.push({
-                            pHoje, pNatal, asp, casaTrans, casaNatalAtiv, temp,
+                            pHoje, pNatal, asp, casaTrans, casaNatalAtiv, temp, vigenciaTexto,
                             peso: (temp === "LONGO PRAZO" ? 4 : temp === "MÉDIO PRAZO" ? 3 : 2) + (asp.estado === "Exato" ? 2 : 0)
                         });
                     }
@@ -705,6 +796,7 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
                                 <div class="detail-cell"><span>ORBE / ESTADO</span>${item.asp.orbeFormat} (${item.asp.estado})</div>
                             </div>
                             <p><strong>Área da Vida Atingida:</strong> ${SIGNIFICADO_CASAS[item.casaTrans]}</p>
+                            <p style="margin-top:6px; font-size:0.76rem; color:var(--ouro);">🗓️ ${item.vigenciaTexto}</p>
                             <div style="margin-top: 10px; display: flex; gap: 8px;">
                                 <button type="button" class="btn-ia" onclick="gerarLeituraIA('${item.pHoje} em Trânsito', '${item.pNatal} Natal', 'Casa ${item.casaTrans}', '${idIa}')">✨ Leitura IA</button>
                                 <button type="button" class="btn-ia" style="background:var(--bg-card); border:1px solid var(--border);" onclick="ouvirTexto('${idIa}')">🔊 Ouvir</button>
@@ -727,6 +819,7 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
                 </div>`;
 
             contextoTransitosAtual.trânsitosEncontrados = trânsitosEncontrados;
+            document.getElementById('periodoAnaliseBox').innerHTML = montarPeriodoAnaliseHtml(dAtual, hAtual, fusoAtual, trânsitosEncontrados);
 
             // 5. CONVERGÊNCIA
             let casasFoco = {};
@@ -943,9 +1036,9 @@ function resumoContextoIA() {
     if (!contextoTransitosAtual) return 'Contexto ainda não calculado.';
     const c=contextoTransitosAtual;
     const fmt=(mapa)=>Object.entries(mapa).map(([p,g])=>{const i=obterInfoSigno(g);return `${p}: ${i.signo} ${i.grau}°${String(i.min).padStart(2,'0')}'`;}).join('; ');
-    const aspectos=(c.trânsitosEncontrados||[]).slice(0,18).map(t=>`${t.pHoje} ${t.asp.simbolo} ${t.pNatal} (${t.asp.nome}, orbe ${t.asp.orbeFormat}, ${t.asp.estado}, casa ${t.casaTrans})`).join('; ');
+    const aspectos=(c.trânsitosEncontrados||[]).slice(0,18).map(t=>`${t.pHoje} ${t.asp.simbolo} ${t.pNatal} (${t.asp.nome}, orbe ${t.asp.orbeFormat}, ${t.asp.estado}, casa ${t.casaTrans}) — VIGÊNCIA: ${t.vigenciaTexto||'não estimada'}`).join('; ');
     const percentual=(obj)=>Object.entries(obj||{}).map(([k,v])=>`${k}: ${Math.round(v/10*100)}%`).join(', ');
-    return `DATA/HORA: ${c.data} ${c.hora}.
+    return `PERÍODO EXATO DESTA ANÁLISE: instante único de ${c.data} às ${c.hora} — isto NÃO é uma média nem uma previsão automática de semana/mês/ano; é um retrato pontual desse momento. Sol, Lua, regente do dia e hora planetária valem apenas para este dia/hora específico. Cada aspecto de trânsito listado abaixo carrega sua PRÓPRIA janela estimada de vigência (de quando a quando permanece ativo) — use essas janelas para dizer explicitamente até quando cada tema tende a durar.
 REGENTE DO DIA: ${c.regenteDia}. HORA PLANETÁRIA: ${c.horaPlanetaria}, ${c.numeroHora}ª hora ${c.periodoHora}. METAL ALQUÍMICO: ${c.metalAlquimico}. PRINCÍPIO: ${c.principioRegente}. FASE LUNAR: ${c.faseLunar}.
 SOL DO DIA: ${c.sol.signo} ${c.sol.grau}°, casa natal ${c.sol.casa}. LUA DO DIA: ${c.lua.signo} ${c.lua.grau}°, casa natal ${c.lua.casa}.
 POSIÇÕES DO DIA: ${fmt(c.planetasHoje)}
@@ -953,7 +1046,7 @@ POSIÇÕES NATAIS: ${fmt(c.planetasNatais)}
 ELEMENTOS — DIA: ${percentual(c.elementos?.dia)} | NATAL: ${percentual(c.elementos?.natal)}
 RITMOS — DIA: ${percentual(c.ritmos?.dia)} | NATAL: ${percentual(c.ritmos?.natal)}
 POLARIDADES — DIA: ${percentual(c.polaridades?.dia)} | NATAL: ${percentual(c.polaridades?.natal)}
-ASPECTOS DE TRÂNSITO/NATAL RELEVANTES: ${aspectos||'nenhum dentro da orbe analisada.'}
+ASPECTOS DE TRÂNSITO/NATAL RELEVANTES (com vigência estimada): ${aspectos||'nenhum dentro da orbe analisada.'}
 CONVERGÊNCIA: ${JSON.stringify(c.convergencia||{})}`;
 }
 
@@ -965,9 +1058,9 @@ const PROMPTS_BLOCOS_IA = {
     polaridades: `Compare a polaridade Masculina/Yang e Feminina/Yin do céu do dia com o mapa natal. Explique iniciativa versus receptividade, exteriorização versus interiorização, e como o desequilíbrio relativo pode ser percebido psicologicamente.`,
     sol: `Interprete o Sol em trânsito em relação ao Sol natal, à casa natal atravessada e aos aspectos do dia. Explique o que o foco consciente, vitalidade, identidade e vontade estão sendo convidados a perceber, desenvolver ou reorganizar.`,
     lua: `Interprete a Lua em trânsito em relação à Lua natal, à casa natal atravessada e aos aspectos relevantes. Explique ritmo emocional, necessidade de segurança, sensibilidade, reatividade, memória e estado subjetivo, sem transformar símbolo astrológico em diagnóstico psicológico.`,
-    ativacoes: `Analise as ativações individuais como um sistema. Identifique os trânsitos mais importantes por duração, exatidão, planeta e casa, e explique como eles se combinam. Destaque conflitos, apoios e o tema central que emerge da interação dos aspectos.`,
-    convergencia: `Analise a convergência dos trânsitos. Descubra qual casa ou tema recebe maior densidade, quais forças apontam na mesma direção, quais entram em conflito e qual processo psicológico ou existencial parece dominar o dia. Não invente acontecimentos concretos.`,
-    sintese: `Produza uma síntese total, rica e integrada de todo o mapa natal ativado neste dia. Responda explicitamente: qual área da vida está mais afetada; quais são os principais conflitos; quais são as bênçãos, recursos e vias de fluidez; qual pode ser o clima emocional; que estado de consciência o momento favorece ou desafia; como a pessoa pode se sentir consigo mesma; o que pede transformação, disciplina, expressão ou recolhimento; e qual atitude consciente integra melhor o conjunto. Diferencie tendências simbólicas de fatos concretos e não faça determinismo.`
+    ativacoes: `Analise as ativações individuais como um sistema. Identifique os trânsitos mais importantes por duração, exatidão, planeta e casa, e explique como eles se combinam. Para cada trânsito citado, mencione também sua janela de vigência (a partir dos dados fornecidos), deixando claro que temas de planetas rápidos (Lua, Sol, Mercúrio, Vênus, Marte) tendem a durar dias, enquanto os de planetas lentos (Júpiter a Plutão) podem se estender por semanas ou meses. Destaque conflitos, apoios e o tema central que emerge da interação dos aspectos.`,
+    convergencia: `Analise a convergência dos trânsitos. Descubra qual casa ou tema recebe maior densidade, quais forças apontam na mesma direção, quais entram em conflito e qual processo psicológico ou existencial parece dominar o dia. Situe isso no tempo: diga se essa convergência é passageira (de hoje) ou se, pelas janelas de vigência fornecidas, ela deve se manter por mais dias, semanas ou meses. Não invente acontecimentos concretos.`,
+    sintese: `Produza uma síntese total, rica e integrada de todo o mapa natal ativado neste dia. É OBRIGATÓRIO que, dentro do primeiro ou segundo parágrafo, você situe com precisão o PERÍODO coberto por esta leitura: cite a data e hora exatas informadas nos dados, deixe claro que se trata de um retrato pontual daquele momento específico (não uma previsão automática de semana, mês ou ano inteiro), e diga, para os dois ou três temas mais fortes do dia, até quando essas energias tendem a permanecer ativas, usando as janelas de vigência fornecidas nos dados. Essa contextualização de período conta como conteúdo central da leitura, não como saudação ou preâmbulo — portanto não a omita mesmo seguindo a regra de "sem introdução". Depois disso, responda explicitamente: qual área da vida está mais afetada; quais são os principais conflitos; quais são as bênçãos, recursos e vias de fluidez; qual pode ser o clima emocional; que estado de consciência o momento favorece ou desafia; como a pessoa pode se sentir consigo mesma; o que pede transformação, disciplina, expressão ou recolhimento; e qual atitude consciente integra melhor o conjunto. Diferencie tendências simbólicas de fatos concretos e não faça determinismo.`
 };
 
 async function alternarAnaliseIABloco(tipo, botao) {
