@@ -1078,6 +1078,43 @@ async function alternarAnaliseIABloco(tipo, botao) {
     await gerarAnaliseIABloco(tipo);
 }
 
+// ==========================================
+// WORKERS DE IA COM FALLBACK (mesmo padrão do tarot.html)
+// ==========================================
+// Antes, as duas funções de IA desta página chamavam SOMENTE
+// "astro-gns-proxy.genesisgns.workers.dev" direto. Se esse worker específico
+// estivesse sobrecarregado ("high demand"), o erro aparecia na hora, sem
+// tentar os outros dois workers do Cloudflare que o projeto já mantém. Agora
+// as três URLs são tentadas em sequência antes de mostrar erro ao usuário.
+const PROXIES_WORKERS_TRANSITOS = [
+    "https://astro-gns-proxy.genesisgns.workers.dev/",
+    "https://shiny-sky-21dd.genesisgns.workers.dev/",
+    "https://astro2.genesisgns.workers.dev/"
+];
+
+async function chamarProxyIAComFallback(promptText) {
+    let ultimoErro = null;
+    for (let i = 0; i < PROXIES_WORKERS_TRANSITOS.length; i++) {
+        const proxyUrl = PROXIES_WORKERS_TRANSITOS[i];
+        try {
+            const response = await fetch(proxyUrl, {
+                method: 'POST',
+                cache: 'no-store',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: promptText })
+            });
+            const data = await response.json();
+            if (response.ok && data.resposta) {
+                return data.resposta;
+            }
+            ultimoErro = data.error || `Serviço ${proxyUrl} respondeu sem dados válidos.`;
+        } catch (err) {
+            ultimoErro = err.message;
+        }
+    }
+    throw new Error(ultimoErro || 'Nenhum dos serviços de IA respondeu no momento.');
+}
+
 async function gerarAnaliseIABloco(tipo) {
     const ids={panorama:'iaPanorama',dia:'iaDia',elementos:'iaElementos',ritmos:'iaRitmos',polaridades:'iaPolaridades',sol:'iaSol',lua:'iaLua',ativacoes:'iaAtivacoes',convergencia:'iaConvergencia',sintese:'iaSintese'};
     const painel=document.getElementById(ids[tipo]);
@@ -1091,13 +1128,12 @@ ${resumoContextoIA()}
 
 ${DIRETRIZ_TOM_IA_TRANSITOS}`;
     try {
-        const response=await fetch('https://astro-gns-proxy.genesisgns.workers.dev/',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptText})});
-        const data=await response.json();
-        if(response.ok && data.resposta) { painel.innerHTML=`<p><strong>✨ Interpretação IA:</strong></p>${data.resposta}`; painel.dataset.carregado='1'; }
-        else painel.innerHTML=`<p style="color:var(--fogo);"><strong>Erro:</strong> ${data.error||'Não foi possível obter a resposta da IA.'}</p>`;
+        const resposta = await chamarProxyIAComFallback(promptText);
+        painel.innerHTML=`<p><strong>✨ Interpretação IA:</strong></p>${resposta}`;
+        painel.dataset.carregado='1';
     } catch(err) {
         console.error('Erro na análise IA:',err);
-        painel.innerHTML=`<p style="color:var(--fogo);"><strong>Erro de conexão:</strong> ${err.message}</p>`;
+        painel.innerHTML=`<p style="color:var(--fogo);"><strong>Erro:</strong> ${err.message}</p>`;
     }
 }
 
@@ -1120,23 +1156,11 @@ async function gerarLeituraIA(astroTransito, alvoNatal, casa, idPainel) {
     ${DIRETRIZ_TOM_IA_TRANSITOS}`;
 
     try {
-        const response = await fetch('https://astro-gns-proxy.genesisgns.workers.dev/', {
-            method: 'POST',
-            cache: 'no-store',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: promptText })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.resposta) {
-            painel.innerHTML = `<p><strong>✨ Interpretação Iniciática IA:</strong></p>${data.resposta}`;
-        } else {
-            painel.innerHTML = `<p style="color:var(--fogo);"><strong>Erro:</strong> ${data.error || 'Não foi possível obter a resposta da IA.'}</p>`;
-        }
+        const resposta = await chamarProxyIAComFallback(promptText);
+        painel.innerHTML = `<p><strong>✨ Interpretação Iniciática IA:</strong></p>${resposta}`;
     } catch (err) {
         console.error('Erro na leitura de IA dos trânsitos:', err);
-        painel.innerHTML = `<p style="color:var(--fogo);"><strong>Erro de Conexão:</strong> ${err.message}</p>`;
+        painel.innerHTML = `<p style="color:var(--fogo);"><strong>Erro:</strong> ${err.message}</p>`;
     }
 }
 
