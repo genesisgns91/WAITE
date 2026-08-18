@@ -1087,14 +1087,23 @@ async function alternarAnaliseIABloco(tipo, botao) {
 // tentar os outros dois workers do Cloudflare que o projeto já mantém. Agora
 // as três URLs são tentadas em sequência antes de mostrar erro ao usuário.
 const PROXIES_WORKERS_TRANSITOS = [
+    "https://interno.genesisgns.workers.dev/",
+    "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
+    "https://forzion-gpt-proxy.genesisgns.workers.dev/",
+    "https://astro2.genesisgns.workers.dev/",
     "https://astro-gns-proxy.genesisgns.workers.dev/",
-    "https://shiny-sky-21dd.genesisgns.workers.dev/",
-    "https://astro2.genesisgns.workers.dev/"
+    "https://shiny-sky-21dd.genesisgns.workers.dev/"
 ];
 
-async function chamarProxyIAComFallback(promptText) {
+// aoTentar(n) é chamado antes de cada tentativa (n = 1..6), para exibir em
+// qual worker a consulta está no momento. Falhas intermediárias são
+// silenciosas — só se TODOS os workers falharem é que um erro é lançado.
+async function chamarProxyIAComFallback(promptText, aoTentar) {
     let ultimoErro = null;
     for (let i = 0; i < PROXIES_WORKERS_TRANSITOS.length; i++) {
+        if (typeof aoTentar === 'function') {
+            try { aoTentar(i + 1); } catch (e) { /* ignora erro de UI */ }
+        }
         const proxyUrl = PROXIES_WORKERS_TRANSITOS[i];
         try {
             const response = await fetch(proxyUrl, {
@@ -1122,6 +1131,7 @@ async function chamarProxyIAComFallback(promptText) {
         } catch (err) {
             ultimoErro = `${proxyUrl.replace('https://','').split('.')[0]}: ${err.message}`;
         }
+        // Falha silenciosa: segue para o próximo worker sem avisar a pessoa.
     }
     throw new Error(ultimoErro || 'Nenhum dos serviços de IA respondeu no momento.');
 }
@@ -1131,7 +1141,7 @@ async function gerarAnaliseIABloco(tipo) {
     const painel=document.getElementById(ids[tipo]);
     if(!painel) return;
     painel.style.display='block';
-    painel.innerHTML='<em>Consultando a inteligência astrológica...</em>';
+    painel.innerHTML='<em>Consultando a inteligência astrológica (...1)</em>';
     const promptText=`${PROMPTS_BLOCOS_IA[tipo]}
 
 DADOS CALCULADOS PELO APLICATIVO — USE SOMENTE ESTES DADOS:
@@ -1139,7 +1149,9 @@ ${resumoContextoIA()}
 
 ${DIRETRIZ_TOM_IA_TRANSITOS}`;
     try {
-        const resposta = await chamarProxyIAComFallback(promptText);
+        const resposta = await chamarProxyIAComFallback(promptText, (n) => {
+            painel.innerHTML = `<em>Consultando a inteligência astrológica (...${n})</em>`;
+        });
         painel.innerHTML=`<p><strong>✨ Interpretação IA:</strong></p>${resposta}`;
         painel.dataset.carregado='1';
     } catch(err) {
@@ -1153,7 +1165,7 @@ async function gerarLeituraIA(astroTransito, alvoNatal, casa, idPainel) {
     if (!painel) return;
 
     painel.style.display = 'block';
-    painel.innerHTML = '<em>Consultando a inteligência astrológica...</em>';
+    painel.innerHTML = '<em>Consultando a inteligência astrológica (...1)</em>';
 
     const promptText = `Faça uma leitura astrológica integrada sobre ${astroTransito} ativando ${alvoNatal}, na ${casa} desta pessoa.
 
@@ -1167,7 +1179,9 @@ async function gerarLeituraIA(astroTransito, alvoNatal, casa, idPainel) {
     ${DIRETRIZ_TOM_IA_TRANSITOS}`;
 
     try {
-        const resposta = await chamarProxyIAComFallback(promptText);
+        const resposta = await chamarProxyIAComFallback(promptText, (n) => {
+            painel.innerHTML = `<em>Consultando a inteligência astrológica (...${n})</em>`;
+        });
         painel.innerHTML = `<p><strong>✨ Interpretação Iniciática IA:</strong></p>${resposta}`;
     } catch (err) {
         console.error('Erro na leitura de IA dos trânsitos:', err);

@@ -364,12 +364,17 @@
             { id: "Wands14", nome: "Rei de Paus (King)", busca: "rei de paus king wands Wands14", arquivo: "cards/Wands14.jpg" }
         ];
 
-        // WORKERS DE IA CONECTADOS
+        // WORKERS DE IA CONECTADOS — tentados nesta ordem. Uma falha em
+        // qualquer um deles é silenciosa (não aparece nada na tela); o
+        // próximo é tentado automaticamente. Só se TODOS falharem é que um
+        // erro é mostrado.
         const PROXIES_WORKERS = [
-            "https://interno.genesisgns.workers.dev",
-            "https://interno.genesisgns.workers.dev",
-            "https://interno.genesisgns.workers.dev"
-            
+            "https://interno.genesisgns.workers.dev/",
+            "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
+            "https://forzion-gpt-proxy.genesisgns.workers.dev/",
+            "https://astro2.genesisgns.workers.dev/",
+            "https://astro-gns-proxy.genesisgns.workers.dev/",
+            "https://shiny-sky-21dd.genesisgns.workers.dev/"
         ];
 
         const ROTULOS_PADRAO = {
@@ -920,7 +925,8 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
             botoesAcoes.forEach(b => b.disabled = true);
 
             corpo.classList.add('show');
-            corpo.innerHTML += `<div style="margin-top:8px;"><span class="spinner"></span> consultando os arcanos<span class="dots-loading"></span></div>`;
+            const idStatusEstudo = `statusEstudo_${topicoId}`;
+            corpo.innerHTML += `<div style="margin-top:8px;" id="${idStatusEstudo}"><span class="spinner"></span> consultando os arcanos (...1)</div>`;
 
             const nomeCarta = cartaEstudoSelecionada.nome;
             let userPrompt;
@@ -934,7 +940,10 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
             }
 
             try {
-                const resposta = await fazerRequisicaoIAComFallback(construirSystemPromptEstudo(topico), userPrompt);
+                const resposta = await fazerRequisicaoIAComFallback(construirSystemPromptEstudo(topico), userPrompt, (n) => {
+                    const statusEl = document.getElementById(idStatusEstudo);
+                    if (statusEl) statusEl.innerHTML = `<span class="spinner"></span> consultando os arcanos (...${n})`;
+                });
 
                 if (!ehComplemento) {
                     estudoAtual.topicos[topicoId] = { texto: resposta, complementos: [] };
@@ -953,63 +962,49 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
             }
         }
 
-        async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt) {
+        // aoTentar(n) é chamado antes de cada tentativa (n = 1..6), para que a
+        // tela possa exibir em qual worker a consulta está no momento
+        // (ex: "...1", "...2"). Falhas intermediárias são silenciosas — nada
+        // aparece na tela até que TODOS os workers tenham falhado.
+        async function fazerRequisicaoIAComFallback(systemPrompt, userPrompt, aoTentar) {
             let ultimoErro = null;
 
-            // IMPORTANTE: os workers de IA usados neste app (o mesmo padrão das
-            // telas de Mapa Natal / Revolução Solar / Trânsitos Diários) só leem o
-            // campo "prompt" do corpo da requisição — os campos "system", "messages"
-            // e "contents" separados são ignorados por eles. Por isso o texto
-            // completo (instruções do systemPrompt + dados do userPrompt) precisa
-            // estar OBRIGATORIAMENTE dentro do campo "prompt", ou as instruções de
-            // formato/estrutura (breve, padrão, aprofundada) nunca chegam à IA.
+            // IMPORTANTE: os workers de IA usados neste app só leem o campo
+            // "prompt" do corpo da requisição — por isso o texto completo
+            // (instruções do systemPrompt + dados do userPrompt) precisa estar
+            // OBRIGATORIAMENTE dentro do campo "prompt".
             const promptCompleto = `${systemPrompt}\n\n${userPrompt}`;
 
-            const payload = {
-                system: systemPrompt,
-                prompt: promptCompleto,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: userPrompt }
-                ],
-                contents: [
-                    { role: 'user', parts: [{ text: promptCompleto }] }
-                ]
-            };
-
             for (let i = 0; i < PROXIES_WORKERS.length; i++) {
+                if (typeof aoTentar === 'function') {
+                    try { aoTentar(i + 1); } catch (e) { /* ignora erro de UI */ }
+                }
                 const proxyUrl = PROXIES_WORKERS[i];
                 try {
                     const response = await fetch(proxyUrl, {
                         method: 'POST',
+                        cache: 'no-store',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({ prompt: promptCompleto })
                     });
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        let textoRes = "";
-                        if (typeof data === 'string') textoRes = data;
-                        else if (data.resultado) textoRes = data.resultado;
-                        else if (data.resposta) textoRes = data.resposta;
-                        else if (data.content) textoRes = data.content;
-                        else if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                            textoRes = data.candidates[0].content.parts[0].text;
-                        } else if (data.choices && data.choices[0]?.message?.content) {
-                            textoRes = data.choices[0].message.content;
-                        } else {
-                            textoRes = JSON.stringify(data);
-                        }
+                    const corpoTexto = await response.text();
+                    let data = null;
+                    try { data = JSON.parse(corpoTexto); } catch (e) { /* corpo não é JSON */ }
 
+                    if (response.ok && data && data.resposta) {
                         // Remove toda a formatação markdown para não prejudicar o leitor de voz
-                        return textoRes.replace(/[#*`_~>|-]/g, '').trim();
+                        return String(data.resposta).replace(/[#*`_~>|-]/g, '').trim();
                     }
+
+                    ultimoErro = (data && (data.error || data.message)) || corpoTexto || 'resposta vazia';
                 } catch (err) {
-                    ultimoErro = err;
+                    ultimoErro = err.message;
                 }
+                // Falha silenciosa: segue para o próximo worker sem avisar a pessoa.
             }
 
-            throw new Error(`Serviço indisponível no momento. (${ultimoErro ? ultimoErro.message : 'Sem resposta'})`);
+            throw new Error(`Serviço indisponível no momento. (${ultimoErro || 'Sem resposta'})`);
         }
 
         function construirSystemPrompt(profundidade) {
@@ -1080,7 +1075,7 @@ Encerre sempre com uma resposta prática, direta e clara à questão original do
 
             const out = document.getElementById('iaOutput');
             out.classList.remove('placeholder');
-            out.innerText = "Sintetizando a leitura em texto dissertativo para áudio...";
+            out.innerText = "Sintetizando a leitura em texto dissertativo para áudio (...1)";
             document.getElementById('chatMessages').innerHTML = '';
             historicoChat = [];
 
@@ -1099,7 +1094,9 @@ ${linhasCartas}
 Lembre-se: responda em texto dissertativo corrido, sem introdução ou saudação, e sem nenhum asterisco, cardinal ou formatação especial.`;
 
             try {
-                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
+                const respostaTexto = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt, (n) => {
+                    out.innerText = `Sintetizando a leitura em texto dissertativo para áudio (...${n})`;
+                });
                 renderizarSaidaIA(respostaTexto);
 
                 leituraAtual = {
@@ -1172,7 +1169,7 @@ Lembre-se: responda em texto dissertativo corrido, sem introdução ou saudaçã
             const msgLoading = document.createElement('div');
             msgLoading.className = 'chat-msg assistant';
             msgLoading.id = msgId;
-            msgLoading.innerHTML = `<span class="spinner"></span> refletindo sobre os símbolos<span class="dots-loading"></span>`;
+            msgLoading.innerHTML = `<span class="spinner"></span> refletindo sobre os símbolos (...1)`;
             chatMessages.appendChild(msgLoading);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -1188,7 +1185,10 @@ NOVA PERGUNTA DO CONSULENTE: "${pergunta}"
 Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudação ou introdução, e sem nenhum tipo de caractere especial de formatação como asteriscos ou cardinais.`;
 
             try {
-                const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt);
+                const respostaAprofundada = await fazerRequisicaoIAComFallback(construirSystemPrompt(profundidadeSelecionada), userPrompt, (n) => {
+                    const elStatus = document.getElementById(msgId);
+                    if (elStatus) elStatus.innerHTML = `<span class="spinner"></span> refletindo sobre os símbolos (...${n})`;
+                });
 
                 historicoChat.push({ role: 'user', texto: pergunta });
                 historicoChat.push({ role: 'assistant', texto: respostaAprofundada });
