@@ -1103,13 +1103,24 @@ async function chamarProxyIAComFallback(promptText) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: promptText })
             });
-            const data = await response.json();
-            if (response.ok && data.resposta) {
+
+            // Lê o corpo como texto primeiro (funciona tanto se for JSON válido
+            // quanto se o worker/Cloudflare responder com HTML/texto puro de erro),
+            // e só então tenta interpretar como JSON — assim o motivo real do erro
+            // (status HTTP + mensagem do worker) nunca fica escondido atrás de um
+            // "Sem resposta" genérico.
+            const corpoTexto = await response.text();
+            let data = null;
+            try { data = JSON.parse(corpoTexto); } catch (e) { /* corpo não é JSON */ }
+
+            if (response.ok && data && data.resposta) {
                 return data.resposta;
             }
-            ultimoErro = data.error || `Serviço ${proxyUrl} respondeu sem dados válidos.`;
+
+            const motivo = (data && (data.error || data.message)) || corpoTexto || 'resposta vazia';
+            ultimoErro = `${proxyUrl.replace('https://','').split('.')[0]}: HTTP ${response.status} — ${String(motivo).slice(0, 200)}`;
         } catch (err) {
-            ultimoErro = err.message;
+            ultimoErro = `${proxyUrl.replace('https://','').split('.')[0]}: ${err.message}`;
         }
     }
     throw new Error(ultimoErro || 'Nenhum dos serviços de IA respondeu no momento.');
