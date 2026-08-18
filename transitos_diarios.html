@@ -1087,12 +1087,12 @@ async function alternarAnaliseIABloco(tipo, botao) {
 // tentar os outros dois workers do Cloudflare que o projeto já mantém. Agora
 // as três URLs são tentadas em sequência antes de mostrar erro ao usuário.
 const PROXIES_WORKERS_TRANSITOS = [
-    "https://interno.genesisgns.workers.dev/",
-    "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
-    "https://forzion-gpt-proxy.genesisgns.workers.dev/",
     "https://astro2.genesisgns.workers.dev/",
+    "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
     "https://astro-gns-proxy.genesisgns.workers.dev/",
-    "https://shiny-sky-21dd.genesisgns.workers.dev/"
+    "https://forzion-gpt-proxy.genesisgns.workers.dev/",
+    "https://shiny-sky-21dd.genesisgns.workers.dev/",
+    "https://interno.genesisgns.workers.dev/"
 ];
 
 // aoTentar(n) é chamado antes de cada tentativa (n = 1..6), para exibir em
