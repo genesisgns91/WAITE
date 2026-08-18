@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste dos Workers de IA</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 850px;
+        margin: 30px auto;
+        padding: 0 15px;
+        background: #f4f4f4;
+    }
+    h1 { text-align: center; }
+    textarea {
+        width: 100%;
+        height: 120px;
+        box-sizing: border-box;
+        padding: 12px;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    .botoes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    button {
+        padding: 14px;
+        font-size: 15px;
+        cursor: pointer;
+        border: 0;
+        border-radius: 6px;
+        background: #333;
+        color: white;
+    }
+    button:hover { opacity: 0.85; }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    #resultado {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 15px;
+        min-height: 150px;
+    }
+    .status {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .ok { color: green; }
+    .erro { color: #c00; }
+</style>
+</head>
+<body>
+
+<h1>Teste dos Workers de IA</h1>
+
+<textarea id="prompt">Olá! Responda apenas: Worker funcionando corretamente.</textarea>
+
+<div class="botoes">
+    <button onclick="testarWorker('astro-gns-proxy')">Testar astro-gns-proxy</button>
+    <button onclick="testarWorker('shiny-sky-21dd')">Testar shiny-sky-21dd</button>
+    <button onclick="testarWorker('astro2')">Testar astro2</button>
+    <button onclick="testarWorker('interno')">Testar interno</button>
+</div>
+
+<div id="resultado">
+    <div class="status">Escolha um Worker para testar.</div>
+</div>
+
+<script>
+const WORKERS = {
+    "astro-gns-proxy": "https://astro-gns-proxy.genesisgns.workers.dev/",
+    "shiny-sky-21dd": "https://shiny-sky-21dd.genesisgns.workers.dev/",
+    "astro2": "https://astro2.genesisgns.workers.dev/",
+    "interno": "https://interno.genesisgns.workers.dev/"
+};
+
+async function testarWorker(nome) {
+    const prompt = document.getElementById("prompt").value.trim();
+    const resultado = document.getElementById("resultado");
+    const botoes = document.querySelectorAll("button");
+
+    if (!prompt) {
+        resultado.innerHTML = '<div class="status erro">Digite uma mensagem para testar.</div>';
+        return;
+    }
+
+    botoes.forEach(btn => btn.disabled = true);
+
+    resultado.innerHTML = `
+        <div class="status">Testando: ${nome}...</div>
+        <div>URL: ${WORKERS[nome]}</div>
+    `;
+
+    const inicio = performance.now();
+
+    try {
+        const response = await fetch(WORKERS[nome], {
+            method: "POST",
+            cache: "no-store",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
+        });
+
+        const tempo = Math.round(performance.now() - inicio);
+
+        const textoBruto = await response.text();
+
+        let data = null;
+        try {
+            data = JSON.parse(textoBruto);
+        } catch (e) {}
+
+        if (response.ok) {
+            const resposta =
+                data?.resposta ||
+                data?.response ||
+                data?.result?.response ||
+                data?.content ||
+                textoBruto;
+
+            resultado.innerHTML = `
+                <div class="status ok">✓ WORKER FUNCIONANDO</div>
+                <p><strong>Worker:</strong> ${nome}</p>
+                <p><strong>HTTP:</strong> ${response.status}</p>
+                <p><strong>Tempo:</strong> ${tempo} ms</p>
+                <hr>
+                <strong>Resposta:</strong>
+                <br><br>
+                ${escapeHtml(typeof resposta === "string"
+                    ? resposta
+                    : JSON.stringify(resposta, null, 2))}
+            `;
+        } else {
+            const erro =
+                data?.error ||
+                data?.message ||
+                textoBruto ||
+                "Erro sem mensagem";
+
+            resultado.innerHTML = `
+                <div class="status erro">✗ WORKER COM ERRO</div>
+                <p><strong>Worker:</strong> ${nome}</p>
+                <p><strong>HTTP:</strong> ${response.status}</p>
+                <p><strong>Tempo:</strong> ${tempo} ms</p>
+                <hr>
+                <strong>Erro retornado:</strong>
+                <br><br>
+                ${escapeHtml(typeof erro === "string"
+                    ? erro
+                    : JSON.stringify(erro, null, 2))}
+            `;
+        }
+
+    } catch (erro) {
+        const tempo = Math.round(performance.now() - inicio);
+
+        resultado.innerHTML = `
+            <div class="status erro">✗ FALHA NA CONEXÃO</div>
+            <p><strong>Worker:</strong> ${nome}</p>
+            <p><strong>Tempo:</strong> ${tempo} ms</p>
+            <hr>
+            <strong>Erro:</strong>
+            <br><br>
+            ${escapeHtml(erro.message)}
+        `;
+    } finally {
+        botoes.forEach(btn => btn.disabled = false);
+    }
+}
+
+function escapeHtml(texto) {
+    return String(texto)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+</script>
+
+</body>
+</html>
