@@ -865,10 +865,26 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
         }
 
         // --- CÁLCULO DOS ELEMENTOS, RITMOS E POLARIDADES ---
+        // IMPORTANTE: esta comparação usa SOMENTE os 10 planetas principais dos
+        // dois lados (dia × natal) — a mesma base usada em index.html e
+        // revolucao_solar.html para Elementos/Modalidades/Polaridades. O objeto
+        // "planetasNatais" também guarda os 4 ângulos (Asc, MC, Dsc, Ic) para uso
+        // em outras partes da página, mas eles NÃO entram nesta contagem: como
+        // Ascendente e Descendente (e MC e Fundo do Céu) são sempre signos
+        // opostos, eles compartilham sempre a MESMA polaridade e o MESMO ritmo
+        // — incluí-los duplicava essas duas categorias apenas do lado natal
+        // (o lado "hoje" não tem ângulos), distorcendo a comparação, sobretudo em
+        // Polaridades. O gráfico também divide sempre por 10 (linha abaixo), que
+        // só bate exatamente com a contagem quando são usados os 10 planetas.
+        const ASTROS_BALANCO_TRANSITO = ["Sol", "Lua", "Mercúrio", "Vênus", "Marte", "Júpiter", "Saturno", "Urano", "Netuno", "Plutão"];
+
         function calcularElementosERitmos(planetasHoje, planetasNatais) {
             const calcular = (mapa) => {
                 const elem={Fogo:0,Terra:0,Ar:0,Água:0}, ritmos={Cardinal:0,Fixo:0,Mutável:0}, pol={Masculina:0,Feminina:0};
-                Object.keys(mapa).forEach(p=>{ const info=obterInfoSigno(mapa[p]); const prop=PROPRIEDADES_SIGNOS[info.signo]; if(prop){elem[prop.elemento]++;ritmos[prop.ritmo]++;pol[prop.polaridade]++;} });
+                ASTROS_BALANCO_TRANSITO.forEach(p=>{
+                    if (mapa[p] === undefined) return;
+                    const info=obterInfoSigno(mapa[p]); const prop=PROPRIEDADES_SIGNOS[info.signo]; if(prop){elem[prop.elemento]++;ritmos[prop.ritmo]++;pol[prop.polaridade]++;}
+                });
                 return {elem,ritmos,pol};
             };
             const hoje=calcular(planetasHoje), natal=calcular(planetasNatais);
