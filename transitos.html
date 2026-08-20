@@ -216,7 +216,36 @@
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/astronomy-engine/astronomy.browser.min.js"></script>
+    <!-- Astronomy Engine: carregamento resiliente com fallback entre CDNs. -->
+    <script>
+    window.__astronomyReady = (async function carregarAstronomyEngine() {
+        if (typeof window.Astronomy !== 'undefined') return window.Astronomy;
+        const fontes = [
+            'https://cdn.jsdelivr.net/npm/astronomy-engine@2/astronomy.browser.min.js',
+            'https://unpkg.com/astronomy-engine@2/astronomy.browser.min.js',
+            'https://cdn.jsdelivr.net/npm/astronomy-engine/astronomy.browser.min.js'
+        ];
+        let ultimoErro = null;
+        for (const src of fontes) {
+            try {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = true;
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error('Falha ao carregar ' + src));
+                    document.head.appendChild(script);
+                });
+                if (typeof window.Astronomy !== 'undefined') return window.Astronomy;
+                ultimoErro = new Error('A biblioteca carregou, mas o objeto global Astronomy não foi encontrado: ' + src);
+            } catch (erro) {
+                ultimoErro = erro;
+                console.warn(erro.message);
+            }
+        }
+        throw (ultimoErro || new Error('Não foi possível carregar Astronomy Engine.'));
+    })();
+    </script>
     <script>
         const SIGNOS = ["Áries","Touro","Gêmeos","Câncer","Leão","Virgem","Libra","Escorpião","Sagitário","Capricórnio","Aquário","Peixes"];
         const REGENTES_SIGNOS = { Áries: "Marte", Touro: "Vênus", Gêmeos: "Mercúrio", Câncer: "Lua", Leão: "Sol", Virgem: "Mercúrio", Libra: "Vênus", Escorpião: "Plutão", Sagitário: "Júpiter", Capricórnio: "Saturno", Aquário: "Urano", Peixes: "Netuno" };
@@ -305,7 +334,12 @@
             document.getElementById('horaTransito').value = hoje.toTimeString().split(' ')[0].substring(0, 5);
             carregarDadosNataisCompartilhados();
             carregarPerfisSalvos();
-            executarAnalise();
+            window.__astronomyReady.then(() => {
+                executarAnalise();
+            }).catch((erro) => {
+                console.error('Falha ao inicializar Astronomy Engine:', erro);
+                mostrarErroAstronomy(erro);
+            });
 
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').then((registro) => {
@@ -595,15 +629,22 @@ function calcularPosicaoPlaneta(nome, dataUtc) {
             `;
         }
 
-        function executarAnalise() {
+        function mostrarErroAstronomy(erro) {
+            const detalhe = erro && erro.message ? erro.message : 'Erro desconhecido.';
+            const mensagem = `<strong style="color:var(--fogo);">Não foi possível carregar o mecanismo astronômico.</strong><br><span style="font-size:.78rem;color:#8b949e;">${detalhe}</span><br><span style="font-size:.78rem;color:#8b949e;">Tente novamente após alguns segundos. Se estiver usando uma versão publicada, atualize a página para buscar os arquivos mais recentes.</span>`;
+            ['climaGeralTexto','solExplicacaoTexto','luaDetalhesTexto'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=mensagem; });
+            const lista=document.getElementById('posicoesPrincipaisList');
+            if(lista) lista.innerHTML=`<p style="color:var(--fogo);font-size:.82rem;">${mensagem}</p>`;
+        }
+
+        async function executarAnalise() {
             try {
+                if (window.__astronomyReady) await window.__astronomyReady;
+                if (typeof Astronomy === 'undefined') throw new Error('Astronomy Engine não ficou disponível após o carregamento.');
                 executarAnaliseInterna();
             } catch (erro) {
                 console.error('Erro ao processar análise astrológica:', erro);
-                const ids = ['climaGeralTexto','solExplicacaoTexto','luaDetalhesTexto'];
-                ids.forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=`<strong style="color:var(--fogo);">Não foi possível concluir o cálculo.</strong> Verifique se a biblioteca Astronomy Engine foi carregada e tente processar novamente.`; });
-                const lista=document.getElementById('posicoesPrincipaisList');
-                if(lista) lista.innerHTML='<p style="color:var(--fogo);font-size:.82rem;">Erro no cálculo. Abra o console do navegador para detalhes.</p>';
+                mostrarErroAstronomy(erro);
             }
         }
 
