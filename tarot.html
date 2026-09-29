@@ -1614,13 +1614,132 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             atualizarBotaoExportarSelecionadasEstudo();
         }
 
+
+        // ==================== FICHA TÉCNICA DA CARTA (correspondências Golden Dawn) ====================
+        const LETRAS_HEBRAICAS = {
+            aleph: ['Aleph', 'א', 1], beth: ['Beth', 'ב', 2], gimel: ['Gimel', 'ג', 3], daleth: ['Daleth', 'ד', 4],
+            heh: ['Heh', 'ה', 5], vav: ['Vav', 'ו', 6], zayin: ['Zayin', 'ז', 7], cheth: ['Cheth', 'ח', 8],
+            teth: ['Teth', 'ט', 9], yod: ['Yod', 'י', 10], kaph: ['Kaph', 'כ', 20], lamed: ['Lamed', 'ל', 30],
+            mem: ['Mem', 'מ', 40], nun: ['Nun', 'נ', 50], samekh: ['Samekh', 'ס', 60], ayin: ['Ayin', 'ע', 70],
+            peh: ['Peh', 'פ', 80], tzaddi: ['Tzaddi', 'צ', 90], qoph: ['Qoph', 'ק', 100], resh: ['Resh', 'ר', 200],
+            shin: ['Shin', 'ש', 300], tav: ['Tav', 'ת', 400]
+        };
+        const ROMANOS = ['0','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI'];
+        const NOMES_INGLES_MAIORES = ['The Fool','The Magician','The High Priestess','The Empress','The Emperor','The Hierophant','The Lovers','The Chariot','Strength','The Hermit','Wheel of Fortune','Justice','The Hanged Man','Death','Temperance','The Devil','The Tower','The Star','The Moon','The Sun','Judgement','The World'];
+        const SEPHIROTH = { 1:'Kether', 2:'Chokmah', 3:'Binah', 4:'Chesed', 5:'Geburah', 6:'Tiphareth', 7:'Netzach', 8:'Hod', 9:'Yesod', 10:'Malkuth' };
+        // [letra, caminho, liga, elemento, astrologia, planetária]
+        const FICHA_MAIORES = [
+            ['aleph', 11, 'Kether e Chokmah', 'Ar', 'Sem signo (na Golden Dawn, atribuída ao Ar)', 'Urano, na atribuição moderna'],
+            ['beth', 12, 'Kether e Binah', 'Sem elemento próprio (carta planetária)', 'Mercúrio (planeta)', 'Mercúrio, regente de Gêmeos e Virgem'],
+            ['gimel', 13, 'Kether e Tiphareth', 'Sem elemento próprio (carta planetária)', 'Lua (luminar)', 'Lua, regente de Câncer'],
+            ['daleth', 14, 'Chokmah e Binah', 'Sem elemento próprio (carta planetária)', 'Vênus (planeta)', 'Vênus, regente de Touro e Libra'],
+            ['heh', 15, 'Chokmah e Tiphareth', 'Fogo', 'Áries (signo cardeal)', 'Marte'],
+            ['vav', 16, 'Chokmah e Chesed', 'Terra', 'Touro (signo fixo)', 'Vênus'],
+            ['zayin', 17, 'Binah e Tiphareth', 'Ar', 'Gêmeos (signo mutável)', 'Mercúrio'],
+            ['cheth', 18, 'Binah e Geburah', 'Água', 'Câncer (signo cardeal)', 'Lua'],
+            ['teth', 19, 'Chesed e Geburah', 'Fogo', 'Leão (signo fixo)', 'Sol'],
+            ['yod', 20, 'Chesed e Tiphareth', 'Terra', 'Virgem (signo mutável)', 'Mercúrio'],
+            ['kaph', 21, 'Chesed e Netzach', 'Sem elemento próprio (carta planetária)', 'Júpiter (planeta)', 'Júpiter, regente tradicional de Sagitário e Peixes'],
+            ['lamed', 22, 'Geburah e Tiphareth', 'Ar', 'Libra (signo cardeal)', 'Vênus'],
+            ['mem', 23, 'Geburah e Hod', 'Água', 'Sem signo (na Golden Dawn, atribuída à Água)', 'Netuno, na atribuição moderna'],
+            ['nun', 24, 'Tiphareth e Netzach', 'Água', 'Escorpião (signo fixo)', 'Marte (tradicional) e Plutão (moderno)'],
+            ['samekh', 25, 'Tiphareth e Yesod', 'Fogo', 'Sagitário (signo mutável)', 'Júpiter'],
+            ['ayin', 26, 'Tiphareth e Hod', 'Terra', 'Capricórnio (signo cardeal)', 'Saturno'],
+            ['peh', 27, 'Netzach e Hod', 'Sem elemento próprio (carta planetária)', 'Marte (planeta)', 'Marte, regente de Áries e Escorpião (tradicional)'],
+            ['tzaddi', 28, 'Netzach e Yesod', 'Ar', 'Aquário (signo fixo)', 'Saturno (tradicional) e Urano (moderno)'],
+            ['qoph', 29, 'Netzach e Malkuth', 'Água', 'Peixes (signo mutável)', 'Júpiter (tradicional) e Netuno (moderno)'],
+            ['resh', 30, 'Hod e Yesod', 'Sem elemento próprio (carta planetária)', 'Sol (luminar)', 'Sol, regente de Leão'],
+            ['shin', 31, 'Hod e Malkuth', 'Fogo', 'Sem signo (na Golden Dawn, atribuída ao Fogo)', 'Plutão, na atribuição moderna'],
+            ['tav', 32, 'Yesod e Malkuth', 'Sem elemento próprio (Saturno; Terra em algumas atribuições)', 'Saturno (planeta)', 'Saturno, regente de Capricórnio e Aquário (tradicional)']
+        ];
+        const NAIPES_FICHA = {
+            Wands:  { pt: 'Paus',   en: 'Wands',     elem: 'Fogo',  letra: 'yod' },
+            Cups:   { pt: 'Taças',  en: 'Cups',      elem: 'Água',  letra: 'heh' },
+            Swords: { pt: 'Espadas', en: 'Swords',   elem: 'Ar',    letra: 'vav' },
+            Pents:  { pt: 'Ouros',  en: 'Pentacles', elem: 'Terra', letra: 'heh' }
+        };
+        // Decanatos da Golden Dawn para as cartas 2 a 10 de cada naipe: [planeta, signo]
+        const DECANATOS_MENORES = {
+            Wands:  [['Marte','Áries'],['Sol','Áries'],['Vênus','Áries'],['Saturno','Leão'],['Júpiter','Leão'],['Marte','Leão'],['Mercúrio','Sagitário'],['Lua','Sagitário'],['Saturno','Sagitário']],
+            Cups:   [['Vênus','Câncer'],['Mercúrio','Câncer'],['Lua','Câncer'],['Marte','Escorpião'],['Sol','Escorpião'],['Vênus','Escorpião'],['Saturno','Peixes'],['Júpiter','Peixes'],['Marte','Peixes']],
+            Swords: [['Lua','Libra'],['Saturno','Libra'],['Júpiter','Libra'],['Vênus','Aquário'],['Mercúrio','Aquário'],['Lua','Aquário'],['Júpiter','Gêmeos'],['Marte','Gêmeos'],['Sol','Gêmeos']],
+            Pents:  [['Júpiter','Capricórnio'],['Marte','Capricórnio'],['Sol','Capricórnio'],['Mercúrio','Touro'],['Lua','Touro'],['Saturno','Touro'],['Sol','Virgem'],['Vênus','Virgem'],['Mercúrio','Virgem']]
+        };
+        // Cartas da corte (Golden Dawn/Thoth): Cavaleiro = Fogo do naipe, Rainha = Água, Rei (Príncipe) = Ar, Valete (Princesa) = Terra
+        const CORTE_FICHA = {
+            12: { pt: 'Cavaleiro', en: 'Knight', letra: 'yod',  elem: 'Fogo',  sef: 'Chokmah',  zod: { Wands: '20° de Escorpião a 20° de Sagitário', Cups: '20° de Aquário a 20° de Peixes', Swords: '20° de Touro a 20° de Gêmeos', Pents: '20° de Leão a 20° de Virgem' } },
+            13: { pt: 'Rainha',    en: 'Queen',  letra: 'heh',  elem: 'Água',  sef: 'Binah',    zod: { Wands: '20° de Peixes a 20° de Áries', Cups: '20° de Gêmeos a 20° de Câncer', Swords: '20° de Virgem a 20° de Libra', Pents: '20° de Sagitário a 20° de Capricórnio' } },
+            14: { pt: 'Rei',       en: 'King',   letra: 'vav',  elem: 'Ar',    sef: 'Tiphareth', zod: { Wands: '20° de Câncer a 20° de Leão', Cups: '20° de Libra a 20° de Escorpião', Swords: '20° de Capricórnio a 20° de Aquário', Pents: '20° de Áries a 20° de Touro' } },
+            11: { pt: 'Valete',    en: 'Page',   letra: 'heh',  elem: 'Terra', sef: 'Malkuth',  zod: null }
+        };
+        const NUMEROS_EXTENSO_EN = ['', 'Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
+
+        function fichaTecnicaCarta(data) {
+            const idCarta = String(data.cardId || (data.arquivo || '').split('/').pop().replace(/\.[a-z]+$/i, ''));
+            const fmtLetra = (chave) => { const [nome, glifo, valor] = LETRAS_HEBRAICAS[chave]; return `${nome} (${glifo}), valor ${valor}`; };
+
+            const maior = idCarta.match(/^(\d{2})_/);
+            if (maior) {
+                const n = parseInt(maior[1], 10);
+                const f = FICHA_MAIORES[n];
+                if (!f) return null;
+                return [
+                    { icone: '☉', rotulo: 'Astrologia', valor: f[4] },
+                    { icone: '△', rotulo: 'Elemento', valor: f[3] },
+                    { icone: '#', rotulo: 'Número', valor: n === 0 ? '0' : `${ROMANOS[n]} (${n})` },
+                    { icone: '✡', rotulo: 'Cabala', valor: `Caminho ${f[1]}, letra ${fmtLetra(f[0])}; liga ${f[2]}` },
+                    { icone: '☿', rotulo: 'Planetária', valor: f[5] },
+                    { icone: '✦', rotulo: 'Nome original', valor: NOMES_INGLES_MAIORES[n] },
+                    { icone: '☥', rotulo: 'Classificação', valor: 'Arcano Maior' }
+                ];
+            }
+
+            const menor = idCarta.match(/^(Wands|Cups|Swords|Pents)(\d{2})$/);
+            if (menor) {
+                const naipe = NAIPES_FICHA[menor[1]];
+                const n = parseInt(menor[2], 10);
+                if (n >= 1 && n <= 10) {
+                    const dec = n >= 2 ? DECANATOS_MENORES[menor[1]][n - 2] : null;
+                    return [
+                        { icone: '☉', rotulo: 'Astrologia', valor: dec ? `${dec[0]} em ${dec[1]} (decanato)` : 'Sem signo (raiz do elemento)' },
+                        { icone: '△', rotulo: 'Elemento', valor: naipe.elem },
+                        { icone: '#', rotulo: 'Número', valor: `${n}${n === 1 ? ' (Ás)' : ''}` },
+                        { icone: '✡', rotulo: 'Cabala', valor: `Sephirah ${SEPHIROTH[n]}; letra ${LETRAS_HEBRAICAS[naipe.letra][0]} (${LETRAS_HEBRAICAS[naipe.letra][1]}) do Nome divino` },
+                        { icone: '☿', rotulo: 'Planetária', valor: dec ? dec[0] : 'Sem planeta (raiz do naipe)' },
+                        { icone: '✦', rotulo: 'Nome original', valor: `${NUMEROS_EXTENSO_EN[n]} of ${naipe.en}` },
+                        { icone: '☥', rotulo: 'Classificação', valor: `Arcano Menor, naipe de ${naipe.pt}` }
+                    ];
+                }
+                const c = CORTE_FICHA[n];
+                if (c) {
+                    return [
+                        { icone: '☉', rotulo: 'Astrologia', valor: c.zod ? c.zod[menor[1]] : 'Sem faixa zodiacal própria (governa um quadrante celeste)' },
+                        { icone: '△', rotulo: 'Elemento', valor: `${c.elem} do naipe de ${naipe.pt} (${naipe.elem})` },
+                        { icone: '#', rotulo: 'Número', valor: `${n} (carta da corte)` },
+                        { icone: '✡', rotulo: 'Cabala', valor: `Letra ${LETRAS_HEBRAICAS[c.letra][0]} (${LETRAS_HEBRAICAS[c.letra][1]}) do Nome divino; Sephirah ${c.sef}` },
+                        { icone: '☿', rotulo: 'Planetária', valor: 'Conforme os signos do trecho zodiacal' },
+                        { icone: '✦', rotulo: 'Nome original', valor: `${c.en} of ${naipe.en}` },
+                        { icone: '☥', rotulo: 'Classificação', valor: `Arcano Menor (corte), naipe de ${naipe.pt}` }
+                    ];
+                }
+            }
+            return null;
+        }
+
+        function montarFichaTecnicaHtml(data) {
+            const itens = fichaTecnicaCarta(data);
+            if (!itens) return '';
+            const linhas = itens.map(i => `<div class="ficha-item"><span class="ficha-icone">${i.icone}</span><span class="ficha-texto"><span class="ficha-rotulo">${escapeTexto(i.rotulo)}</span> ${escapeTexto(i.valor)}</span></div>`).join('');
+            return `<div class="ficha-tecnica">${linhas}<div class="ficha-nota">Correspondências segundo a Golden Dawn e a tradição ocultista que a seguiu; outras escolas divergem.</div></div>`;
+        }
+
         function montarBlocoTopicosImpressaoEstudo(topicos) {
             if (!topicos) return '';
             let html = '';
             TOPICOS_ESTUDO_TODOS.forEach(t => {
                 const dadosTopico = topicos[t.id];
                 if (!dadosTopico || !dadosTopico.texto) return;
-                html += `<h2 class="subtitulo-carta">${t.numero}. ${escapeTexto(t.titulo)}</h2>`;
+                html += `<h2 class="subtitulo-carta">${escapeTexto(t.titulo)}</h2>`;
                 html += textoParaParagrafosHtml(dadosTopico.texto);
                 (dadosTopico.complementos || []).forEach((c) => {
                     html += textoParaParagrafosHtml(c);
@@ -1646,50 +1765,53 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
 
             const folhas = selecionadas.map(({ data }, idx) => {
                 return `
-                    <section class="folha-leitura"${idx > 0 ? ' style="page-break-before: always;"' : ''}>
-                        <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
-                        <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
-                        <div class="ornamento">◆</div>
-                        <div class="cartas-grid">
-                            <div class="carta-bloco">
-                                <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
-                            </div>
-                        </div>
-                        ${montarBlocoTopicosImpressaoEstudo(data.topicos)}
-                    </section>
+                    <table class="pagina-tabela"${idx > 0 ? ' style="break-before: page; page-break-before: always;"' : ''}>
+                        <thead><tr><td><div class="espaco-topo"></div></td></tr></thead>
+                        <tfoot><tr><td><div class="espaco-base"></div></td></tr></tfoot>
+                        <tbody><tr><td>
+                            <section class="folha-leitura">
+                                <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
+                                <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
+                                <div class="ornamento">◆</div>
+                                <div class="cabecalho-carta">
+                                    <div class="carta-bloco">
+                                        <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
+                                    </div>
+                                    ${montarFichaTecnicaHtml(data)}
+                                </div>
+                                ${montarBlocoTopicosImpressaoEstudo(data.topicos)}
+                            </section>
+                        </td></tr></tbody>
+                    </table>
                 `;
             }).join('');
 
             win.document.write(`
                 <html>
                 <head>
-                    <title>Astro Tarot - Estudos de Cartas Exportados</title>
+                    <title>Estudo de Carta</title>
                     <style>
-                        @page {
-                            size: A4;
-                            margin: 2.4cm 2.2cm 2.6cm 2.2cm;
-                        }
-                        @page {
-                            @bottom-center {
-                                content: "— " counter(page) " —";
-                                font-family: Georgia, 'Times New Roman', serif;
-                                font-size: 9.5pt;
-                                color: #666;
-                            }
-                        }
-                        body { font-family: Georgia, 'Times New Roman', serif; padding: 10px; color: #1a1a1a; line-height: 1.7; text-align: justify; }
+                        @page { size: A4; margin: 0; }
+                        html, body { margin: 0; }
+                        body { font-family: Georgia, 'Times New Roman', serif; padding: 0 2.2cm; color: #1a1a1a; line-height: 1.7; text-align: justify; }
+                        .pagina-tabela { width: 100%; border-collapse: collapse; }
+                        .pagina-tabela td { padding: 0; }
+                        .espaco-topo { height: 2.4cm; }
+                        .espaco-base { height: 2.4cm; }
                         .capitulo-rotulo { text-align: center; text-transform: uppercase; letter-spacing: 3px; font-size: 9.5pt; color: #8a6d1f; margin-top: 6px; }
                         h1 { color: #3a2a5c; font-size: 24pt; font-weight: bold; text-align: center; margin-top: 6px; letter-spacing: 1px; font-variant: small-caps; }
-                        .ornamento { text-align: center; color: #8a6d1f; font-size: 13pt; margin: 4px 0 20px; letter-spacing: 8px; }
-                        h2, .subtitulo-carta { color: #3a2a5c; font-size: 13.5pt; font-weight: bold; font-variant: small-caps; letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 10px; text-align: center; border-top: 1px solid #d8cdb0; padding-top: 14px; }
-                        p { font-size: 11.5pt; margin: 0 0 10px; text-align: justify; text-indent: 1.2em; }
-                        .cartas-grid { display: flex; justify-content: center; margin: 8px 0 22px; }
-                        .carta-bloco { width: 160px; text-align: center; font-size: 9pt; }
+                        .ornamento { text-align: center; color: #8a6d1f; font-size: 13pt; margin: 4px 0 18px; letter-spacing: 8px; }
+                        .cabecalho-carta { display: flex; align-items: flex-start; gap: 22px; margin: 6px 0 22px; }
+                        .carta-bloco { flex: 0 0 150px; }
                         .carta-bloco img { width: 150px; height: auto; border: 1px solid #b8a969; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-                        .folha-leitura { page-break-inside: avoid; }
-                        @media print {
-                            .folha-leitura { page-break-inside: auto; }
-                        }
+                        .ficha-tecnica { flex: 1; border-top: 1px solid #d8cdb0; border-bottom: 1px solid #d8cdb0; padding: 8px 0; text-align: left; }
+                        .ficha-item { display: flex; align-items: baseline; gap: 10px; margin: 5px 0; font-size: 10pt; line-height: 1.4; }
+                        .ficha-icone { flex: 0 0 18px; text-align: center; color: #8a6d1f; font-size: 12pt; }
+                        .ficha-rotulo { color: #3a2a5c; font-weight: bold; font-variant: small-caps; letter-spacing: 0.4px; margin-right: 4px; }
+                        .ficha-rotulo::after { content: ":"; }
+                        .ficha-nota { margin-top: 8px; font-size: 8.5pt; font-style: italic; color: #777; }
+                        h2, .subtitulo-carta { color: #3a2a5c; font-size: 13.5pt; font-weight: bold; font-variant: small-caps; letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 10px; text-align: left; border-top: 1px solid #d8cdb0; padding-top: 14px; break-after: avoid; }
+                        p { font-size: 11.5pt; margin: 0 0 10px; text-align: justify; text-indent: 1.2em; }
                     </style>
                 </head>
                 <body>${folhas}</body>
