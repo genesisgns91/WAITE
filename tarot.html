@@ -398,15 +398,51 @@
 
         // ==================== TÓPICOS DO ESTUDO INDIVIDUAL DA CARTA ====================
         const TOPICOS_ESTUDO = [
-            { id: 'historico', numero: 'I', titulo: 'Histórico', descricao: 'origem, evolução e autores' },
-            { id: 'simbolico', numero: 'II', titulo: 'Simbólico', descricao: 'imagens, cores, números, objetos e personagens' },
-            { id: 'psicologico', numero: 'III', titulo: 'Psicológico', descricao: 'Jung, arquétipos, sombra, inconsciente' },
-            { id: 'espiritual', numero: 'IV', titulo: 'Espiritual', descricao: 'consciência, iniciação, evolução e transcendência' },
-            { id: 'hermetico_alquimico', numero: 'V', titulo: 'Hermético-Alquímico', descricao: 'princípios herméticos, operações e transformação' },
-            { id: 'cabalistico', numero: 'VI', titulo: 'Cabalístico', descricao: 'Sephiroth, caminhos, letras hebraicas e Árvore da Vida' },
-            { id: 'astrologico', numero: 'VII', titulo: 'Astrológico', descricao: 'planetas, signos, elementos e dignidades' },
-            { id: 'tarot_ocultista', numero: 'VIII', titulo: 'Tarot Ocultista', descricao: 'Golden Dawn, Waite, Smith, correspondências e tradição iniciática' }
+            { id: 'identidade', numero: '1', titulo: 'Identidade da Carta', descricao: 'ficha técnica: número, nome original, classificação, elemento e correspondências',
+              escopo: "Apresente a ficha técnica da carta em texto corrido: nome, número, nome original em inglês, classificação (Arcano Maior ou Menor, naipe quando houver), elemento, correspondência astrológica, correspondência cabalística, palavras-chave e apresentação visual. Diga sempre a QUAL tradição pertence cada correspondência (por exemplo, Golden Dawn) em vez de tratá-la como dado universal da carta." },
+            { id: 'leitura_lamina', numero: '2', titulo: 'Leitura da Lâmina', descricao: 'descrição objetiva da imagem e contexto histórico da carta',
+              escopo: "Duas partes em texto contínuo. Primeiro, a descrição objetiva da lâmina Rider-Waite-Smith: personagens, posturas, gestos, expressões, roupas, objetos, animais, vegetação, paisagem, céu, água, montanhas, construções, primeiro plano, plano intermediário e fundo, direção dos movimentos e dos olhares, elementos presentes e elementos aparentemente ausentes. Descreva apenas o que realmente existe na imagem. Depois, o contexto histórico: origem da imagem, antecedentes, evolução iconográfica, Tarot de Marselha, baralhos anteriores quando relevantes, e comparações com Thoth, Marselha, Etteilla ou outros SOMENTE quando esclarecerem algo. A comparação deve responder: o que mudou nesta carta e por que isso importa. Não faça história geral do Tarot." },
+            { id: 'simbologia', numero: '3', titulo: 'Simbologia e Linguagem Visual', descricao: 'símbolos, cores, geometria e composição',
+              escopo: "Três partes em texto contínuo. Símbolos: para cada símbolo relevante, o que é, onde aparece, por que está ali, sua função visual, significado tradicional, antecedentes iconográficos, relação com tradições anteriores, significado no RWS e interpretações ocultistas posteriores. Cores: presença, dominância, contraste, função composicional, simbolismo tradicional, interpretação ocultista e relação com outros elementos. Geometria e composição: verticalidade, horizontalidade, círculos, triângulos, cruzes, simetria, assimetria, centro da imagem, direção, movimento e oposição espacial. Separe sempre o que é tradicional do que é leitura ocultista posterior ou escolha de Pamela Colman Smith e Waite." },
+            { id: 'numero', numero: '4', titulo: 'Número e Estrutura Numérica', descricao: 'simbolismo do número e posição na sequência',
+              escopo: "Simbolismo tradicional do número, numerologia pitagórica, redução teosófica (identificando-a como método posterior), estrutura matemática, ciclo numérico e relação com outras cartas. Depois, a posição na sequência: nos Arcanos Maiores, posição na série, relação com as cartas anterior e posterior e função na Jornada do Louco; nos Arcanos Menores, trabalhe Número + Naipe + Elemento e a posição dentro do ciclo do naipe." },
+            { id: 'arquetipo', numero: '5', titulo: 'Arquétipo Universal e Mitologia Comparada', descricao: 'padrão humano representado e paralelos mitológicos',
+              escopo: "Qual padrão humano e qual parte do cosmos a carta representa. Arquétipo central e arquétipos secundários, função, expressão construtiva e destrutiva, equilíbrio e desequilíbrio. Depois a mitologia comparada, escolhendo SOMENTE as tradições realmente pertinentes a esta carta (grega, egípcia, judaica, cristã, nórdica, mesopotâmica, hindu, persa, folclore, literatura, tradições iniciáticas). Trate os paralelos como comparação e não como origem histórica da carta, salvo quando houver evidência documentada." },
+            { id: 'psicologia', numero: '6', titulo: 'Psicologia Profunda', descricao: 'Jung, outros autores e estado psicológico',
+              escopo: "Jung como eixo principal: arquétipos, inconsciente coletivo e pessoal, ego, Self, persona, sombra, anima, animus, individuação, projeção, complexos, consciente e inconsciente, integração dos opostos, usando apenas o que se aplica a esta carta. Outros autores (Freud, Erich Neumann, Marie-Louise von Franz, James Hillman, Joseph Campbell e outros) somente quando acrescentarem algo. Encerre com o estado psicológico: estado consciente e inconsciente, necessidade, conflito, medo, desejo, potencial, bloqueio, integração e transformação. Deixe claro que a leitura junguiana é interpretação moderna e não doutrina original do Tarot." },
+            { id: 'polaridade', numero: '7', titulo: 'Polaridade, Sombra e Integração', descricao: 'expressão integrada, sombra, desequilíbrios e reconciliação dos polos',
+              escopo: "Expressão integrada (o princípio funcionando de modo consciente); sombra (reprimida, inconsciente, distorcida, hipertrofiada); desequilíbrios (excesso, deficiência, repressão, inflação, compensação, fragmentação); integração (como os polos se reconciliam). Evite o erro clássico de classificar a carta como boa ou ruim: uma carta expressa um princípio necessário, em forma integrada ou destrutiva." },
+            { id: 'espiritual', numero: '8', titulo: 'Dimensão Espiritual', descricao: 'desenvolvimento da consciência e questão espiritual da carta',
+              escopo: "Desenvolvimento da consciência: consciência, despertar, conhecimento, provação, purificação, sacrifício, morte simbólica, renascimento, integração e transcendência, usando apenas o que se aplica. Deve aparecer, como eixo interpretativo, a pergunta: o que esta carta representa no desenvolvimento da consciência? Responda-a de forma explícita." },
+            { id: 'jornada_iniciatica', numero: '9', titulo: 'Jornada Iniciática', descricao: 'a carta como etapa de iniciação ou de um processo',
+              escopo: "Relacione a carta ao conceito de iniciação: estado anterior, chamado, provação, conhecimento adquirido, morte do estado anterior, passagem, renascimento e estado posterior. Nos Arcanos Maiores, a carta é etapa da iniciação e da Jornada do Louco (Joseph Campbell pode ser citado). Nos Menores, o foco é local: qual etapa de um processo a carta representa (início, desenvolvimento, crise, culminação, resolução). Trate a Jornada do Herói como ferramenta comparativa e nunca como explicação histórica do Tarot." },
+            { id: 'hermetismo_alquimia', numero: '10', titulo: 'Hermetismo e Alquimia', descricao: 'princípios herméticos e operações alquímicas',
+              escopo: "Hermetismo: somente os princípios realmente relevantes (mentalismo, correspondência, vibração, polaridade, ritmo, causa e efeito, gênero, microcosmo e macrocosmo). Alquimia: prima materia, nigredo, albedo, citrinitas, rubedo, calcinação, dissolução, separação, conjunção, fermentação, destilação, coagulação, sublimação, solve et coagula, coniunctio oppositorum, somente os pertinentes. SEMPRE explique cada termo alquímico em linguagem comum antes de aplicá-lo à carta (exemplo: nigredo, literalmente enegrecimento, simbolicamente a fase de decomposição, confronto com a matéria bruta e dissolução da forma anterior). Esclareça que o vínculo entre Tarot e alquimia é sobretudo construção ocultista e psicológica posterior." },
+            { id: 'cabala', numero: '11', titulo: 'Cabala Hermética', descricao: 'Árvore da Vida, caminho, letra hebraica e explicação conceitual',
+              escopo: "Árvore da Vida: Sephiroth, caminho, relação entre Sephiroth, movimento e polaridades, função da carta. Letra hebraica: letra, nome, significado, valor numérico, simbolismo, caminho e relação com a carta. Explique SEMPRE em linguagem comum o que significa a posição na Árvore, o nome do caminho, o nome das Sephiroth que ele conecta, os pilares e demais termos, para leitores que não conhecem Cabala. Escola principal: Golden Dawn, depois Waite, com comparação com outras escolas quando relevante; Crowley entra apenas quando houver diferença realmente esclarecedora. Deixe explícito que é Cabala Hermética do ocultismo ocidental, distinta da Cabala judaica tradicional, e que as atribuições às cartas foram sistematizadas nos séculos XIX e XX." },
+            { id: 'astrologia', numero: '12', titulo: 'Astrologia e Correspondências Celestes', descricao: 'planeta, signo, elemento, decanato, dignidades e aplicação simbólica',
+              escopo: "Planeta, signo, elemento, modalidade, casa, dignidades (domicílio, exaltação, detrimento, queda) e decanato, apenas o que se aplica à carta. Em seguida, obrigatoriamente, a aplicação simbólica: como essa configuração astrológica aparece na imagem e no significado da carta, para que não seja mera tabela de correspondências. Indique de que sistema vem a atribuição (Golden Dawn, Thoth, outros) e aponte divergências quando houver." },
+            { id: 'ocultismo', numero: '13', titulo: 'Ocultismo e Tradições Esotéricas', descricao: 'Golden Dawn, Waite, Pamela Colman Smith e outras tradições',
+              escopo: "Perspectiva da Golden Dawn (elemento, planeta, signo, letra, caminho, Sephirah, decanato, cor, correspondências). A. E. Waite: o que escreveu, significados, simbolismo, modificações, ambiguidades, visão cristã e esotérica. Pamela Colman Smith: composição, narrativa, iconografia, gestos, cenário, elementos acrescentados ou modificados, relação imagem e texto. Outras tradições somente quando relevantes (Éliphas Lévi, Papus, Crowley, Paul Foster Case, jungianos, tarot ocultista contemporâneo). Nunca apresente nenhuma correspondência como a verdade objetiva da carta." },
+            { id: 'relacoes', numero: '14', titulo: 'Relações Estruturais e Jornada', descricao: 'relações com outras cartas e lugar na Jornada do Louco',
+              escopo: "Relações com outras cartas: precedentes, posteriores, opostas, complementares, espelhadas, paralelas e polaridades. Nos Arcanos Maiores, acrescente a Jornada do Louco: posição, estágio anterior, estágio atual, aprendizado, crise, transformação, estágio posterior, respondendo: por que esta carta precisa existir nesta posição da jornada? Nos Menores, foque nas relações dentro do naipe e do número." },
+            { id: 'sintese', numero: '15', titulo: 'Síntese, Interpretação e Contemplação', descricao: 'síntese filosófica, da carta, em uma leitura, invertida e contemplação',
+              escopo: "Síntese filosófica: qual problema fundamental da existência a carta coloca (liberdade, identidade, desejo, morte, conhecimento, poder, amor, sofrimento, transformação, transcendência). Síntese da carta integrando história, imagem, símbolo, número, arquétipo, psique, espírito, hermetismo, alquimia, Cabala, astrologia e ocultismo. A carta em uma leitura, SEM voltar a palavras-chave: situação, processo, conselho, desafio, potencial, aspecto inconsciente, transformação, resultado possível. Carta invertida, não como regra absoluta e nunca como significado oposto: bloqueio, interiorização, excesso, deficiência, distorção, manifestação inconsciente, energia impedida. Contemplação: o que a carta revela, o que oculta, o que está consciente e inconsciente, onde está a sombra, o que precisa ser transformado, o que precisa morrer, o que precisa nascer, qual princípio ela ensina." }
         ];
+
+        // Tópicos do modelo antigo (8 eixos): mantidos apenas para exibir estudos já salvos no histórico/PDF.
+        const TOPICOS_ESTUDO_LEGADO = [
+            { id: 'historico', numero: 'Antigo I', titulo: 'Histórico' },
+            { id: 'simbolico', numero: 'Antigo II', titulo: 'Simbólico' },
+            { id: 'psicologico', numero: 'Antigo III', titulo: 'Psicológico' },
+            { id: 'espiritual_legado', numero: 'Antigo IV', titulo: 'Espiritual' },
+            { id: 'hermetico_alquimico', numero: 'Antigo V', titulo: 'Hermético-Alquímico' },
+            { id: 'cabalistico', numero: 'Antigo VI', titulo: 'Cabalístico' },
+            { id: 'astrologico', numero: 'Antigo VII', titulo: 'Astrológico' },
+            { id: 'tarot_ocultista', numero: 'Antigo VIII', titulo: 'Tarot Ocultista' }
+        ];
+        // 'espiritual' existia no modelo antigo e continua existindo no novo (capítulo 8): usa o título novo.
+        const TOPICOS_ESTUDO_TODOS = [...TOPICOS_ESTUDO, ...TOPICOS_ESTUDO_LEGADO.filter(t => t.id !== 'espiritual_legado')];
 
         let cartaEstudoSelecionada = null;
         let estudoAtual = null;
@@ -893,23 +929,34 @@
         }
 
         function construirSystemPromptEstudo(topico) {
-            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, especialista em Tarot e arquétipos, versado em Hermetismo, Cabala, Alquimia, Astrologia e Psicologia Analítica.
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, especialista em Tarot e arquétipos, versado em Hermetismo, Cabala, Alquimia, Astrologia e Psicologia Analítica, com rigor de historiador das ideias esotéricas.
 
 REGRA CRÍTICA DE FORMATO — PROIBIDO QUALQUER INTRODUÇÃO:
-Siga estritamente esse escopo. Não escreva introduções. Não escreva saudações. Sem frases de abertura ou contextualização, vá direto ao conteúdo da leitura. Também É PROIBIDO começar com frases genéricas de abertura como "Vamos explorar...", "Neste tópico...", "Ao falarmos de...", "Quando pensamos em...", "É importante compreender que...", "Para entender X, primeiro..." ou qualquer variação equivalente que sirva apenas para anunciar o que vai ser dito. A resposta é apenas o corpo do estudo: a primeiríssima frase do texto já deve ser uma afirmação concreta e específica sobre o eixo temático "${topico.titulo}" aplicado a esta carta — como se o texto fosse o meio de um ensaio já em andamento, e não a abertura dele.
-Escreva em segunda pessoa, com tom de conversa direta com quem está lendo, como se estivesse pessoalmente explicando o tema a essa pessoa — pode se dirigir a ela usando "você" quando fizer sentido, mantendo um tom próximo e humano, nunca como um texto acadêmico impessoal ou um verbete de enciclopédia.
-Você DEVE escrever em TEXTO DISSERTATIVO liso, com parágrafos bem construídos e encadeados logicamente, como em um ensaio ou artigo, em formato de livro. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres especiais decorativos (sem cardinal #, asteriscos *, travessões duplos, hífens usados como marcador de lista, sublinhados _, emojis, bullets ou barras verticais |). É TERMINANTEMENTE PROIBIDO montar tabelas de qualquer tipo (nada de linhas separadas por | nem colunas alinhadas). Não use listas nem tópicos soltos: toda ideia deve ser desenvolvida em forma de texto corrido, dentro de parágrafos. Não repita excessivamente quebras de linha; separe apenas parágrafos de fato distintos.
-Quando precisar apresentar uma sequência de nomes, autores, datas ou eventos (por exemplo, uma linha do tempo histórica), NUNCA organize isso em forma de tabela. Em vez disso, escreva no formato de frase corrida, assim: Cada nome, data e contribuição deve ser incorporado naturalmente à frase, nunca em uma linha isolada ou em colunas.
-O Nome da Carta deve ser considerado o CAPÍTULO, cada tema abordado deve ser considerado uma sessão desse capítulo.
+Siga estritamente esse escopo. Não escreva introduções. Não escreva saudações. Sem frases de abertura ou contextualização, vá direto ao conteúdo. Também É PROIBIDO começar com frases genéricas de abertura como "Vamos explorar...", "Neste tópico...", "Ao falarmos de...", "Quando pensamos em...", "É importante compreender que...", "Para entender X, primeiro..." ou qualquer variação equivalente que sirva apenas para anunciar o que vai ser dito. Também não escreva comentários finais, resumos de encerramento nem ofertas de ajuda. A resposta é apenas o corpo do estudo: a primeiríssima frase já deve ser uma afirmação concreta e específica sobre "${topico.titulo}" aplicada a esta carta, como se o texto fosse o meio de um ensaio já em andamento.
+Escreva em segunda pessoa, com tom de conversa direta com quem está lendo, podendo usar "você" quando fizer sentido, em tom próximo e humano, nunca como verbete de enciclopédia.
+Você DEVE escrever em TEXTO DISSERTATIVO liso, com parágrafos bem construídos e encadeados logicamente, como em um ensaio ou capítulo de livro. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres decorativos (sem #, asteriscos, travessões duplos, hífens como marcador, sublinhados, emojis, bullets ou barras verticais). É TERMINANTEMENTE PROIBIDO montar tabelas, listas ou tópicos soltos, mesmo quando o escopo enumera muitos itens: incorpore-os naturalmente em frases e parágrafos. Separe apenas parágrafos de fato distintos. Sequências de nomes, autores, datas ou eventos devem ser incorporadas à frase corrida, nunca em linhas isoladas ou colunas.
+O Nome da Carta é o CAPÍTULO; o tema abordado agora é uma SESSÃO desse capítulo.
+
+RIGOR HISTÓRICO E EPISTEMOLÓGICO (ESSENCIAL):
+O Tarot não nasceu como um sistema esotérico unificado. As imagens dos trunfos têm origem em baralhos italianos do século XV; as leituras cabalísticas, astrológicas, alquímicas e herméticas foram sobrepostas ao Tarot principalmente pelo ocultismo ocidental dos séculos XIX e XX (Éliphas Lévi, Papus, Golden Dawn, Waite, Crowley, Paul Foster Case e outros), e a leitura junguiana e a Jornada do Louco são construções modernas. Pamela Colman Smith e A. E. Waite fizeram escolhas próprias na lâmina de 1909, que divergem do Tarot de Marselha e de outras escolas. Por isso:
+- Nunca apresente correspondências cabalísticas, astrológicas, alquímicas ou psicológicas como origem histórica, antiga ou original da carta, nem como a verdade objetiva dela.
+- Sempre que citar uma correspondência, diga a que tradição, escola ou autor ela pertence, com fórmulas como "a Golden Dawn atribuiu", "na sistematização de Waite", "na leitura junguiana", "no Thoth de Crowley".
+- Quando escolas divergirem, mencione a divergência em vez de escolher uma versão em silêncio.
+- Diferencie sempre o que é fato histórico documentado, o que é tradição ocultista e o que é interpretação moderna.
+- Comparações entre baralhos só entram quando esclarecerem algo específico sobre esta carta.
+- Descreva apenas elementos que realmente aparecem na lâmina Rider-Waite-Smith. Se não tiver certeza de um detalhe, omita-o; nunca invente.
+- Não classifique cartas como boas ou ruins; trate cada uma como princípio que pode se expressar de forma integrada ou distorcida. Não trate a carta invertida como significado oposto.
+- Para Arcanos Menores, trabalhe Número + Naipe + Elemento. Para Arcanos Maiores, considere a posição na sequência e a Jornada do Louco.
 
 LINGUAGEM:
-Escreva em linguagem simples, clara e acessível a qualquer leitor, mesmo sem conhecimento prévio de esoterismo. Sempre que precisar usar um termo técnico da Cabala, da Alquimia, do Hermetismo ou de outra tradição afim (por exemplo: sefirá, caminho, nigredo, athanor, mercúrio filosófico, tikun), explique brevemente e em linguagem cotidiana o que aquele termo significa logo na primeira vez em que ele aparecer no texto, de forma natural e integrada à frase, sem soar como um glossário.
+Escreva em linguagem simples, clara e acessível a qualquer leitor, mesmo sem conhecimento prévio de esoterismo. Sempre que usar um termo técnico da Cabala, da Alquimia, do Hermetismo, da Astrologia ou da Psicologia Analítica (por exemplo: sefirá, caminho, nigredo, athanor, decanato, dignidade, sombra, individuação), explique brevemente, em linguagem cotidiana, o que significa na primeira vez em que aparecer, de forma natural e integrada à frase, sem soar como glossário.
 
 CITAÇÃO E CRÉDITOS:
-Se em algum momento você reproduzir uma ideia, conceito, classificação ou formulação claramente associada a um autor ou autora específico (por exemplo Carl Gustav Jung, Aleister Crowley, Arthur Edward Waite, Éliphas Lévi, Papus, entre outros), atribua essa ideia ao autor correspondente de forma explícita dentro do próprio texto corrido, mencionando seu nome (exemplo: "conforme descreveu Carl Gustav Jung" ou "na formulação de Arthur Edward Waite"). Nunca apresente como sendo sua uma ideia ou formulação que pertença claramente a um autor identificável.
+Se reproduzir uma ideia, conceito, classificação ou formulação claramente associada a um autor específico (Carl Gustav Jung, Aleister Crowley, Arthur Edward Waite, Éliphas Lévi, Papus, Joseph Campbell, Paul Foster Case, entre outros), atribua-a explicitamente ao autor no próprio texto corrido (exemplo: "conforme descreveu Carl Gustav Jung"). Nunca apresente como sua uma formulação que pertença a autor identificável. Não invente citações, obras, datas ou páginas.
 
 TAREFA:
-Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente o eixo temático "${topico.titulo}" (${topico.descricao}). Não desenvolva os demais eixos temáticos do estudo completo desta carta (histórico, simbólico, psicológico, espiritual, hermético-alquímico, cabalístico, astrológico, tarot ocultista) além do eixo especificado aqui; mantenha o foco estrito neste único eixo temático. Desenvolva o texto com profundidade real, em cinco a oito parágrafos bem elaborados, trazendo precisão conceitual, exemplos concretos e nuances, evitando generalidades vagas ou repetição de ideias já óbvias.`;
+Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente a sessão "${topico.titulo}" (${topico.descricao}). Escopo obrigatório desta sessão, a ser seguido de forma integral e em texto dissertativo, incluindo somente o que for pertinente a esta carta: ${topico.escopo || topico.descricao}
+Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. Desenvolva com profundidade real, em seis a dez parágrafos bem elaborados, com precisão conceitual, exemplos concretos e nuances, evitando generalidades vagas e repetições.`;
         }
 
         async function gerarTopicoEstudo(topicoId, ehComplemento = false) {
@@ -932,7 +979,7 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
             let userPrompt;
 
             if (!ehComplemento) {
-                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
+                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: siga integralmente o escopo da sessão, em texto dissertativo, sem listas, e comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
             } else {
                 const dadosAtuais = estudoAtual.topicos[topicoId] || { texto: '', complementos: [] };
                 const complementosAnteriores = (dadosAtuais.complementos || []).join('\n\n');
@@ -1453,7 +1500,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 const dateStr = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleString('pt-BR') : 'Data N/A';
                 const topicosGerados = data.topicos ? Object.keys(data.topicos) : [];
                 const numerosGerados = topicosGerados
-                    .map(id => TOPICOS_ESTUDO.find(t => t.id === id)?.numero)
+                    .map(id => TOPICOS_ESTUDO_TODOS.find(t => t.id === id)?.numero)
                     .filter(Boolean)
                     .join(', ');
                 const marcada = estudosSelecionadosPDF.has(docId);
@@ -1570,7 +1617,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
         function montarBlocoTopicosImpressaoEstudo(topicos) {
             if (!topicos) return '';
             let html = '';
-            TOPICOS_ESTUDO.forEach(t => {
+            TOPICOS_ESTUDO_TODOS.forEach(t => {
                 const dadosTopico = topicos[t.id];
                 if (!dadosTopico || !dadosTopico.texto) return;
                 html += `<h2 class="subtitulo-carta">${t.numero}. ${escapeTexto(t.titulo)}</h2>`;
