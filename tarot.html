@@ -248,6 +248,11 @@
                     <h3 id="tituloEstudoAtual">✨ Estudo Iniciático da Carta</h3>
                 </div>
                 <div class="autosave-hint show" style="text-align:left;">Selecione uma carta e gere cada tópico individualmente. Depois de gerado, você pode pedir um aprofundamento complementar sobre o mesmo tópico.</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0;">
+                    <button type="button" class="btn-save-reading" id="btnGerarTodosEstudo" onclick="gerarTodosTopicosEstudo()" disabled>📚 Gerar os 15 tópicos em sequência</button>
+                    <button type="button" class="btn-ia-action" id="btnPararLoteEstudo" onclick="pararLoteEstudo()" style="display:none;">⏹ Parar</button>
+                    <span class="autosave-hint show" id="statusLoteEstudo" style="text-align:left;"></span>
+                </div>
                 <div id="topicosEstudoContainer" class="topicos-estudo-grid"></div>
             </div>
         </div>
@@ -445,6 +450,7 @@
         const TOPICOS_ESTUDO_TODOS = [...TOPICOS_ESTUDO, ...TOPICOS_ESTUDO_LEGADO.filter(t => t.id !== 'espiritual_legado')];
 
         let cartaEstudoSelecionada = null;
+        const geracaoLote = { ativa: false, cancelar: false };
         let estudoAtual = null;
         let modoSeletorCartas = 'slot'; // 'slot' (tiragem) ou 'estudo' (estudo individual)
         let historicoEstudosCompleto = [];
@@ -846,6 +852,11 @@
         // ==================== ESTUDO INDIVIDUAL DA CARTA ====================
 
         function definirCartaEstudo(carta) {
+            if (geracaoLote.ativa) {
+                geracaoLote.cancelar = true;
+                const stLote = document.getElementById('statusLoteEstudo');
+                if (stLote) stLote.textContent = '';
+            }
             cartaEstudoSelecionada = carta;
             estudoAtual = {
                 cardId: carta.id,
@@ -892,6 +903,7 @@
             if (estudoAtual && estudoAtual.topicos) {
                 Object.keys(estudoAtual.topicos).forEach(topicoId => renderizarTopicoCorpo(topicoId));
             }
+            atualizarBotoesLoteEstudo();
         }
 
         function renderizarTopicoCorpo(topicoId) {
@@ -959,12 +971,89 @@ Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada
 Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. Desenvolva com profundidade real, em seis a dez parágrafos bem elaborados, com precisão conceitual, exemplos concretos e nuances, evitando generalidades vagas e repetições.`;
         }
 
-        async function gerarTopicoEstudo(topicoId, ehComplemento = false) {
+
+        // ==================== GERAÇÃO EM LOTE DOS 15 TÓPICOS ====================
+        function atualizarBotoesLoteEstudo() {
+            const btn = document.getElementById('btnGerarTodosEstudo');
+            const btnParar = document.getElementById('btnPararLoteEstudo');
+            if (btn) btn.disabled = !cartaEstudoSelecionada || geracaoLote.ativa;
+            if (btnParar) btnParar.style.display = geracaoLote.ativa ? '' : 'none';
+        }
+
+        function pararLoteEstudo() {
+            if (!geracaoLote.ativa) return;
+            geracaoLote.cancelar = true;
+            const st = document.getElementById('statusLoteEstudo');
+            if (st) st.textContent = 'Parando após o tópico em andamento...';
+        }
+
+        async function gerarTodosTopicosEstudo() {
+            if (geracaoLote.ativa) return;
+            if (!cartaEstudoSelecionada || !estudoAtual) {
+                return showToast('Selecione uma carta para estudar primeiro.', 'erro');
+            }
+            const estudoRef = estudoAtual;
+            const pendentes = TOPICOS_ESTUDO.filter(t => !(estudoRef.topicos[t.id] && estudoRef.topicos[t.id].texto));
+            if (pendentes.length === 0) {
+                return showToast('Todos os 15 tópicos desta carta já foram gerados.', 'sucesso');
+            }
+
+            geracaoLote.ativa = true;
+            geracaoLote.cancelar = false;
+            atualizarBotoesLoteEstudo();
+            const st = document.getElementById('statusLoteEstudo');
+            let concluidos = 0;
+            let falhou = false;
+
+            for (let i = 0; i < pendentes.length; i++) {
+                if (geracaoLote.cancelar || estudoAtual !== estudoRef) break;
+                const t = pendentes[i];
+                if (st) st.textContent = `Gerando ${i + 1} de ${pendentes.length}: ${t.titulo}...`;
+                const card = document.getElementById(`topicoCard_${t.id}`);
+                if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                await gerarTopicoEstudo(t.id, false, true);
+                if (estudoAtual !== estudoRef) break;
+                if (!(estudoRef.topicos[t.id] && estudoRef.topicos[t.id].texto)) {
+                    // uma nova tentativa antes de desistir
+                    await gerarTopicoEstudo(t.id, false, true);
+                    if (estudoAtual !== estudoRef) break;
+                }
+                if (estudoRef.topicos[t.id] && estudoRef.topicos[t.id].texto) {
+                    concluidos++;
+                } else {
+                    falhou = true;
+                    break;
+                }
+            }
+
+            const trocouCarta = estudoAtual !== estudoRef;
+            geracaoLote.ativa = false;
+            atualizarBotoesLoteEstudo();
+
+            if (trocouCarta) {
+                if (st) st.textContent = '';
+                return showToast('Geração em lote interrompida: a carta foi trocada.', 'erro');
+            }
+            if (falhou) {
+                if (st) st.textContent = `Interrompido após ${concluidos} de ${pendentes.length}. Clique novamente para continuar de onde parou.`;
+                return showToast('A geração parou por falha no serviço de IA. Clique de novo para continuar.', 'erro', 6000);
+            }
+            if (geracaoLote.cancelar) {
+                if (st) st.textContent = `Parado após ${concluidos} de ${pendentes.length}.`;
+                return showToast('Geração em lote interrompida.', 'sucesso');
+            }
+            if (st) st.textContent = `Concluído: ${concluidos} tópicos gerados. Não esqueça de guardar o estudo no histórico.`;
+            showToast('✨ Estudo completo gerado. Guarde-o no histórico.', 'sucesso');
+        }
+
+        async function gerarTopicoEstudo(topicoId, ehComplemento = false, silencioso = false) {
             if (!cartaEstudoSelecionada || !estudoAtual) {
                 return showToast('Selecione uma carta para estudar primeiro.', 'erro');
             }
             const topico = TOPICOS_ESTUDO.find(t => t.id === topicoId);
             if (!topico) return;
+            const estudoRef = estudoAtual;
 
             const corpo = document.getElementById(`topicoCorpo_${topicoId}`);
             const acoes = document.getElementById(`topicoAcoes_${topicoId}`);
@@ -992,6 +1081,7 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
                     if (statusEl) statusEl.innerHTML = `<span class="spinner"></span> consultando os arcanos (...${n})`;
                 });
 
+                if (estudoAtual !== estudoRef) return; // a carta foi trocada durante a geração
                 if (!ehComplemento) {
                     estudoAtual.topicos[topicoId] = { texto: resposta, complementos: [] };
                 } else {
@@ -1001,11 +1091,12 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
 
                 renderizarTopicoCorpo(topicoId);
                 document.getElementById('btnSalvarEstudo').disabled = false;
-                showToast(`✨ Tópico "${topico.titulo}" ${ehComplemento ? 'aprofundado' : 'gerado'} com sucesso.`, 'sucesso');
+                if (!silencioso) showToast(`✨ Tópico "${topico.titulo}" ${ehComplemento ? 'aprofundado' : 'gerado'} com sucesso.`, 'sucesso');
             } catch (err) {
+                if (estudoAtual !== estudoRef) return;
                 corpo.innerHTML += `<div style="color:var(--fogo); margin-top:8px;">Erro ao gerar este tópico: ${escapeTexto(err.message)}</div>`;
                 botoesAcoes.forEach(b => b.disabled = false);
-                showToast('Não foi possível gerar este tópico agora.', 'erro');
+                if (!silencioso) showToast('Não foi possível gerar este tópico agora.', 'erro');
             }
         }
 
@@ -1480,6 +1571,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 querySnapshot.forEach((docSnap) => {
                     historicoEstudosCompleto.push({ id: docSnap.id, data: docSnap.data() });
                 });
+                historicoEstudosCompleto = ordenarEstudosLogicamente(historicoEstudosCompleto);
 
                 renderizarHistoricoEstudos(historicoEstudosCompleto);
             } catch (err) {
@@ -1730,7 +1822,25 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             const itens = fichaTecnicaCarta(data);
             if (!itens) return '';
             const linhas = itens.map(i => `<div class="ficha-item"><span class="ficha-icone">${i.icone}</span><span class="ficha-texto"><span class="ficha-rotulo">${escapeTexto(i.rotulo)}</span> ${escapeTexto(i.valor)}</span></div>`).join('');
-            return `<div class="ficha-tecnica">${linhas}<div class="ficha-nota">Correspondências segundo a Golden Dawn e a tradição ocultista que a seguiu; outras escolas divergem.</div></div>`;
+            return `<div class="ficha-tecnica">${linhas}</div>`;
+        }
+
+
+        // Ordem lógica: Arcanos Maiores (0, I, II...) e depois Menores por naipe (Paus, Taças, Espadas, Ouros) e número.
+        function chaveOrdemCarta(data) {
+            const idCarta = String((data && data.cardId) || ((data && data.arquivo) || '').split('/').pop().replace(/\.[a-z]+$/i, ''));
+            const maior = idCarta.match(/^(\d{2})_/);
+            if (maior) return parseInt(maior[1], 10);
+            const menor = idCarta.match(/^(Wands|Cups|Swords|Pents)(\d{2})$/);
+            if (menor) {
+                const naipe = ['Wands', 'Cups', 'Swords', 'Pents'].indexOf(menor[1]);
+                return 100 + naipe * 100 + parseInt(menor[2], 10);
+            }
+            return 9999;
+        }
+        function ordenarEstudosLogicamente(lista) {
+            // sort é estável: estudos repetidos da mesma carta mantêm a ordem original (mais recente primeiro)
+            return lista.slice().sort((x, y) => chaveOrdemCarta(x.data) - chaveOrdemCarta(y.data));
         }
 
         function montarBlocoTopicosImpressaoEstudo(topicos) {
@@ -1753,7 +1863,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 return showToast('Selecione ao menos um estudo salvo no histórico para exportar.', 'erro');
             }
 
-            const selecionadas = historicoEstudosCompleto.filter(({ id }) => estudosSelecionadosPDF.has(id));
+            const selecionadas = ordenarEstudosLogicamente(historicoEstudosCompleto.filter(({ id }) => estudosSelecionadosPDF.has(id)));
             if (selecionadas.length === 0) {
                 return showToast('Os estudos selecionados não foram encontrados. Atualize o histórico e tente novamente.', 'erro');
             }
@@ -1765,24 +1875,18 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
 
             const folhas = selecionadas.map(({ data }, idx) => {
                 return `
-                    <table class="pagina-tabela"${idx > 0 ? ' style="break-before: page; page-break-before: always;"' : ''}>
-                        <thead><tr><td><div class="espaco-topo"></div></td></tr></thead>
-                        <tfoot><tr><td><div class="espaco-base"></div></td></tr></tfoot>
-                        <tbody><tr><td>
-                            <section class="folha-leitura">
-                                <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
-                                <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
-                                <div class="ornamento">◆</div>
-                                <div class="cabecalho-carta">
-                                    <div class="carta-bloco">
-                                        <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
-                                    </div>
-                                    ${montarFichaTecnicaHtml(data)}
-                                </div>
-                                ${montarBlocoTopicosImpressaoEstudo(data.topicos)}
-                            </section>
-                        </td></tr></tbody>
-                    </table>
+                    <section class="folha-leitura"${idx > 0 ? ' style="break-before: page; page-break-before: always;"' : ''}>
+                        <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
+                        <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
+                        <div class="ornamento">◆</div>
+                        <div class="cabecalho-carta">
+                            <div class="carta-bloco">
+                                <img src="${urlAbsolutaImagemCarta(data.arquivo)}" alt="${escapeAtributo(data.nomeCarta || '')}">
+                            </div>
+                            ${montarFichaTecnicaHtml(data)}
+                        </div>
+                        ${montarBlocoTopicosImpressaoEstudo(data.topicos)}
+                    </section>
                 `;
             }).join('');
 
@@ -1791,13 +1895,23 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 <head>
                     <title>Estudo de Carta</title>
                     <style>
-                        @page { size: A4; margin: 0; }
-                        html, body { margin: 0; }
-                        body { font-family: Georgia, 'Times New Roman', serif; padding: 0 2.2cm; color: #1a1a1a; line-height: 1.7; text-align: justify; }
-                        .pagina-tabela { width: 100%; border-collapse: collapse; }
-                        .pagina-tabela td { padding: 0; }
-                        .espaco-topo { height: 2.4cm; }
-                        .espaco-base { height: 2.4cm; }
+                        @page {
+                            size: A4;
+                            margin: 2.4cm 2.2cm 2.6cm 2.2cm;
+                            /* Margin boxes vazios substituem o cabeçalho/rodapé padrão do navegador (data, título, endereço) */
+                            @top-left { content: ""; }
+                            @top-center { content: ""; }
+                            @top-right { content: ""; }
+                            @bottom-left { content: ""; }
+                            @bottom-right { content: ""; }
+                            @bottom-center {
+                                content: "— " counter(page) " —";
+                                font-family: Georgia, 'Times New Roman', serif;
+                                font-size: 9.5pt;
+                                color: #666;
+                            }
+                        }
+                        body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 0; color: #1a1a1a; line-height: 1.7; text-align: justify; }
                         .capitulo-rotulo { text-align: center; text-transform: uppercase; letter-spacing: 3px; font-size: 9.5pt; color: #8a6d1f; margin-top: 6px; }
                         h1 { color: #3a2a5c; font-size: 24pt; font-weight: bold; text-align: center; margin-top: 6px; letter-spacing: 1px; font-variant: small-caps; }
                         .ornamento { text-align: center; color: #8a6d1f; font-size: 13pt; margin: 4px 0 18px; letter-spacing: 8px; }
@@ -1809,7 +1923,6 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                         .ficha-icone { flex: 0 0 18px; text-align: center; color: #8a6d1f; font-size: 12pt; }
                         .ficha-rotulo { color: #3a2a5c; font-weight: bold; font-variant: small-caps; letter-spacing: 0.4px; margin-right: 4px; }
                         .ficha-rotulo::after { content: ":"; }
-                        .ficha-nota { margin-top: 8px; font-size: 8.5pt; font-style: italic; color: #777; }
                         h2, .subtitulo-carta { color: #3a2a5c; font-size: 13.5pt; font-weight: bold; font-variant: small-caps; letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 10px; text-align: left; border-top: 1px solid #d8cdb0; padding-top: 14px; break-after: avoid; }
                         p { font-size: 11.5pt; margin: 0 0 10px; text-align: justify; text-indent: 1.2em; }
                     </style>
