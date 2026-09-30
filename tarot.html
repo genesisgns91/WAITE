@@ -214,6 +214,7 @@
                 </div>
 
                 <div class="input-group">
+                    <button type="button" class="btn-ia-action" onclick="selecionarIntroducaoEstudo()" style="width:100%; justify-content:center; margin-bottom:6px;">📖 Gerar Introdução ao Baralho</button>
                     <div class="card-preview-container" style="margin: 4px auto;" onclick="abrirSeletorCartaEstudo()" role="button" tabindex="0" aria-label="Escolher carta para estudo individual">
                         <img id="previewCartaEstudo" src="cards/00_Fool.jpg" class="card-preview-img" alt="Carta selecionada para estudo">
                         <span class="card-preview-zoom-hint">🔍 escolher</span>
@@ -233,6 +234,7 @@
                 <div class="history-toolbar">
                     <input type="search" id="historyEstudoSearch" placeholder="🔎 Buscar por nome da carta..." oninput="filtrarHistoricoEstudos()">
                     <button type="button" class="btn-ia-action" id="btnSelecionarTodosHistEstudo" onclick="alternarSelecionarTodosHistoricoEstudos()">☑️ Selecionar todas</button>
+                    <label class="history-select-checkbox" title="Insere uma página de índice antes da introdução"><input type="checkbox" id="chkIndicePDF"> <span>📑 Incluir índice</span></label>
                     <button type="button" class="btn-save-reading" id="btnExportarSelecionadasPDFEstudo" onclick="exportarPDFHistoricoEstudoSelecionado()" disabled>📑 Exportar PDF (0 selecionadas)</button>
                 </div>
                 <div class="autosave-hint show" style="text-align:center;">A exportação em PDF está disponível apenas para estudos já salvos no histórico. Marque a caixa em cada estudo para incluí-lo.</div>
@@ -446,8 +448,19 @@
             { id: 'astrologico', numero: 'Antigo VII', titulo: 'Astrológico' },
             { id: 'tarot_ocultista', numero: 'Antigo VIII', titulo: 'Tarot Ocultista' }
         ];
+        // Texto introdutório do estudo (aparece antes de todas as cartas no PDF)
+        const INTRO_TOPICO = { id: 'introducao', numero: 'Intro', titulo: 'Introdução ao Baralho', descricao: 'introdução geral ao baralho e aos temas abordados em cada carta', escopo: '' };
+        const CARTA_INTRODUCAO = {
+            id: 'introducao',
+            nome: 'Introdução ao Baralho',
+            arquivo: 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 340"><rect width="200" height="340" rx="10" fill="#2b1f47"/><rect x="10" y="10" width="180" height="320" rx="6" fill="none" stroke="#c9a94b" stroke-width="3"/><text x="100" y="150" text-anchor="middle" font-family="Georgia,serif" font-size="56" fill="#c9a94b">&#9788;</text><text x="100" y="205" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#f1e7c8">INTRODUÇÃO</text><text x="100" y="232" text-anchor="middle" font-family="Georgia,serif" font-size="16" fill="#f1e7c8">ao Baralho</text></svg>')
+        };
+        function topicosAtivosEstudo() {
+            return (cartaEstudoSelecionada && cartaEstudoSelecionada.id === 'introducao') ? [INTRO_TOPICO] : TOPICOS_ESTUDO;
+        }
+
         // 'espiritual' existia no modelo antigo e continua existindo no novo (capítulo 8): usa o título novo.
-        const TOPICOS_ESTUDO_TODOS = [...TOPICOS_ESTUDO, ...TOPICOS_ESTUDO_LEGADO.filter(t => t.id !== 'espiritual_legado')];
+        const TOPICOS_ESTUDO_TODOS = [INTRO_TOPICO, ...TOPICOS_ESTUDO, ...TOPICOS_ESTUDO_LEGADO.filter(t => t.id !== 'espiritual_legado')];
 
         let cartaEstudoSelecionada = null;
         const geracaoLote = { ativa: false, cancelar: false };
@@ -872,8 +885,15 @@
             renderizarTopicosEstudo();
         }
 
+        function selecionarIntroducaoEstudo() {
+            definirCartaEstudo(CARTA_INTRODUCAO);
+        }
         function atualizarCartaEstudoPorInput() {
             const val = document.getElementById('inputCartaEstudo').value.toLowerCase().trim();
+            if (val.startsWith('introdu')) {
+                if (!cartaEstudoSelecionada || cartaEstudoSelecionada.id !== 'introducao') selecionarIntroducaoEstudo();
+                return;
+            }
             const carta = TODAS_AS_CARTAS.find(c => c.nome.toLowerCase() === val || c.busca.toLowerCase().includes(val) || c.id.toLowerCase() === val);
             if (carta) definirCartaEstudo(carta);
         }
@@ -881,14 +901,14 @@
         function renderizarTopicosEstudo() {
             const container = document.getElementById('topicosEstudoContainer');
             container.innerHTML = '';
-            TOPICOS_ESTUDO.forEach(t => {
+            topicosAtivosEstudo().forEach(t => {
                 const div = document.createElement('div');
                 div.className = 'topico-estudo-card';
                 div.id = `topicoCard_${t.id}`;
                 div.innerHTML = `
                     <div class="topico-estudo-header">
                         <div>
-                            <div class="topico-estudo-titulo">${t.numero}. ${t.titulo}</div>
+                            <div class="topico-estudo-titulo">${t.id === 'introducao' ? '' : t.numero + '. '}${t.titulo}</div>
                             <div class="topico-estudo-desc">${t.descricao}</div>
                         </div>
                         <div class="topico-estudo-acoes" id="topicoAcoes_${t.id}">
@@ -940,7 +960,25 @@
             if (btn) btn.innerText = expandido ? '▲ Recolher' : '▼ Expandir';
         }
 
+        function construirSystemPromptIntroducao() {
+            const capitulos = TOPICOS_ESTUDO.map(t => `${t.titulo} (${t.descricao})`).join('; ');
+            return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, especialista em Tarot e arquétipos, com rigor de historiador das ideias esotéricas.
+
+REGRA CRÍTICA DE FORMATO — PROIBIDO QUALQUER INTRODUÇÃO DA IA:
+Não escreva saudações, comentários, resumos finais nem ofertas de ajuda. A primeiríssima frase já deve ser uma afirmação concreta sobre o baralho, como se o texto fosse a abertura de um livro. É proibido começar com fórmulas como "Vamos explorar...", "Neste texto...", "Bem-vindo...".
+Escreva em TEXTO DISSERTATIVO liso, em parágrafos bem construídos e encadeados, como o prefácio de um livro. NÃO USE NENHUM SÍMBOLO DE FORMATAÇÃO MARKDOWN nem caracteres decorativos (sem #, asteriscos, hífens como marcador, sublinhados, emojis, bullets, tabelas ou listas). Incorpore enumerações em frases corridas. Escreva em segunda pessoa, com tom próximo e humano, podendo usar "você".
+Linguagem simples e acessível a leitores sem conhecimento prévio de esoterismo; explique brevemente, na primeira vez, qualquer termo técnico de Cabala, Alquimia, Hermetismo, Astrologia ou Psicologia Analítica.
+
+RIGOR HISTÓRICO E EPISTEMOLÓGICO (ESSENCIAL):
+O Tarot não nasceu como sistema esotérico unificado. As imagens dos trunfos vêm de baralhos italianos do século XV, criados para jogo; as leituras cabalísticas, astrológicas, alquímicas e herméticas foram sobrepostas ao Tarot principalmente pelo ocultismo ocidental dos séculos XIX e XX (Éliphas Lévi, Papus, Golden Dawn, Waite, Crowley, Paul Foster Case e outros); a leitura junguiana e a Jornada do Louco são construções modernas. Pamela Colman Smith e A. E. Waite fizeram escolhas próprias no baralho de 1909, que divergem do Tarot de Marselha e de outras escolas. Nunca apresente correspondências como origem histórica antiga do Tarot nem como verdade objetiva das cartas; atribua cada ideia à tradição, escola ou autor a que pertence; diferencie fato histórico documentado, tradição ocultista e interpretação moderna. Não invente fatos, datas, obras nem citações; se não tiver certeza de um dado, omita-o.
+
+TAREFA:
+Escreva um texto introdutório único, completo e aprofundado, que abra um livro de estudos sobre as cartas do baralho Rider-Waite-Smith. O texto deve: apresentar o baralho (criação, publicação em 1909, a parceria entre A. E. Waite e Pamela Colman Smith, a particularidade das cenas ilustradas também nos Arcanos Menores); situar historicamente o Tarot, desde sua origem como jogo de cartas na Itália até a apropriação pelo ocultismo; explicar a estrutura de 78 cartas (22 Arcanos Maiores e 56 Arcanos Menores, com os quatro naipes, as cartas numeradas e as cartas da corte) e o papel de cada parte; explicar o método do livro, informando que cada carta será estudada em capítulo próprio, a partir destes temas: ${capitulos}; e esclarecer como o leitor deve encarar essas camadas (história, imagem, psicologia, espiritualidade, ocultismo), como lentes de leitura que se somam e nunca como uma tradição única e original, preservando o olhar esotérico. Encerre o texto com um parágrafo sobre a postura contemplativa com que o estudo deve ser lido, sem fórmula de despedida.
+Desenvolva com profundidade real, em doze a dezesseis parágrafos bem elaborados.`;
+        }
+
         function construirSystemPromptEstudo(topico) {
+            if (topico.id === 'introducao') return construirSystemPromptIntroducao();
             return `Você é um Ocultista da tradição da Golden Dawn e Analista Junguiano, especialista em Tarot e arquétipos, versado em Hermetismo, Cabala, Alquimia, Astrologia e Psicologia Analítica, com rigor de historiador das ideias esotéricas.
 
 REGRA CRÍTICA DE FORMATO — PROIBIDO QUALQUER INTRODUÇÃO:
@@ -976,7 +1014,7 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
         function atualizarBotoesLoteEstudo() {
             const btn = document.getElementById('btnGerarTodosEstudo');
             const btnParar = document.getElementById('btnPararLoteEstudo');
-            if (btn) btn.disabled = !cartaEstudoSelecionada || geracaoLote.ativa;
+            if (btn) btn.disabled = !cartaEstudoSelecionada || geracaoLote.ativa || cartaEstudoSelecionada.id === 'introducao';
             if (btnParar) btnParar.style.display = geracaoLote.ativa ? '' : 'none';
         }
 
@@ -993,7 +1031,7 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
                 return showToast('Selecione uma carta para estudar primeiro.', 'erro');
             }
             const estudoRef = estudoAtual;
-            const pendentes = TOPICOS_ESTUDO.filter(t => !(estudoRef.topicos[t.id] && estudoRef.topicos[t.id].texto));
+            const pendentes = topicosAtivosEstudo().filter(t => !(estudoRef.topicos[t.id] && estudoRef.topicos[t.id].texto));
             if (pendentes.length === 0) {
                 return showToast('Todos os 15 tópicos desta carta já foram gerados.', 'sucesso');
             }
@@ -1051,7 +1089,7 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
             if (!cartaEstudoSelecionada || !estudoAtual) {
                 return showToast('Selecione uma carta para estudar primeiro.', 'erro');
             }
-            const topico = TOPICOS_ESTUDO.find(t => t.id === topicoId);
+            const topico = topicosAtivosEstudo().find(t => t.id === topicoId);
             if (!topico) return;
             const estudoRef = estudoAtual;
 
@@ -1068,7 +1106,9 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
             let userPrompt;
 
             if (!ehComplemento) {
-                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: siga integralmente o escopo da sessão, em texto dissertativo, sem listas, e comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
+                userPrompt = topico.id === 'introducao'
+                    ? `Escreva o texto introdutório completo do estudo, conforme o escopo definido.\n\nLembrete final: texto dissertativo corrido, sem listas, começando direto no conteúdo, sem saudação nem frase de abertura.`
+                    : `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: siga integralmente o escopo da sessão, em texto dissertativo, sem listas, e comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
             } else {
                 const dadosAtuais = estudoAtual.topicos[topicoId] || { texto: '', complementos: [] };
                 const complementosAnteriores = (dadosAtuais.complementos || []).join('\n\n');
@@ -1653,7 +1693,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
         }
 
         function carregarEstudoDoHistorico(data) {
-            const carta = TODAS_AS_CARTAS.find(c => c.id === data.cardId) || { id: data.cardId, nome: data.nomeCarta, arquivo: data.arquivo };
+            const carta = data.cardId === 'introducao' ? CARTA_INTRODUCAO : (TODAS_AS_CARTAS.find(c => c.id === data.cardId) || { id: data.cardId, nome: data.nomeCarta, arquivo: data.arquivo });
             cartaEstudoSelecionada = carta;
             estudoAtual = {
                 cardId: data.cardId,
@@ -1828,6 +1868,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
 
         // Ordem lógica: Arcanos Maiores (0, I, II...) e depois Menores por naipe (Paus, Taças, Espadas, Ouros) e número.
         function chaveOrdemCarta(data) {
+            if (data && data.cardId === 'introducao') return -1;
             const idCarta = String((data && data.cardId) || ((data && data.arquivo) || '').split('/').pop().replace(/\.[a-z]+$/i, ''));
             const maior = idCarta.match(/^(\d{2})_/);
             if (maior) return parseInt(maior[1], 10);
@@ -1858,6 +1899,43 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             return html;
         }
 
+
+        // Mede quantas páginas A4 uma seção ocupa, simulando a área útil da página com colunas CSS de altura fixa.
+        function medirPaginasSecao(win, secao) {
+            const doc = win.document;
+            const W = Math.round(16.6 * 96 / 2.54);        // largura útil (A4 21cm - margens 2,2cm x 2)
+            const H = Math.round(24.7 * 96 / 2.54) - 2;    // altura útil (A4 29,7cm - 2,4cm - 2,6cm)
+            const wrap = doc.createElement('div');
+            wrap.style.cssText = `position:absolute; left:0; top:0; visibility:hidden; width:${W}px; height:${H}px; column-width:${W}px; column-gap:0; column-fill:auto;`;
+            const clone = secao.cloneNode(true);
+            clone.style.breakBefore = 'auto';
+            clone.style.pageBreakBefore = 'auto';
+            const imgsOrig = secao.querySelectorAll('img');
+            const imgsClone = clone.querySelectorAll('img');
+            imgsOrig.forEach((im, i) => {
+                const h = im.getBoundingClientRect().height;
+                if (h && imgsClone[i]) imgsClone[i].style.height = h + 'px';
+            });
+            wrap.appendChild(clone);
+            doc.body.appendChild(wrap);
+            const paginas = Math.max(1, Math.ceil((wrap.scrollWidth - 1) / W));
+            doc.body.removeChild(wrap);
+            return paginas;
+        }
+
+        function preencherIndicePaginas(win) {
+            const doc = win.document;
+            const secIndice = doc.getElementById('secIndice');
+            const secoes = Array.from(doc.querySelectorAll('section[data-indice]'));
+            if (!secIndice) return;
+            let paginaAtual = 1 + medirPaginasSecao(win, secIndice);
+            secoes.forEach((sec, i) => {
+                const alvo = doc.querySelector(`.indice-pg[data-i="${i}"]`);
+                if (alvo) alvo.textContent = `pg ${paginaAtual}`;
+                paginaAtual += medirPaginasSecao(win, sec);
+            });
+        }
+
         function exportarPDFHistoricoEstudoSelecionado() {
             if (estudosSelecionadosPDF.size === 0) {
                 return showToast('Selecione ao menos um estudo salvo no histórico para exportar.', 'erro');
@@ -1873,10 +1951,27 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                 return showToast('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'erro');
             }
 
-            const folhas = selecionadas.map(({ data }, idx) => {
+            const incluirIndice = !!(document.getElementById('chkIndicePDF') && document.getElementById('chkIndicePDF').checked);
+            let numeroCapitulo = 0;
+            let primeiraSecao = !incluirIndice;
+            const quebra = () => { const r = primeiraSecao ? '' : ' style="break-before: page; page-break-before: always;"'; primeiraSecao = false; return r; };
+
+            const folhasCartas = selecionadas.map(({ data }) => {
+                if (data.cardId === 'introducao') {
+                    const dadosIntro = (data.topicos && data.topicos.introducao) || { texto: '', complementos: [] };
+                    return `
+                    <section class="folha-leitura" data-indice="${escapeAtributo(data.nomeCarta || 'Introdução ao Baralho')}"${quebra()}>
+                        <div class="capitulo-rotulo">Introdução</div>
+                        <h1>${escapeTexto(data.nomeCarta || 'Introdução ao Baralho')}</h1>
+                        <div class="ornamento">◆</div>
+                        ${textoParaParagrafosHtml(dadosIntro.texto || '')}
+                        ${(dadosIntro.complementos || []).map(c => textoParaParagrafosHtml(c)).join('')}
+                    </section>`;
+                }
+                numeroCapitulo++;
                 return `
-                    <section class="folha-leitura"${idx > 0 ? ' style="break-before: page; page-break-before: always;"' : ''}>
-                        <div class="capitulo-rotulo">Capítulo ${idx + 1}</div>
+                    <section class="folha-leitura" data-indice="${escapeAtributo(data.nomeCarta || 'Carta')}"${quebra()}>
+                        <div class="capitulo-rotulo">Capítulo ${numeroCapitulo}</div>
                         <h1>${escapeTexto(data.nomeCarta || 'Carta')}</h1>
                         <div class="ornamento">◆</div>
                         <div class="cabecalho-carta">
@@ -1889,6 +1984,14 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                     </section>
                 `;
             }).join('');
+
+            const folhaIndice = incluirIndice ? `
+                    <section class="folha-leitura" id="secIndice">
+                        <h1>Índice</h1>
+                        <div class="ornamento">◆</div>
+                        ${selecionadas.map(({ data }, i) => `<div class="indice-linha"><span class="indice-titulo">${escapeTexto(data.nomeCarta || 'Carta')}</span><span class="indice-pontos"></span><span class="indice-pg" data-i="${i}">pg 00</span></div>`).join('')}
+                    </section>` : '';
+            const folhas = folhaIndice + folhasCartas;
 
             win.document.write(`
                 <html>
@@ -1925,6 +2028,9 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                         .ficha-rotulo::after { content: ":"; }
                         h2, .subtitulo-carta { color: #3a2a5c; font-size: 13.5pt; font-weight: bold; font-variant: small-caps; letter-spacing: 0.5px; margin-top: 26px; margin-bottom: 10px; text-align: left; border-top: 1px solid #d8cdb0; padding-top: 14px; break-after: avoid; }
                         p { font-size: 11.5pt; margin: 0 0 10px; text-align: justify; text-indent: 1.2em; }
+                        .indice-linha { display: flex; align-items: baseline; gap: 6px; margin: 3px 0; font-size: 11pt; line-height: 1.5; text-align: left; }
+                        .indice-pontos { flex: 1; border-bottom: 1.5px dotted #9a9a9a; transform: translateY(-3px); }
+                        .indice-pg { white-space: nowrap; color: #3a2a5c; }
                     </style>
                 </head>
                 <body>${folhas}</body>
@@ -1932,16 +2038,22 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
             `);
             win.document.close();
 
+            const imprimirFinal = () => {
+                if (incluirIndice) {
+                    try { preencherIndicePaginas(win); } catch (e) { console.warn('Falha ao calcular o índice:', e); }
+                }
+                win.print();
+            };
             const imgs = win.document.images;
             let restantes = imgs.length;
             if (restantes === 0) {
-                setTimeout(() => win.print(), 300);
+                setTimeout(imprimirFinal, 300);
             } else {
                 let disparado = false;
                 const tentarImprimir = () => {
                     if (disparado) return;
                     disparado = true;
-                    win.print();
+                    imprimirFinal();
                 };
                 Array.from(imgs).forEach(img => {
                     img.addEventListener('load', () => { restantes--; if (restantes <= 0) tentarImprimir(); });
