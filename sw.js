@@ -1,8 +1,9 @@
-const CACHE_NAME = 'waite-v6';
+const CACHE_NAME = 'waite-v7';
 const urlsToCache = [
   './',
   './index.html',
   './estilos.css',
+  './icones.js',
   './tarot.html',
   './revolucao_solar.html',
   './transitos_diarios.html',

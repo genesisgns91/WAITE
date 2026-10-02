@@ -19,6 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="estilos.css">
+    <script src="icones.js" defer></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -52,18 +53,22 @@
 
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <header>
+    <header class="app-header">
+        <div class="app-header-inner">
+            <a href="index.html" class="brand" aria-label="Astro — início"><svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><defs><linearGradient id="bm" x1="4" y1="4" x2="28" y2="28"><stop offset="0" stop-color="#e3b361"/><stop offset="1" stop-color="#9b80ea"/></linearGradient></defs><path d="M21.5 4.6A12.2 12.2 0 1 0 27.4 20 9.6 9.6 0 0 1 21.5 4.6z" stroke="url(#bm)" stroke-width="1.7" stroke-linejoin="round"/><path d="M23 11l1 2.2 2.3.3-1.7 1.6.4 2.3L23 16.2l-2 1.2.4-2.3-1.7-1.6 2.3-.3z" fill="url(#bm)"/></svg><span class="brand-nome">ASTRO</span></a>
+            <nav class="app-nav" aria-label="Navegação principal">
+            <a href="index.html" class="nav-tab"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4"/><path d="M12 3v5.6M12 15.4V21M3 12h5.6M15.4 12H21"/></svg><span>Mapa Natal</span></a>
+            <a href="revolucao_solar.html" class="nav-tab"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span>Revolução Solar</span></a>
+            <a href="transitos_diarios.html" class="nav-tab"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(-30 12 12)"/><circle cx="19.2" cy="7.9" r="1" fill="currentColor" stroke="none"/></svg><span>Trânsitos Diários</span></a>
+            <a href="tarot.html" class="nav-tab active" aria-current="page"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="3" width="13" height="18" rx="2.2"/><path d="M12 8l1.3 2.7 2.9.4-2.1 2 .5 2.9L12 14.6l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/></svg><span>Astro Tarot</span></a>
+            </nav>
+            <button type="button" class="nav-util" onclick="limparCacheDoApp()" title="Força o app a buscar a versão mais nova"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4M4 4v3.6h3.6"/><path d="M4 13a8 8 0 0 0 14.5 4M20 20v-3.6h-3.6"/></svg><span>Limpar cache</span></button>
+        </div>
+    </header>
+    <div class="page-hero">
         <h1>ASTRO TAROT — DIÁRIO & SÍNTESE INICIÁTICA</h1>
         <p>Registro Físico, Hermetismo, Cabala, Psicologia Analítica (Jung) & Firebase Cloud</p>
-
-        <nav class="app-nav">
-            <a href="index.html" class="nav-tab">Mapa Natal</a>
-            <a href="revolucao_solar.html" class="nav-tab">Revolução Solar</a>
-            <a href="transitos_diarios.html" class="nav-tab">Trânsitos Diários</a>
-            <a href="tarot.html" class="nav-tab active">Astro Tarot</a>
-            <button type="button" class="nav-tab" style="cursor:pointer;" onclick="limparCacheDoApp()" title="Força o app a buscar a versão mais nova">🧹 Limpar Cache</button>
-        </nav>
-    </header>
+    </div>
 
     <datalist id="listaCartasTarot"></datalist>
 
@@ -1819,7 +1824,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                     { icone: '☉', rotulo: 'Astrologia', valor: f[4] },
                     { icone: '△', rotulo: 'Elemento', valor: f[3] },
                     { icone: '#', rotulo: 'Número', valor: n === 0 ? '0' : `${ROMANOS[n]} (${n})` },
-                    { icone: '✡', rotulo: 'Cabala', valor: `Caminho ${f[1]}, letra ${fmtLetra(f[0])}; liga ${f[2]}` },
+                    { icone: '✡\uFE0E', rotulo: 'Cabala', valor: `Caminho ${f[1]}, letra ${fmtLetra(f[0])}; liga ${f[2]}` },
                     { icone: '☿', rotulo: 'Planetária', valor: f[5] },
                     { icone: '✦', rotulo: 'Nome original', valor: NOMES_INGLES_MAIORES[n] },
                     { icone: '☥', rotulo: 'Classificação', valor: 'Arcano Maior' }
@@ -1836,7 +1841,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                         { icone: '☉', rotulo: 'Astrologia', valor: dec ? `${dec[0]} em ${dec[1]} (decanato)` : 'Sem signo (raiz do elemento)' },
                         { icone: '△', rotulo: 'Elemento', valor: naipe.elem },
                         { icone: '#', rotulo: 'Número', valor: `${n}${n === 1 ? ' (Ás)' : ''}` },
-                        { icone: '✡', rotulo: 'Cabala', valor: `Sephirah ${SEPHIROTH[n]}; letra ${LETRAS_HEBRAICAS[naipe.letra][0]} (${LETRAS_HEBRAICAS[naipe.letra][1]}) do Nome divino` },
+                        { icone: '✡\uFE0E', rotulo: 'Cabala', valor: `Sephirah ${SEPHIROTH[n]}; letra ${LETRAS_HEBRAICAS[naipe.letra][0]} (${LETRAS_HEBRAICAS[naipe.letra][1]}) do Nome divino` },
                         { icone: '☿', rotulo: 'Planetária', valor: dec ? dec[0] : 'Sem planeta (raiz do naipe)' },
                         { icone: '✦', rotulo: 'Nome original', valor: `${NUMEROS_EXTENSO_EN[n]} of ${naipe.en}` },
                         { icone: '☥', rotulo: 'Classificação', valor: `Arcano Menor, naipe de ${naipe.pt}` }
@@ -1848,7 +1853,7 @@ Lembre-se: responda obrigatoriamente em texto corrido dissertativo, sem saudaç�
                         { icone: '☉', rotulo: 'Astrologia', valor: c.zod ? c.zod[menor[1]] : 'Sem faixa zodiacal própria (governa um quadrante celeste)' },
                         { icone: '△', rotulo: 'Elemento', valor: `${c.elem} do naipe de ${naipe.pt} (${naipe.elem})` },
                         { icone: '#', rotulo: 'Número', valor: `${n} (carta da corte)` },
-                        { icone: '✡', rotulo: 'Cabala', valor: `Letra ${LETRAS_HEBRAICAS[c.letra][0]} (${LETRAS_HEBRAICAS[c.letra][1]}) do Nome divino; Sephirah ${c.sef}` },
+                        { icone: '✡\uFE0E', rotulo: 'Cabala', valor: `Letra ${LETRAS_HEBRAICAS[c.letra][0]} (${LETRAS_HEBRAICAS[c.letra][1]}) do Nome divino; Sephirah ${c.sef}` },
                         { icone: '☿', rotulo: 'Planetária', valor: 'Conforme os signos do trecho zodiacal' },
                         { icone: '✦', rotulo: 'Nome original', valor: `${c.en} of ${naipe.en}` },
                         { icone: '☥', rotulo: 'Classificação', valor: `Arcano Menor (corte), naipe de ${naipe.pt}` }

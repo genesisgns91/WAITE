@@ -17,7 +17,7 @@
  *   - roxo reservado ao Tarot/IA
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Symbols:wght@400;600&family=Noto+Sans+Symbols+2&family=Noto+Sans+Math&display=swap');
 
 /* =========================================================
    TOKENS GLOBAIS PADRONIZADOS
@@ -82,7 +82,7 @@
     --app-max-width: 480px;
 
     --fonte-display: 'Cinzel', Georgia, serif;
-    --fonte-corpo: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --fonte-corpo: 'Inter', 'Noto Sans Symbols', 'Noto Sans Symbols 2', 'Noto Sans Math', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* =========================================================
@@ -1960,3 +1960,591 @@ button:disabled, .btn-ia-action:disabled {
 .modal-box {
     background: var(--bg-card-vidro);
 }
+
+/* =========================================================================
+   REDESIGN 2026 — "CÉU SERENO"
+   -------------------------------------------------------------------------
+   Camada final de design, comum às quatro telas. Ela vem POR ÚLTIMO de
+   propósito: refina o visual sem mexer na lógica nem nos ids/classes que o
+   JavaScript usa.
+
+   Princípios:
+   1. Vidro suave em vez de caixas com borda marcada (nada de "retrô").
+   2. Espaço de tela aproveitado: container fluido + barra lateral fixa.
+   3. Um único sistema de ícones: SVG em traço fino (sem emoji).
+   4. Paleta serena e mística: índigo profundo, periwinkle, violeta e ouro.
+   ========================================================================= */
+
+:root {
+    --gutter: clamp(16px, 2.6vw, 56px);
+    --app-max-width: 2200px;
+    --raio: 18px;
+    --raio-sm: 12px;
+    --raio-lg: 24px;
+    --linha: rgba(170, 185, 255, 0.13);
+    --linha-forte: rgba(170, 185, 255, 0.26);
+    --vidro: linear-gradient(155deg, rgba(34, 43, 84, 0.52) 0%, rgba(17, 22, 46, 0.58) 100%);
+    --vidro-claro: rgba(255, 255, 255, 0.04);
+    --sombra-card: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 48px -28px rgba(0, 0, 0, 0.7);
+    --brilho: 0 0 0 3px rgba(124, 147, 255, 0.18);
+    --texto: #d9dcee;
+    --texto-fraco: #959bbd;
+    --salvia: #5fb59a;
+    --transicao: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { font-variant-emoji: text; }
+body { font-variant-emoji: text; font-feature-settings: 'kern', 'liga'; -webkit-font-smoothing: antialiased; }
+
+/* ---------- Fundo: estrelas continuam; ganha uma aurora muito suave ---------- */
+body {
+    padding: 0;
+    align-items: stretch;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 55% 40% at 12% 8%, rgba(124, 147, 255, 0.11), transparent 70%),
+        radial-gradient(ellipse 45% 38% at 92% 18%, rgba(155, 128, 234, 0.10), transparent 70%),
+        radial-gradient(ellipse 50% 40% at 70% 100%, rgba(95, 181, 154, 0.07), transparent 70%);
+}
+.app-header, .page-hero, .app-layout { position: relative; z-index: 1; }
+
+/* ---------- Barra superior ---------- */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 1600;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--linha);
+    border-radius: 0;
+    text-align: left;
+    background: rgba(10, 13, 29, 0.66);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+}
+.app-header-inner {
+    max-width: var(--app-max-width);
+    margin: 0 auto;
+    padding: 12px var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.brand-mark { width: 30px; height: 30px; filter: drop-shadow(0 0 8px rgba(227, 179, 97, 0.35)); }
+.brand-nome {
+    font-family: var(--fonte-display);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: 0.32em;
+    background: linear-gradient(120deg, #f3d9a0, #e3b361 55%, #c9b3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.app-nav {
+    display: flex;
+    gap: 4px;
+    margin: 0 auto;
+    padding: 4px;
+    justify-content: center;
+    flex-wrap: nowrap;
+    background: var(--vidro-claro);
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+}
+.nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 18px;
+    min-height: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--texto-fraco);
+    font-size: 0.86rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition: color var(--transicao), background var(--transicao), box-shadow var(--transicao);
+}
+.nav-ico { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.9; }
+.nav-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.06); border: 0; }
+.nav-tab.active,
+body:has(#cardPickerModal) .nav-tab.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(124, 147, 255, 0.30), rgba(155, 128, 234, 0.24));
+    box-shadow: 0 0 0 1px rgba(160, 175, 255, 0.34) inset, 0 8px 24px -8px rgba(124, 147, 255, 0.45);
+}
+.nav-tab.active .nav-ico { color: var(--ouro); opacity: 1; }
+.nav-util {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--texto-fraco);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transicao);
+}
+.nav-util .nav-ico { width: 15px; height: 15px; }
+.nav-util:hover { color: #fff; border-color: var(--linha-forte); background: var(--vidro-claro); }
+.nav-util:hover .nav-ico { transform: rotate(180deg); transition: transform 0.5s ease; }
+
+/* ---------- Título da página ---------- */
+.page-hero {
+    width: 100%;
+    max-width: var(--app-max-width);
+    margin: 0 auto;
+    padding: clamp(22px, 3.2vw, 44px) var(--gutter) clamp(14px, 2vw, 26px);
+    text-align: left;
+}
+.page-hero h1 {
+    font-family: var(--fonte-display);
+    font-weight: 600;
+    font-size: clamp(1.35rem, 2.3vw, 2.1rem);
+    letter-spacing: 0.16em;
+    line-height: 1.2;
+    background: linear-gradient(100deg, #fff 0%, #f1dcab 45%, #bfa8ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.page-hero p {
+    margin-top: 8px;
+    font-size: 0.92rem;
+    color: var(--texto-fraco);
+    letter-spacing: 0.02em;
+}
+.page-hero::after {
+    content: '';
+    display: block;
+    width: 84px;
+    height: 2px;
+    margin-top: 16px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--ouro), transparent);
+}
+
+/* ---------- Container fluido ---------- */
+.app-layout {
+    width: 100%;
+    max-width: var(--app-max-width);
+    margin: 0 auto;
+    padding: 0 var(--gutter) 72px;
+    gap: 24px;
+}
+
+/* Barra lateral (formulário + pessoas) + conteúdo principal */
+.app-sidebar, .app-main { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+@media (min-width: 1100px) {
+    .app-layout-split {
+        display: grid;
+        grid-template-columns: clamp(330px, 22vw, 420px) minmax(0, 1fr);
+        gap: clamp(22px, 2vw, 36px);
+        align-items: start;
+    }
+    .app-sidebar {
+        position: sticky;
+        top: 86px;
+        max-height: calc(100vh - 106px);
+        overflow-y: auto;
+        padding: 2px 6px 2px 2px;
+        margin: -2px -6px -2px -2px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(124, 147, 255, 0.28) transparent;
+    }
+    .app-sidebar .controls { grid-template-columns: 1fr 1fr; }
+    .app-sidebar .controls .input-group.span-2,
+    .app-sidebar .controls .input-group.full { grid-column: 1 / -1; }
+}
+
+/* ---------- Cartões em vidro ---------- */
+.controls, .card-table, .chart-card, .balance-card, .esoteric-card, .wheel-panel,
+.positions-panel, .history-section, .ia-section, .spread-display, .sintese-box,
+.day-detail-card, .chat-section {
+    background: var(--vidro);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-card);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+}
+.controls { padding: 22px; gap: 14px; }
+.card-table, .chart-card, .wheel-panel, .positions-panel, .esoteric-card { padding: 22px 24px; }
+.balance-card { padding: 20px 22px; }
+.esoteric-card.card-natal-highlight {
+    border-color: rgba(124, 147, 255, 0.34);
+    background: linear-gradient(155deg, rgba(48, 60, 120, 0.46), rgba(18, 23, 48, 0.58));
+}
+.sintese-box {
+    padding: 24px 28px;
+    border-color: rgba(155, 128, 234, 0.34);
+    background: linear-gradient(155deg, rgba(76, 58, 140, 0.34), rgba(18, 22, 48, 0.58));
+}
+.card-table:hover, .balance-card:hover, .esoteric-card:hover, .chart-card:hover {
+    border-color: var(--linha-forte);
+    box-shadow: var(--sombra-card), 0 0 40px -12px rgba(124, 147, 255, 0.25);
+}
+
+/* Títulos dos cartões */
+.card-table h3, .chart-card h2, .balance-card h3, .esoteric-card h3,
+.wheel-panel-header h2, .positions-panel-header h2, .history-section h3, .ia-section h3 {
+    font-family: var(--fonte-display);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: 0.07em;
+    color: #e9ecff;
+    border: 0;
+    padding-bottom: 0;
+}
+.card-table h3 { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.balance-card-header { border: 0; padding-bottom: 0; margin-bottom: 18px; }
+.esoteric-card h3 { border: 0; padding-bottom: 0; margin-bottom: 16px; }
+.chart-card-header { margin-bottom: 16px; }
+.card-table h3 .ico, .esoteric-card h3 .ico { color: var(--ouro); }
+
+/* ---------- Formulário ---------- */
+label { font-size: 0.74rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-fraco); }
+input, select, textarea {
+    background: rgba(8, 11, 26, 0.55);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio-sm);
+    padding: 11px 14px;
+    font-size: 0.92rem;
+    transition: border-color var(--transicao), box-shadow var(--transicao), background var(--transicao);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--linha-forte); }
+input:focus, select:focus, textarea:focus {
+    border-color: rgba(124, 147, 255, 0.7);
+    background: rgba(8, 11, 26, 0.75);
+    box-shadow: var(--brilho);
+}
+.geo-search-container { gap: 8px; }
+
+/* ---------- Botões ---------- */
+.btn-primary {
+    background: linear-gradient(135deg, #4fa88f 0%, #3f8fa3 100%);
+    border-radius: 14px;
+    letter-spacing: 0.03em;
+    box-shadow: 0 10px 26px -10px rgba(79, 168, 143, 0.65);
+}
+.btn-primary:hover, .btn-primary:active {
+    background: linear-gradient(135deg, #5cbba0 0%, #4aa0b6 100%);
+    box-shadow: 0 14px 30px -10px rgba(79, 168, 143, 0.8);
+}
+.btn-search-geo {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(124, 147, 255, 0.14);
+    border: 1px solid rgba(124, 147, 255, 0.32);
+    color: #dfe5ff;
+    border-radius: var(--raio-sm);
+    padding: 0 16px;
+}
+.btn-search-geo:hover { background: rgba(124, 147, 255, 0.26); }
+.btn-search-geo[style*="8957e5"] {
+    background: rgba(155, 128, 234, 0.22) !important;
+    border-color: rgba(155, 128, 234, 0.5);
+}
+.btn-ia {
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: linear-gradient(135deg, rgba(155, 128, 234, 0.92), rgba(227, 179, 97, 0.92));
+    box-shadow: 0 8px 20px -10px rgba(155, 128, 234, 0.8);
+}
+.btn-save-reading {
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e8bd6d, #d79f4a);
+    box-shadow: 0 10px 24px -12px rgba(227, 179, 97, 0.9);
+}
+.btn-ia-action, .btn-sm {
+    border-radius: 999px;
+    background: var(--vidro-claro);
+    border: 1px solid var(--linha);
+    color: #d6dbf5;
+    padding: 7px 14px;
+}
+.btn-use { background: rgba(124, 147, 255, 0.22); border: 1px solid rgba(124, 147, 255, 0.4); color: #fff; }
+.btn-ia-action:hover:not(:disabled), .btn-sm:hover { border-color: var(--ia-color); background: rgba(155, 128, 234, 0.16); color: #fff; }
+
+/* ---------- Ícones em linha ---------- */
+.ico {
+    display: inline-flex;
+    width: 1.12em;
+    height: 1.12em;
+    vertical-align: -0.2em;
+    flex-shrink: 0;
+}
+.ico svg { width: 100%; height: 100%; display: block; }
+.ico + .ico { margin-left: 0.15em; }
+.ico-azul { color: #58a6ff; }
+button .ico, .nav-tab .ico { margin-right: 0; }
+.arrow-icon { display: inline-flex; align-items: center; color: var(--texto-fraco); transition: transform var(--transicao); }
+.arrow-icon .ico { width: 1em; height: 1em; }
+.geo-status .ico { color: var(--salvia); margin-right: 4px; }
+
+/* ---------- Painéis: dashboard, balanços e listas ---------- */
+.dashboard-grid { gap: 24px; }
+.balance-container { gap: 20px; }
+@media (min-width: 860px) {
+    .dashboard-grid { grid-template-columns: minmax(380px, 0.95fr) minmax(0, 1.4fr); }
+    .transitos-dashboard { grid-template-columns: minmax(380px, 0.95fr) minmax(0, 1.1fr); gap: 24px; }
+    .sol-lua-grid { gap: 22px; }
+    .expand-list, .topicos-estudo-grid { column-count: auto; column-width: 400px; column-gap: 18px; }
+}
+@media (min-width: 1180px) {
+    .expand-list, .topicos-estudo-grid { column-count: auto; column-width: 400px; }
+}
+.grid-3-colunas { gap: 22px; }
+.chart-card { align-items: stretch; }
+.chart-card svg { max-width: 640px; margin: 0 auto; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.45)); }
+.bar-bg, .element-bar-container { border-radius: 999px; }
+.bar-fill { border-radius: 999px; }
+
+/* Acordeões */
+.expand-card {
+    background: var(--vidro-claro);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    margin-bottom: 12px;
+    transition: border-color var(--transicao), background var(--transicao), transform var(--transicao);
+}
+.expand-card:hover { border-color: rgba(124, 147, 255, 0.4); background: rgba(124, 147, 255, 0.06); }
+.expand-header { padding: 14px 16px; background: transparent; gap: 10px; }
+.expand-content {
+    background: rgba(6, 9, 22, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 18px;
+    line-height: 1.7;
+    color: #a9aecb;
+}
+.expand-badge, .badge-aspecto, .badge-tempo, .chip, .tag-natal, .tag-ceu, .tag-invertida {
+    border-radius: 999px;
+}
+.expand-card.card-natal-border { border-color: rgba(124, 147, 255, 0.4); }
+.expand-list { gap: 12px; }
+.empty-state { color: var(--texto-fraco); font-size: 0.9rem; line-height: 1.6; }
+#pessoasSalvasList:empty::before { content: ''; }
+
+/* Lista de pessoas salvas / estado vazio (evita quebra em colunas) */
+#pessoasSalvasList { column-count: 1 !important; display: flex; flex-direction: column; gap: 10px; }
+
+/* ---------- Modais e sobreposições ---------- */
+.modal-overlay { background: rgba(5, 7, 18, 0.72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.modal-card, .modal-box {
+    background: linear-gradient(160deg, rgba(30, 38, 76, 0.94), rgba(14, 18, 40, 0.96));
+    border: 1px solid var(--linha-forte);
+    border-radius: var(--raio-lg);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
+}
+.modal-header { border-bottom: 1px solid var(--linha); }
+
+/* Rolagem discreta */
+* { scrollbar-width: thin; scrollbar-color: rgba(124, 147, 255, 0.28) transparent; }
+
+/* Toasts */
+.toast { border-radius: 14px; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+
+/* ---------- Astro Tarot: duas colunas no desktop ---------- */
+@media (min-width: 1100px) {
+    .app-layout-tarot {
+        display: grid;
+        grid-template-columns: clamp(360px, 27vw, 480px) minmax(0, 1fr);
+        gap: clamp(22px, 2vw, 36px);
+        align-items: start;
+    }
+    .app-layout-tarot .col-left {
+        position: sticky;
+        top: 86px;
+        max-height: calc(100vh - 106px);
+        overflow-y: auto;
+    }
+}
+.app-layout-tarot .controls, .app-layout-tarot .ia-section, .app-layout-tarot .history-section { padding: 24px; }
+.ia-section { border-color: rgba(155, 128, 234, 0.3); }
+
+/* ---------- Celular: mantém a barra inferior; cabeçalho enxuto ---------- */
+@media (max-width: 759px) {
+    .app-header-inner { padding: 10px 16px; justify-content: space-between; }
+    .app-nav { display: none; }
+    .nav-util span { display: none; }
+    .nav-util { padding: 9px; }
+    .page-hero { padding: 18px 16px 12px; }
+    .page-hero h1 { letter-spacing: 0.1em; }
+    .app-layout { padding: 0 14px 90px; gap: 18px; }
+    .controls, .card-table, .chart-card, .esoteric-card, .wheel-panel, .positions-panel { padding: 16px; }
+    .app-sidebar, .app-main { gap: 18px; }
+}
+@media (min-width: 760px) and (max-width: 1099px) {
+    .nav-tab span { display: none; }
+    .nav-tab { padding: 10px 16px; }
+    .nav-util span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-util:hover .nav-ico { transform: none; }
+}
+
+/* ---------- Ajustes finos (rodada 2) ---------- */
+@media (min-width: 860px) {
+    /* Balanços empilhados ao lado da roda: cada cartão ganha largura de leitura */
+    .balance-container { grid-template-columns: 1fr; align-content: stretch; gap: 18px; }
+    .balance-card { height: auto; }
+}
+@media (min-width: 2100px) {
+    .balance-container { grid-template-columns: repeat(2, 1fr); }
+}
+.input-group:has(> #fuso) { grid-column: 1 / -1; }
+.card-table h3 { font-size: 0.95rem; letter-spacing: 0.05em; line-height: 1.35; }
+
+/* ---------- Ajustes finos (rodada 3): fim das bordas tracejadas e abas ---------- */
+.input-group.highlight, .periodo-analise-box {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(227, 179, 97, 0.10), rgba(227, 179, 97, 0.03));
+    border: 1px solid rgba(227, 179, 97, 0.28);
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+.btn-random {
+    background: rgba(227, 179, 97, 0.08);
+    border: 1px solid rgba(227, 179, 97, 0.32);
+    border-radius: 999px;
+    padding: 9px 16px;
+}
+.btn-random:hover { background: rgba(227, 179, 97, 0.16); }
+.chat-section { border-top: 1px solid var(--linha); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.ia-output {
+    background: rgba(6, 9, 22, 0.45);
+    border: 1px solid var(--linha);
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+.section-form-title { border-bottom: 1px solid var(--linha); letter-spacing: 0.1em; }
+.invert-toggle { border-radius: 999px; border-color: var(--linha); }
+.chip { background: var(--vidro-claro); border-color: var(--linha); }
+.chip.active, .chip.selected { background: rgba(155, 128, 234, 0.3); border-color: rgba(155, 128, 234, 0.6); color: #fff; }
+
+/* Abas de modo do Tarot: mesma linguagem do menu principal */
+.modo-tabs {
+    background: var(--vidro-claro);
+    border: 1px solid var(--linha);
+    padding: 4px;
+    margin: 0 auto 26px;
+    position: relative;
+    z-index: 1;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+.modo-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 0.86rem;
+}
+.modo-tab.active {
+    background: linear-gradient(135deg, rgba(124, 147, 255, 0.30), rgba(155, 128, 234, 0.28));
+    color: #fff;
+    box-shadow: 0 0 0 1px rgba(160, 175, 255, 0.34) inset, 0 8px 24px -8px rgba(124, 147, 255, 0.45);
+}
+
+/* O Tarot usa o mesmo espaçamento lateral das demais páginas */
+.modo-tabs, .app-layout-tarot { position: relative; z-index: 1; }
+
+/* ---------- Ajustes finos (rodada 4): desempenho e Tarot ----------
+   O fundo estrelado anima continuamente; desfoque de fundo (backdrop-filter)
+   em cada cartão obrigaria o navegador a refazer o blur a cada quadro. Por isso
+   o "vidro" dos cartões é só translúcido (as estrelas aparecem por trás), e o
+   desfoque real fica restrito ao menu superior e aos modais. */
+.controls, .card-table, .chart-card, .balance-card, .esoteric-card, .wheel-panel,
+.positions-panel, .history-section, .ia-section, .spread-display, .sintese-box,
+.day-detail-card, .chat-section, .modo-tabs {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 10px 28px -22px rgba(0, 0, 0, 0.6);
+}
+.card-table:hover, .balance-card:hover, .esoteric-card:hover, .chart-card:hover {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07) inset, 0 12px 30px -20px rgba(124, 147, 255, 0.35);
+}
+.app-layout-tarot .controls { grid-template-columns: 1fr; }
+input[type="checkbox"], input[type="radio"] {
+    width: auto;
+    padding: 0;
+    accent-color: #9b80ea;
+    background: transparent;
+}
+.history-select-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--linha);
+    border-radius: 999px;
+    background: var(--vidro-claro);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.8rem;
+    color: #d6dbf5;
+}
+
+/* ---------- Ajustes finos (rodada 5): vidro liso ----------
+   Fundo translúcido uniforme (sem degradê nem sombra grande) nos cartões:
+   é mais leve para o navegador e evita faixas de renderização em painéis altos. */
+:root { --vidro: rgba(22, 29, 60, 0.58); }
+.controls, .card-table, .chart-card, .balance-card, .esoteric-card, .wheel-panel,
+.positions-panel, .history-section, .ia-section, .spread-display, .sintese-box,
+.day-detail-card {
+    background: var(--vidro);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.esoteric-card.card-natal-highlight { background: rgba(38, 50, 104, 0.5); }
+.sintese-box { background: rgba(62, 48, 120, 0.38); }
+.card-table:hover, .balance-card:hover, .esoteric-card:hover, .chart-card:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Listas longas (posições, casas, aspectos, temas): em telas largas viram uma grade
+   de cartões independentes — cada um abre sem empurrar ou esticar os vizinhos. */
+@media (min-width: 860px) {
+    #astrosExpandList, #casasExpandList, #aspectosExpandList, #temasExpandList {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+        gap: 14px;
+        align-items: start;
+        column-count: auto;
+    }
+    #astrosExpandList .expand-card, #casasExpandList .expand-card,
+    #aspectosExpandList .expand-card, #temasExpandList .expand-card { margin-bottom: 0; }
+}
+@media (min-width: 860px) {
+    #astrosExpandList .expand-card.open, #casasExpandList .expand-card.open,
+    #aspectosExpandList .expand-card.open, #temasExpandList .expand-card.open { grid-column: 1 / -1; }
+    .expand-card.open .expand-content { max-width: 110ch; }
+}
+.input-group.highlight, .periodo-analise-box { background: rgba(227, 179, 97, 0.07); }
