@@ -2777,3 +2777,72 @@ input[type="checkbox"], input[type="radio"] {
     padding: 22px 0 0;
 }
 .app-layout-tarot .history-section { border: 0; }
+
+/* =========================================================================
+   Barra lateral sem rolagem interna + Mesa Virtual vazia + modo aplicativo
+   ========================================================================= */
+
+/* A barra lateral só "gruda" na tela quando cabe inteira nela (pwa.js marca
+   .sidebar-livre quando é mais alta que a janela). Assim nunca aparece uma
+   barra de rolagem dentro dela: se a lista crescer, a página rola normalmente. */
+@media (min-width: 1100px) {
+    .app-sidebar, .app-layout-tarot .col-left { max-height: none; overflow: visible; }
+    .app-sidebar.sidebar-livre, .app-layout-tarot .col-left.sidebar-livre { position: static; }
+}
+
+/* ---------- Mesa Virtual: baralho de costas ---------- */
+.mesa-vazia {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: 18px 0 8px;
+}
+.baralho-pilha { position: relative; width: 150px; height: 250px; animation: baralho-flutua 7s ease-in-out infinite; }
+.carta-verso {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 50% 42%, rgba(155, 128, 234, 0.28), transparent 62%),
+        radial-gradient(circle at 18% 14%, rgba(227, 179, 97, 0.16) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 82% 22%, rgba(227, 179, 97, 0.14) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 24% 86%, rgba(227, 179, 97, 0.14) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 78% 82%, rgba(227, 179, 97, 0.16) 0 1.5px, transparent 2px),
+        linear-gradient(160deg, #1d2457 0%, #0d1130 100%);
+    border: 1px solid rgba(227, 179, 97, 0.55);
+    box-shadow: 0 18px 34px -16px rgba(0, 0, 0, 0.85), inset 0 0 0 7px #0f1334, inset 0 0 0 8px rgba(227, 179, 97, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.carta-verso.v3 { transform: translate(-14px, 8px) rotate(-7deg); opacity: 0.55; }
+.carta-verso.v2 { transform: translate(-7px, 4px) rotate(-3.5deg); opacity: 0.8; }
+.carta-verso.v1 { transform: none; }
+.verso-marca { width: 54%; height: auto; filter: drop-shadow(0 0 14px rgba(227, 179, 97, 0.35)); }
+.mesa-vazia-texto { max-width: 46ch; text-align: center; color: var(--texto-fraco); font-size: 0.9rem; line-height: 1.65; margin: 0; }
+@keyframes baralho-flutua { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .baralho-pilha { animation: none; } }
+
+/* ---------- Instalar app / modo aplicativo ---------- */
+.nav-util.nav-instalar {
+    border-color: rgba(227, 179, 97, 0.45);
+    color: #f1dcab;
+    background: rgba(227, 179, 97, 0.08);
+}
+.nav-util.nav-instalar:hover { background: rgba(227, 179, 97, 0.16); color: #fff; }
+.nav-util.nav-instalar:hover .nav-ico { transform: none; }
+.nav-util[hidden] { display: none; }
+@media (max-width: 759px) {
+    .nav-util.nav-instalar span { display: inline; }
+    .app-header-inner { gap: 10px; }
+}
+.app-header-inner .nav-grupo { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+html { -webkit-tap-highlight-color: transparent; }
+@media (display-mode: standalone), (display-mode: minimal-ui) {
+    html, body { overscroll-behavior-y: none; }
+    .nav-instalar { display: none; }
+}
+.bottom-tabbar { padding-bottom: env(safe-area-inset-bottom); }
