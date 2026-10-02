@@ -2548,3 +2548,232 @@ input[type="checkbox"], input[type="radio"] {
     .expand-card.open .expand-content { max-width: 110ch; }
 }
 .input-group.highlight, .periodo-analise-box { background: rgba(227, 179, 97, 0.07); }
+
+/* =========================================================================
+   REDESIGN 2026 — RODADA 6: UM ÚNICO PAINEL, COM REPARTIÇÕES
+   -------------------------------------------------------------------------
+   Em vez de vários cartões soltos (de alturas diferentes, com vãos entre
+   eles), cada tela agora é UMA superfície de vidro. Dentro dela:
+     • barra lateral | conteúdo, separados por uma linha fina;
+     • seções empilhadas, separadas por linhas que se dissolvem nas pontas;
+     • colunas lado a lado sempre com a mesma altura e linhas verticais.
+   Nenhum bloco tem fundo ou borda próprios: só o painel geral.
+   ========================================================================= */
+:root {
+    --painel-bg: rgba(15, 20, 44, 0.58);
+    --linha-suave: rgba(160, 175, 255, 0.14);
+    --pad-secao: clamp(22px, 2.1vw, 40px);
+    --linha-grad-h: linear-gradient(90deg, transparent 0%, rgba(160, 175, 255, 0.26) 10%, rgba(160, 175, 255, 0.26) 90%, transparent 100%);
+}
+
+/* ---------- O painel geral ---------- */
+.app-layout-split, .app-layout-tarot {
+    width: calc(100% - 2 * var(--gutter));
+    max-width: calc(var(--app-max-width) - 2 * var(--gutter));
+    margin: 0 auto 72px;
+    padding: 0;
+    gap: 0;
+    background: var(--painel-bg);
+    border: 1px solid var(--linha);
+    border-radius: 28px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 40px 80px -50px rgba(0, 0, 0, 0.85);
+    overflow: clip;
+}
+@media (min-width: 1100px) {
+    .app-layout-split { grid-template-columns: clamp(330px, 21vw, 410px) minmax(0, 1fr); gap: 0; align-items: stretch; }
+    .app-layout-tarot { grid-template-columns: clamp(360px, 26vw, 470px) minmax(0, 1fr); gap: 0; align-items: stretch; }
+}
+
+/* ---------- Barra lateral ---------- */
+.app-sidebar, .app-layout-tarot .col-left {
+    gap: 0;
+    padding: var(--pad-secao);
+    margin: 0;
+    min-width: 0;
+}
+@media (min-width: 1100px) {
+    .app-sidebar, .app-layout-tarot .col-left {
+        position: sticky;
+        top: 70px;
+        align-self: start;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+    }
+}
+.app-sidebar > *, .app-layout-tarot .col-left > * {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+.app-sidebar > * + *, .app-layout-tarot .col-left > * + * {
+    margin-top: 26px;
+    padding-top: 26px;
+    background-image: var(--linha-grad-h);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: top;
+}
+
+/* ---------- Conteúdo principal ---------- */
+.app-main, .app-layout-tarot .col-right { gap: 0; padding: 0; min-width: 0; }
+@media (min-width: 1100px) {
+    .app-main, .app-layout-tarot .col-right { border-left: 1px solid var(--linha-suave); }
+}
+@media (max-width: 1099px) {
+    .app-main, .app-layout-tarot .col-right { border-top: 1px solid var(--linha-suave); }
+}
+
+/* Cada filho direto é uma seção do mesmo painel */
+.app-main > *, .app-layout-tarot .col-right > * {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: var(--pad-secao);
+}
+.app-main > * + *, .app-layout-tarot .col-right > * + * {
+    background-image: var(--linha-grad-h);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: top;
+}
+.app-layout-tarot .col-right > .spread-display:empty { display: none; }
+
+/* Grades dentro do painel: colunas sem vão, mesma altura, linha vertical entre elas */
+.app-main > .dashboard-grid,
+.app-main > .transitos-dashboard,
+.app-main > .grid-3-colunas,
+.app-main > .sol-lua-grid { padding: 0; gap: 0; align-items: stretch; }
+
+@media (min-width: 860px) {
+    .app-main > .dashboard-grid { grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr); }
+    .app-main > .transitos-dashboard { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); }
+    .app-main > .grid-3-colunas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .app-main > .sol-lua-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .app-main > .dashboard-grid > * + *,
+    .app-main > .transitos-dashboard > * + *,
+    .app-main > .grid-3-colunas > * + *,
+    .app-main > .sol-lua-grid > * + * {
+        background-image: linear-gradient(180deg, transparent 0%, rgba(160, 175, 255, 0.24) 8%, rgba(160, 175, 255, 0.24) 92%, transparent 100%);
+        background-size: 1px 100%;
+        background-repeat: no-repeat;
+        background-position: left;
+    }
+}
+@media (max-width: 859px) {
+    .app-main > .dashboard-grid > * + *,
+    .app-main > .transitos-dashboard > * + *,
+    .app-main > .grid-3-colunas > * + *,
+    .app-main > .sol-lua-grid > * + * {
+        background-image: var(--linha-grad-h);
+        background-size: 100% 1px;
+        background-repeat: no-repeat;
+        background-position: top;
+    }
+}
+
+/* Colunas internas: sem caixa própria */
+.app-main .chart-card, .app-main .wheel-panel, .app-main .positions-panel,
+.app-main .balance-container, .app-main .esoteric-card {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: var(--pad-secao);
+}
+.app-main .dashboard-grid > .balance-container,
+.app-main .app-main > .balance-container { padding: 0; }
+
+/* Coluna dos balanços: três faixas que preenchem toda a altura da roda */
+.app-main .balance-container { display: flex; flex-direction: column; gap: 0; }
+.app-main .balance-container .balance-card {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: clamp(18px, 1.6vw, 28px) var(--pad-secao);
+}
+.app-main .balance-container .balance-card + .balance-card {
+    background-image: var(--linha-grad-h);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: top;
+}
+
+/* Destaques viram faixas translúcidas, não caixas */
+.app-main .esoteric-card.card-natal-highlight,
+.app-main > .esoteric-card.card-natal-highlight { background-color: rgba(124, 147, 255, 0.045); }
+.app-main > .sintese-box { background-color: rgba(155, 128, 234, 0.07); }
+
+/* Neutraliza o brilho ao passar o mouse (agora não há caixas) */
+.app-main > *:hover, .app-main .chart-card:hover, .app-main .balance-card:hover,
+.app-main .esoteric-card:hover, .app-sidebar > *:hover {
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* Cabeçalho de cada seção: um fio dourado discreto à esquerda do título */
+.app-main > .card-table > h3,
+.app-main .esoteric-card > h3,
+.app-main .chart-card-header h2,
+.app-main .wheel-panel-header h2,
+.app-main .positions-panel-header h2,
+.app-main .balance-card-header h3 {
+    position: relative;
+}
+.app-main > .card-table > h3 { margin-bottom: 18px; }
+
+/* Listas: itens continuam sendo pequenos cartões — são conteúdo, não estrutura */
+.expand-card { background: rgba(255, 255, 255, 0.035); }
+
+/* ---------- Tarot dentro do painel ---------- */
+.app-layout-tarot .col-left > .controls,
+.app-layout-tarot .col-right > .ia-section,
+.app-layout-tarot .col-right > .history-section,
+.app-layout-tarot .col-left > .history-section { padding-left: 0; padding-right: 0; }
+.app-layout-tarot .col-right > .ia-section,
+.app-layout-tarot .col-right > .history-section { padding: var(--pad-secao); }
+.app-layout-tarot .col-left > * + * { margin-top: 26px; padding-top: 26px; }
+.app-layout-tarot .col-left > .controls { padding: 0; }
+
+/* ---------- Celular ---------- */
+@media (max-width: 759px) {
+    .app-layout-split, .app-layout-tarot { width: calc(100% - 28px); border-radius: 22px; margin-bottom: 90px; }
+    .app-sidebar, .app-layout-tarot .col-left { padding: 18px; }
+    .app-main > *, .app-layout-tarot .col-right > * { padding: 20px 18px; }
+    .app-main .chart-card, .app-main .wheel-panel, .app-main .positions-panel, .app-main .esoteric-card { padding: 20px 18px; }
+    .app-main .balance-container .balance-card { padding: 18px; }
+}
+
+/* Título do formulário lateral */
+.app-sidebar > .controls[data-titulo]::before {
+    content: attr(data-titulo);
+    grid-column: 1 / -1;
+    font-family: var(--fonte-display);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: 0.07em;
+    color: #e9ecff;
+    margin-bottom: 4px;
+}
+
+/* Tarot: o diálogo com a IA vira uma repartição interna, sem caixa */
+.app-layout-tarot .chat-section {
+    border: 0;
+    border-top: 1px solid var(--linha-suave);
+    border-radius: 0;
+    background: transparent;
+    margin-top: 22px;
+    padding: 22px 0 0;
+}
+.app-layout-tarot .history-section { border: 0; }

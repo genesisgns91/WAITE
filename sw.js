@@ -1,4 +1,4 @@
-const CACHE_NAME = 'waite-v7';
+const CACHE_NAME = 'waite-v8';
 const urlsToCache = [
   './',
   './index.html',
