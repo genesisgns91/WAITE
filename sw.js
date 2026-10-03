@@ -14,7 +14,7 @@
  * Para publicar uma versão nova, basta trocar VERSAO abaixo.
  * ---------------------------------------------------------------------------
  */
-const VERSAO = 'v9';
+const VERSAO = 'v10';
 const CACHE_SHELL = `astro-shell-${VERSAO}`;
 const CACHE_IMG = 'astro-img-v1';      // persiste entre versões (cartas são grandes)
 const CACHE_CDN = 'astro-cdn-v1';

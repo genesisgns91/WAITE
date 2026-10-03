@@ -383,11 +383,13 @@
         // próximo é tentado automaticamente. Só se TODOS falharem é que um
         // erro é mostrado.
         const PROXIES_WORKERS = [
-            "https://astro2.genesisgns.workers.dev/",
+            "https://certificados-groq-proxy.genesisgns.workers.dev/",
+            "https://gns91-groq-proxy.genesisgns.workers.dev/",
+            "https://forzion-gpt-proxy.genesisgns.workers.dev/",
             "https://mamoot-gpt-proxy.genesisgns.workers.dev/",
             "https://astro-gns-proxy.genesisgns.workers.dev/",
-            "https://forzion-gpt-proxy.genesisgns.workers.dev/",
             "https://shiny-sky-21dd.genesisgns.workers.dev/",
+            "https://astro2.genesisgns.workers.dev/",
             "https://interno.genesisgns.workers.dev/"
         ];
 
@@ -1028,7 +1030,9 @@ Se reproduzir uma ideia, conceito, classificação ou formulação claramente as
 
 TAREFA:
 Escreva um estudo aprofundado, claro e didático sobre a carta de Tarot indicada, abordando exclusivamente a sessão "${topico.titulo}" (${topico.descricao}). Escopo obrigatório desta sessão, a ser seguido de forma integral e em texto dissertativo, incluindo somente o que for pertinente a esta carta: ${topico.escopo || topico.descricao}
-Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. Desenvolva com profundidade real, em seis a dez parágrafos bem elaborados, com precisão conceitual, exemplos concretos e nuances, evitando generalidades vagas e repetições.`;
+Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta.
+CONTINUIDADE: esta sessão é um trecho de um ensaio contínuo, lido em sequência com as demais. Quando a mensagem trouxer um bloco "CONTEXTO DO ESTUDO", siga rigorosamente as "REGRAS DE CONTINUIDADE": não repita o que as sessões anteriores já disseram, escreva como o próximo parágrafo do mesmo texto e traga somente conteúdo novo. A primeira frase pode, de modo natural, apoiar-se no que já foi dito (sem anunciar o que virá), desde que já avance para o eixo desta sessão.
+Desenvolva com profundidade real, em cinco a oito parágrafos bem elaborados, com precisão conceitual, exemplos concretos e nuances, e sem generalidades vagas nem repetições (dentro da sessão ou em relação às anteriores).`;
         }
 
 
@@ -1107,6 +1111,78 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
             showToast('✨ Estudo completo gerado. Guarde-o no histórico.', 'sucesso');
         }
 
+
+        // ==================== CONTINUIDADE ENTRE OS 15 TÓPICOS ====================
+        // Cada tópico é gerado numa chamada separada, e a IA não "lembra" das anteriores.
+        // Para o estudo ler como UM ensaio contínuo (sem repetir definições, histórico e
+        // símbolos), cada nova geração recebe: (a) o panorama das 15 sessões e o estado de
+        // cada uma; (b) um resumo compacto do que já foi escrito; (c) o último parágrafo
+        // escrito, para a voz e o ritmo continuarem. O resumo é compacto de propósito:
+        // enviar os textos inteiros estouraria o limite de tokens dos workers gratuitos.
+        const ORCAMENTO_CONTEXTO_CHARS = 11000;
+
+        function frasesTemaDoTexto(texto, maxPorFrase) {
+            const paragrafos = String(texto || '').split(/\n+/).map(x => x.trim()).filter(Boolean);
+            return paragrafos.map(par => {
+                const m = par.match(/^.+?[.!?](?=\s|$)/);
+                let frase = m ? m[0] : par;
+                if (frase.length > maxPorFrase) frase = frase.slice(0, maxPorFrase - 1).trimEnd() + '…';
+                return frase;
+            });
+        }
+
+        function resumoCompactoDoTopico(texto, limite) {
+            let resumo = frasesTemaDoTexto(texto, 230).join(' ');
+            if (resumo.length > limite) resumo = resumo.slice(0, limite - 1).trimEnd() + '…';
+            return resumo;
+        }
+
+        function montarContextoEstudo(topicoAtual) {
+            if (!estudoAtual || !topicoAtual || topicoAtual.id === 'introducao') return '';
+            const nomeCarta = cartaEstudoSelecionada ? cartaEstudoSelecionada.nome : 'esta carta';
+            const ordem = TOPICOS_ESTUDO;
+            const idxAtual = ordem.findIndex(t => t.id === topicoAtual.id);
+            const temTexto = (t) => !!(estudoAtual.topicos[t.id] && estudoAtual.topicos[t.id].texto);
+
+            const panorama = ordem.map((t, i) => {
+                const estado = t.id === topicoAtual.id ? 'ESTA É A SESSÃO A ESCREVER AGORA'
+                    : temTexto(t) ? 'já escrita'
+                    : (i < idxAtual ? 'ainda não escrita (pode ser escrita depois; não a antecipe)' : 'ainda não escrita (virá depois; não a antecipe)');
+                return `${t.numero}. ${t.titulo}: ${estado}`;
+            }).join('\n');
+
+            const escritas = ordem.filter(t => t.id !== topicoAtual.id && temTexto(t));
+
+            // sessão escrita mais próxima antes da atual (para continuar a voz do ensaio)
+            let anterior = null;
+            for (let i = idxAtual - 1; i >= 0; i--) { if (temTexto(ordem[i])) { anterior = ordem[i]; break; } }
+            let ultimoParagrafo = '';
+            if (anterior) {
+                const pars = String(estudoAtual.topicos[anterior.id].texto).split(/\n+/).map(x => x.trim()).filter(Boolean);
+                ultimoParagrafo = pars[pars.length - 1] || '';
+                if (ultimoParagrafo.length > 1400) ultimoParagrafo = ultimoParagrafo.slice(0, 1399).trimEnd() + '…';
+            }
+
+            let bloco = `CONTEXTO DO ESTUDO (leia antes de escrever)\nO estudo da carta "${nomeCarta}" é UM ÚNICO ENSAIO CONTÍNUO, dividido em ${ordem.length} sessões. Cada sessão é escrita em separado, mas o leitor lerá todas em sequência, como capítulos de um mesmo texto. Panorama das sessões:\n${panorama}`;
+
+            if (escritas.length) {
+                const limite = Math.max(300, Math.min(1400, Math.floor((ORCAMENTO_CONTEXTO_CHARS - ultimoParagrafo.length - 1500) / escritas.length)));
+                const resumos = escritas.map(t => `[${t.numero}. ${t.titulo}] ${resumoCompactoDoTopico(estudoAtual.topicos[t.id].texto, limite)}`).join('\n');
+                bloco += `\n\nO QUE JÁ FOI DITO (frases-tema de cada sessão já escrita; o leitor já conhece tudo isto):\n${resumos}`;
+            }
+            if (ultimoParagrafo) {
+                bloco += `\n\nÚLTIMO PARÁGRAFO ESCRITO ATÉ AGORA (sessão "${anterior.titulo}"), para você continuar a mesma voz e o mesmo ritmo:\n"${ultimoParagrafo}"`;
+            }
+
+            bloco += `\n\nREGRAS DE CONTINUIDADE (obrigatórias):
+- Trate tudo o que foi dito acima como já sabido pelo leitor. NÃO repita descrições da imagem, definições, histórico, correspondências, símbolos nem explicações de termos que já apareceram. Se precisar tocar num ponto já tratado, retome-o em uma oração curta e avance (por exemplo: "o Ar, já apontado na ficha da carta, aqui se mostra como..."); nunca o explique de novo.
+- Escreva como o PRÓXIMO PARÁGRAFO do mesmo ensaio: mude o foco para o eixo desta sessão e traga apenas o que ainda não foi dito, sob um ângulo novo. Se uma ideia anterior for retomada, que seja para aprofundá-la ou contrastá-la.
+- Termos técnicos já explicados em sessões anteriores podem ser usados sem nova explicação; explique somente os que ainda não apareceram.
+- NÃO antecipe nem resuma o conteúdo das sessões ainda não escritas; cada uma terá o seu momento. A única exceção é o que o escopo desta própria sessão exigir (por exemplo, a ficha de Identidade da Carta apenas NOMEIA as correspondências, em uma linha cada, sem explicá-las: a explicação virá nas sessões próprias).
+- Mantenha coerência com o que já foi afirmado, sem se contradizer.`;
+            return bloco;
+        }
+
         async function gerarTopicoEstudo(topicoId, ehComplemento = false, silencioso = false) {
             if (!cartaEstudoSelecionada || !estudoAtual) {
                 return showToast('Selecione uma carta para estudar primeiro.', 'erro');
@@ -1130,11 +1206,11 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
             if (!ehComplemento) {
                 userPrompt = topico.id === 'introducao'
                     ? `Escreva o texto introdutório completo do estudo, conforme o escopo definido.\n\nLembrete final: texto dissertativo corrido, sem listas, começando direto no conteúdo, sem saudação nem frase de abertura.`
-                    : `CARTA DE TAROT: ${nomeCarta}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: siga integralmente o escopo da sessão, em texto dissertativo, sem listas, e comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
+                    : `CARTA DE TAROT: ${nomeCarta}\n\n${montarContextoEstudo(topico)}\n\nEscreva o estudo sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta.\n\nLembrete final: siga integralmente o escopo da sessão, obedeça às REGRAS DE CONTINUIDADE (não repita o que já foi dito), escreva em texto dissertativo, sem listas, e comece direto no conteúdo, sem nenhuma frase de introdução ou abertura.`;
             } else {
                 const dadosAtuais = estudoAtual.topicos[topicoId] || { texto: '', complementos: [] };
                 const complementosAnteriores = (dadosAtuais.complementos || []).join('\n\n');
-                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\nEste é o texto já escrito sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta:\n"${dadosAtuais.texto}"\n${complementosAnteriores ? `\nAprofundamentos complementares já feitos anteriormente sobre este mesmo eixo:\n"${complementosAnteriores}"\n` : ''}\nAgora escreva um APROFUNDAMENTO complementar sobre este mesmo eixo temático, trazendo camadas, nuances, exemplos ou conexões adicionais que ainda não foram mencionadas nos textos acima. Não repita o que já foi dito.\n\nLembrete final: comece direto no conteúdo do aprofundamento, sem nenhuma frase de introdução ou abertura.`;
+                userPrompt = `CARTA DE TAROT: ${nomeCarta}\n\n${montarContextoEstudo(topico)}\n\nEste é o texto já escrito sobre o eixo temático "${topico.titulo}" (${topico.descricao}) para esta carta:\n"${dadosAtuais.texto}"\n${complementosAnteriores ? `\nAprofundamentos complementares já feitos anteriormente sobre este mesmo eixo:\n"${complementosAnteriores}"\n` : ''}\nAgora escreva um APROFUNDAMENTO complementar sobre este mesmo eixo temático, trazendo camadas, nuances, exemplos ou conexões adicionais que ainda não foram mencionadas nos textos acima. Não repita o que já foi dito.\n\nLembrete final: comece direto no conteúdo do aprofundamento, sem nenhuma frase de introdução ou abertura.`;
             }
 
             try {
@@ -1162,7 +1238,7 @@ Não desenvolva as demais sessões do capítulo; mantenha o foco estrito nesta. 
             }
         }
 
-        // aoTentar(n) é chamado antes de cada tentativa (n = 1..6), para que a
+        // aoTentar(n) é chamado antes de cada tentativa (n = 1..8), para que a
         // tela possa exibir em qual worker a consulta está no momento
         // (ex: "...1", "...2"). Falhas intermediárias são silenciosas — nada
         // aparece na tela até que TODOS os workers tenham falhado.
