@@ -22,17 +22,6 @@
 
     
 </head>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', {
-      scope: './'
-    }).catch(error => {
-      console.error('Falha ao registrar Service Worker:', error);
-    });
-  });
-}
-</script>
     
 <body class="fundo-estrelado">
  
@@ -1983,6 +1972,16 @@ if ('serviceWorker' in navigator) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.2 6.6"/><path d="M20 5v6h-6"/></svg>
         </button>
     </nav>
-
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {
+      scope: './'
+    }).catch(error => {
+      console.error('Falha ao registrar Service Worker:', error);
+    });
+  });
+}
+</script>
 </body>
 </html>
