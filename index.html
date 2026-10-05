@@ -22,6 +22,18 @@
 
     
 </head>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', {
+      scope: './'
+    }).catch(error => {
+      console.error('Falha ao registrar Service Worker:', error);
+    });
+  });
+}
+</script>
+    
 <body class="fundo-estrelado">
  
     <header class="app-header">
