@@ -1,12 +1,12 @@
 {
-  "id": "/WAITE/",
-  "name": "Astro — Mapa Natal, Revolução Solar, Trânsitos & Tarot",
+  "id": "/",
+  "name": "Astro",
   "short_name": "Astro",
   "description": "Mapa astral natal, revolução solar, trânsitos diários e estudo do Tarot, com leitura simbólica por IA.",
   "lang": "pt-BR",
   "dir": "ltr",
 
-  "start_url": "/WAITE/",
+  "start_url": "./WAITE--.html",
   "scope": "/WAITE/",
 
   "display": "standalone",
