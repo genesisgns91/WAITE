@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d1d">
+<title>Astro — Diagnóstico do aplicativo</title>
+<link rel="manifest" href="manifest.json">
+<style>
+ body{margin:0;padding:20px;background:#090c1f;color:#d9dcee;font:15px/1.55 -apple-system,Segoe UI,Roboto,sans-serif}
+ h1{font-size:1.2rem;margin:0 0 4px;color:#f1dcab} p.s{margin:0 0 18px;color:#959bbd;font-size:.85rem}
+ .c{background:rgba(22,29,60,.7);border:1px solid rgba(160,175,255,.18);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+ .c b{display:block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#9fb0ff;margin-bottom:6px}
+ .ok{color:#6fd3a8}.er{color:#ff8d8d}.av{color:#f1c36b} code{word-break:break-all;color:#cfd6ff;font-size:.82rem}
+ button{display:block;width:100%;margin:8px 0 0;padding:13px;border-radius:12px;border:1px solid rgba(160,175,255,.35);background:rgba(124,147,255,.18);color:#fff;font:600 .95rem inherit;font-family:inherit}
+ button.p{background:linear-gradient(135deg,#4fa88f,#3f8fa3);border:0}
+ ul{margin:4px 0 0;padding-left:18px} a{color:#9fb0ff}
+</style>
+</head>
+<body>
+<h1>Diagnóstico do aplicativo Astro</h1>
+<p class="s">Mostra o que o navegador enxerga: manifesto, service worker e estado de instalação.</p>
+<div id="out"></div>
+<button class="p" id="btnInstalar" style="display:none">Instalar app agora</button>
+<button id="btnReparar">Reparar: limpar cache e service worker do Astro</button>
+<button onclick="location.href='index.html'">Voltar ao app</button>
+<script>
+var out=document.getElementById('out'), prompt_=null;
+function card(t,h){var d=document.createElement('div');d.className='c';d.innerHTML='<b>'+t+'</b>'+h;out.appendChild(d);}
+var ok=function(t){return '<span class="ok">✔ '+t+'</span>'},er=function(t){return '<span class="er">✘ '+t+'</span>'},av=function(t){return '<span class="av">• '+t+'</span>'};
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();prompt_=e;var b=document.getElementById('btnInstalar');b.style.display='block';
+  var el=document.getElementById('estInstal'); if(el) el.innerHTML=ok('O navegador oferece a instalação deste app (pode instalar).');});
+window.addEventListener('appinstalled',function(){alert('Instalado!');});
+document.getElementById('btnInstalar').onclick=function(){ if(prompt_){prompt_.prompt();} };
+
+(async function(){
+  card('Endereço','<code>'+location.href+'</code><br>'+(window.isSecureContext?ok('Conexão segura (HTTPS)'):er('Sem HTTPS: não instala')));
+  var modo=(matchMedia('(display-mode: standalone)').matches||navigator.standalone)?ok('Aberto como aplicativo instalado'):av('Aberto no navegador (não como app)');
+  card('Modo de exibição',modo);
+  try{
+    var r=await fetch('manifest.json',{cache:'no-store'}); var m=await r.json();
+    var base=new URL('manifest.json',location.href);
+    var idRes=new URL(m.id||m.start_url,new URL(m.start_url||'./',base).origin).href;
+    var st=new URL(m.start_url||'./',base).href, sc=new URL(m.scope||'./',base).href;
+    var idOk=/\/WAITE\//.test(idRes);
+    card('Manifesto','id informado: <code>'+(m.id||'(nenhum)')+'</code><br>Identidade resolvida: <code>'+idRes+'</code><br>'+
+      (idOk?ok('Identidade exclusiva deste app'):er('Identidade genérica da origem inteira: pode conflitar com outros apps do mesmo domínio e causar "já instalado"'))+
+      '<br>start_url: <code>'+st+'</code><br>scope: <code>'+sc+'</code><br>'+(st.indexOf(sc)===0?ok('start_url está dentro do escopo'):er('start_url fora do escopo'))+
+      '<br>Ícones: '+(m.icons||[]).length+' · Capturas: '+(m.screenshots||[]).length);
+    var falhas=[]; await Promise.all((m.icons||[]).map(async function(i){var x=await fetch(i.src,{cache:'no-store'}); if(!x.ok) falhas.push(i.src+' ('+x.status+')');}));
+    card('Arquivos de ícone',falhas.length?er('Não encontrados: '+falhas.join(', ')):ok('Todos os ícones do manifesto abrem'));
+  }catch(e){card('Manifesto',er('Falha ao ler: '+e.message));}
+  try{
+    var regs=await navigator.serviceWorker.getRegistrations();
+    var lista=regs.map(function(g){return '<li><code>'+g.scope+'</code> — '+(g.active?g.active.state:'sem ativo')+'</li>';}).join('');
+    var meu=regs.some(function(g){return g.scope.indexOf('/WAITE/')>-1;});
+    card('Service workers deste domínio (inclui outros apps)',(meu?ok('O Astro tem service worker ativo'):er('O Astro ainda não tem service worker ativo (recarregue a página uma vez)'))+'<ul>'+(lista||'<li>nenhum</li>')+'</ul>');
+    var ks=await caches.keys(); card('Caches',ks.length?'<ul>'+ks.map(function(k){return '<li><code>'+k+'</code></li>';}).join('')+'</ul>':'nenhum');
+  }catch(e){card('Service worker',er('Indisponível: '+e.message));}
+  card('Instalação','<span id="estInstal">'+av('Aguardando o navegador dizer se pode instalar… Se nada mudar em alguns segundos, o navegador acha que o app já está instalado ou que a página não é instalável.')+'</span>');
+})();
+
+document.getElementById('btnReparar').onclick=async function(){
+  if(!confirm('Isto apaga apenas o cache e o service worker do Astro neste aparelho. Suas pessoas e estudos salvos no Firebase não são afetados. Continuar?')) return;
+  var regs=await navigator.serviceWorker.getRegistrations();
+  for(var g of regs){ if(g.scope.indexOf('/WAITE/')>-1) await g.unregister(); }
+  var ks=await caches.keys(); for(var k of ks){ if(/^(astro-|waite-)/.test(k)) await caches.delete(k); }
+  alert('Pronto. A página será recarregada.'); location.reload();
+};
+</script>
+</body>
+</html>
