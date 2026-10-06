@@ -1,46 +1,40 @@
 {
-  "id": "/",
-  "name": "Astro",
+  "id": "./",
+  "name": "Astro — Mapa Natal, Revolução Solar, Trânsitos & Tarot",
   "short_name": "Astro",
   "description": "Mapa astral natal, revolução solar, trânsitos diários e estudo do Tarot, com leitura simbólica por IA.",
   "lang": "pt-BR",
   "dir": "ltr",
-
-  "start_url": "./index.html",
-  "scope": "/WAITE/",
-
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "display_override": [
     "standalone",
     "minimal-ui"
   ],
-
   "background_color": "#090c1f",
   "theme_color": "#0a0d1d",
-
   "categories": [
     "lifestyle",
     "entertainment",
     "education"
   ],
-
   "prefer_related_applications": false,
-
   "icons": [
     {
-      "src": "/WAITE/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/WAITE/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/WAITE/icon-maskable-512.png",
+      "src": "./icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
