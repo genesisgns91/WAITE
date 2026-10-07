@@ -2842,7 +2842,17 @@ input[type="checkbox"], input[type="radio"] {
 
 html { -webkit-tap-highlight-color: transparent; }
 @media (display-mode: standalone), (display-mode: minimal-ui) {
-    html, body { overscroll-behavior-y: none; }
     .nav-instalar { display: none; }
 }
 .bottom-tabbar { padding-bottom: env(safe-area-inset-bottom); }
+
+
+/* ---------- Rolagem por toque no app instalado ----------
+   Causa do bug: "html, body { overflow-x: hidden }" (regra antiga) faz o <body>
+   virar um segundo contêiner de rolagem, aninhado dentro da tela. No app instalado
+   (Android), arrastar o dedo sobre o conteúdo começava nesse contêiner "morto" e a
+   página não rolava; só rolava ao arrastar pela barra inferior, que é fixa.
+   Solução: só o <html> corta a barra horizontal (e isso vai para a tela inteira);
+   o <body> usa "clip", que corta o excesso sem criar contêiner de rolagem. */
+html { overflow-x: hidden; overflow-y: auto; }
+body { overflow-x: clip; overflow-y: visible; }
