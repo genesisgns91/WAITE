@@ -14,7 +14,7 @@
  * Para publicar uma versão nova, basta trocar VERSAO abaixo.
  * ---------------------------------------------------------------------------
  */
-const VERSAO = 'v12';
+const VERSAO = 'v13';
 const CACHE_SHELL = `astro-shell-${VERSAO}`;
 const CACHE_IMG = 'astro-img-v1';      // persiste entre versões (cartas são grandes)
 const CACHE_CDN = 'astro-cdn-v1';
@@ -23,7 +23,7 @@ const LIMITE_IMG = 140;                // 78 cartas + ícones + margem
 
 const SHELL = [
   './', './index.html', './revolucao_solar.html', './transitos_diarios.html', './tarot.html',
-  './estilos.css', './icones.js', './pwa.js', './manifest.json', './pwa_diagnostico.html',
+  './estilos.css', './icones.js', './pwa.js', './abertura.js', './manifest.json', './pwa_diagnostico.html',
   './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png',
   './icon-monochrome-512.png', './apple-touch-icon.png', './favicon.ico', './favicon.svg', './favicon-32.png'
 ];
