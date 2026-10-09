@@ -12,7 +12,7 @@
     "standalone",
     "minimal-ui"
   ],
-  "background_color": "#070a1c",
+  "background_color": "#000000",
   "theme_color": "#0a0d1d",
   "categories": [
     "lifestyle",

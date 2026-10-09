@@ -109,6 +109,7 @@
     var html =
         '<div class="ab-aurora ab-a1"></div><div class="ab-aurora ab-a2"></div>' +
         '<canvas class="ab-estrelas"></canvas>' +
+        '<div class="ab-negro"></div>' +
         '<div class="ab-meteoro"></div>' +
         '<div class="ab-centro">' +
         '<div class="ab-palco"><div class="ab-halo"></div>' + svg + '</div>' +
@@ -124,6 +125,7 @@
         '#astro-abertura.ab-saindo{animation:ab-some .65s cubic-bezier(.5,0,.3,1) forwards}',
         '#astro-abertura *{box-sizing:border-box}',
         '.ab-estrelas{position:absolute;inset:0;width:100%;height:100%}',
+        '.ab-negro{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;animation:ab-negro 1.2s ease-out .1s both}',
         '.ab-aurora{position:absolute;border-radius:50%;filter:blur(48px);opacity:.55;will-change:transform}',
         '.ab-a1{width:90vmax;height:60vmax;left:-35vmax;top:-22vmax;background:radial-gradient(closest-side,rgba(124,147,255,.45),transparent);animation:ab-deriva 9s ease-in-out infinite alternate}',
         '.ab-a2{width:80vmax;height:55vmax;right:-30vmax;bottom:-20vmax;background:radial-gradient(closest-side,rgba(155,110,230,.42),transparent);animation:ab-deriva 11s ease-in-out infinite alternate-reverse}',
@@ -155,9 +157,9 @@
         '.ab-semente{fill:#fff;filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px #bda4ff);animation:ab-semente 1.5s ease-in-out .2s both}',
         /* a marca */
         '.ab-lua-miolo{fill:rgba(155,128,234,.16);animation:ab-surge .9s ease-out 1.75s both}',
-        '.ab-lua-traco{fill:none;stroke:url(#ab-g);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;animation:ab-traco 1.15s cubic-bezier(.45,0,.2,1) 1s both}',
+        '.ab-lua-traco{fill:none;stroke:url(#ab-g);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;animation:ab-traco-lua 1.15s cubic-bezier(.45,0,.2,1) 1s both}',
         '.ab-estrela{transform-box:fill-box;transform-origin:center;animation:ab-nasce .9s cubic-bezier(.2,1.4,.4,1) 1.95s both}',
-        '.ab-onda{fill:none;stroke:rgba(255,226,160,.9);stroke-width:1.6;transform-box:view-box;opacity:0;animation:ab-onda 1.1s ease-out 2s both}',
+        '.ab-onda{fill:none;stroke:rgba(255,226,160,.9);stroke-width:1.6;transform-box:view-box;opacity:0;animation:ab-onda 1.1s ease-out 2s forwards}',
         '.ab-clarao{stroke:url(#ab-fl);stroke-width:1.4;transform-box:view-box;opacity:0}',
         '.ab-cl-h{animation:ab-clarao-h .9s ease-out 1.98s both}.ab-cl-v{animation:ab-clarao-v .9s ease-out 1.98s both}',
         /* nome */
@@ -170,6 +172,7 @@
         '.ab-meteoro::after{content:"";position:absolute;right:-2px;top:-2px;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(255,236,190,.9)}',
         /* quadros-chave */
         '@keyframes ab-traco{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}',
+        '@keyframes ab-traco-lua{0%{stroke-dashoffset:1;opacity:0}2%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}',
         '@keyframes ab-surge{from{opacity:0}to{opacity:1}}',
         '@keyframes ab-gira{to{transform:rotate(360deg)}}',
         '@keyframes ab-gira-inv{to{transform:rotate(-360deg)}}',
@@ -186,6 +189,7 @@
         '@keyframes ab-portal{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.4)}}',
         '@keyframes ab-some{0%{opacity:1}100%{opacity:0}}',
         '@keyframes ab-entra{from{opacity:0}to{opacity:1}}',
+        '@keyframes ab-negro{from{opacity:1}to{opacity:0}}',
         /* movimento reduzido: tudo parado, só um fade */
         '#astro-abertura.ab-reduzido{animation:ab-entra .5s ease both}',
         '#astro-abertura.ab-reduzido *{animation:none!important}',
